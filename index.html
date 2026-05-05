@@ -1044,6 +1044,11 @@ function applyFilters(){
   document.getElementById('showingCount').textContent=filteredRecords.length;
   document.getElementById('totalRecords').textContent=allRecords.length;
 }
+  function filterByTag(tag){
+  switchView('tracking');
+  document.getElementById('searchTag').value=tag;
+  applyFilters();
+}
 function clearFilters(){
   ['searchInput','searchTag','filterDateFrom','filterDateTo'].forEach(id=>document.getElementById(id).value='');
   ['filterAsset','filterRefinery','filterYear'].forEach(id=>document.getElementById(id).selectedIndex=0);
@@ -1074,7 +1079,7 @@ function renderTable(){
       <td class="td-date">${date||'–'}</td>
       <td class="td-year">${r['YEAR']||''}</td>
       <td><span class="asset-badge">${r['ASSOCIATED ASSET']||'–'}</span></td>
-      <td><span class="tag-badge">${tag||'–'}</span></td>
+      <td><span class="tag-badge" style="cursor:pointer" onclick="filterByTag('${tag}')">${tag||'–'}</span></td>
       <td class="wrap" style="font-size:12px;color:var(--text-light)">${card}</td>
       <td>${fb}</td>
       <td class="wrap">${r['ACTIVITY DESCRIPTION']||'–'}</td>
@@ -1462,7 +1467,7 @@ function renderDashboard(){
       </thead>
       <tbody>
         ${top10.map((t,i)=>`<tr style="border-bottom:1px solid var(--border);${i%2?'background:#f9fafb':''}">
-          <td style="padding:10px 8px"><span class="tag-badge">${t.tag}</span></td>
+          <td style="padding:10px 8px"><span class="tag-badge" style="cursor:pointer" onclick="filterByTag('${t.tag}')">${t.tag}</span></td>
           <td style="text-align:center;padding:10px 8px;font-weight:600;font-family:'Rajdhani',sans-serif;font-size:15px">${t.count}</td>
           <td style="text-align:center;padding:10px 8px;color:#c0392b;font-weight:600">${t.leaks||'—'}</td>
           <td style="text-align:center;padding:10px 8px;color:#e67e22;font-weight:600">${t.replacements||'—'}</td>
