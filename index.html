@@ -503,18 +503,18 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
     </div>
     <div style="padding:6px 20px 4px;font-size:12px;color:var(--silver)" id="eqCount"></div>
     <div class="eq-grid" id="eqGrid"></div>
-  </div>
-  <!-- ── CLOUD MC VIEW ── -->
-<div id="cloudmcView" style="display:none">
-  <div style="padding:20px 28px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-      <div style="font-size:11px;font-weight:600;color:var(--silver);text-transform:uppercase;letter-spacing:1px">Saved Maintenance Cards</div>
-      <button class="btn btn-red" onclick="loadCloudMCList()">🔄 Refresh</button>
-    </div>
-    <div id="cloudMCGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px"></div>
-  </div>
 </div>
-
+  <!-- ── CLOUD MC VIEW ── -->
+  <div id="cloudmcView" style="display:none">
+    <div style="padding:20px 28px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div style="font-size:11px;font-weight:600;color:var(--silver);text-transform:uppercase;letter-spacing:1px">Saved Maintenance Cards</div>
+        <button class="btn btn-red" onclick="loadCloudMCList()">🔄 Refresh</button>
+      </div>
+      <div id="cloudMCGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px"></div>
+    </div>
+  </div>
+  
 <!-- ── DASHBOARD VIEW ── -->
   <div id="dashView" style="display:none">
     <div style="padding:20px 28px 0">
