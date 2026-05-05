@@ -353,7 +353,22 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
 <body>
 
 <!-- ══ SIDEBAR ══ -->
-<div class="sb-nav">
+<div class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo">
+      <img src="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;" class="kar-logo-img">
+      <div class="sb-name">KAR</div>
+    </div>
+    <div class="sb-sub">Mechanical Maintenance</div>
+  </div>
+  <div class="sb-disc">
+    <div class="sb-disc-label">Discipline</div>
+    <div class="disc-btns">
+      <button class="disc-btn active static" id="discStatic" onclick="setDiscipline('static')">⚙️ Static</button>
+      <button class="disc-btn rotating" id="discRot" onclick="setDiscipline('rotating')">🔄 Rotating</button>
+    </div>
+  </div>
+  <div class="sb-nav">
     <div class="sb-section-label">Main</div>
     <div class="sb-item active" id="nav-tracking" onclick="switchView('tracking')">
       <span class="sb-item-icon">📋</span> MC History
@@ -383,6 +398,11 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
       <span class="sb-action-icon">📥</span> Export CSV
     </div>
   </div>
+  <div class="sb-bottom">
+    <div class="sb-count"><strong id="sbCount">—</strong> Records</div>
+    <span class="sb-module-tag static" id="sbModuleTag">Static</span>
+  </div>
+</div>
 
 <!-- ══ MAIN ══ -->
 <div class="main">
@@ -503,27 +523,8 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
           <option value="other">Other</option>
         </select>
       </div>
-      <!-- KPI Cards -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px" id="dashKpiRow"></div>
-      <!-- Charts row -->
-      <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px">
-        <div style="background:white;border:1px solid var(--border);border-radius:8px;padding:16px">
-          <div style="font-size:11px;font-weight:600;color:var(--silver);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Top 10 — Interventions per Equipment</div>
-          <div style="position:relative;height:260px"><canvas id="dashBarChart" role="img" aria-label="Top 10 equipment by interventions">Top 10 equipment interventions.</canvas></div>
-        </div>
-        <div style="background:white;border:1px solid var(--border);border-radius:8px;padding:16px">
-          <div style="font-size:11px;font-weight:600;color:var(--silver);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Intervention Type</div>
-          <div style="position:relative;height:260px"><canvas id="dashDonutChart" role="img" aria-label="Intervention type breakdown">Intervention types.</canvas></div>
-        </div>
-      </div>
-      <!-- Top 10 Table -->
-      <div style="background:white;border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:80px">
-        <div style="font-size:11px;font-weight:600;color:var(--silver);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Top 10 Detail</div>
-        <div id="dashTable"></div>
-      </div>
-    </div>
-  </div>
-    <!-- KPI Cards -->
+     
+         <!-- KPI Cards -->
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px" id="dashKpiRow"></div>
     <!-- Charts row -->
     <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px">
