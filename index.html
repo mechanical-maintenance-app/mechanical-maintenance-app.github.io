@@ -1338,9 +1338,10 @@ function clearMCForm(){
   
 // ── SUPABASE ───────────────────────────────────
 async function sbFetch(path,method='GET',body=null){
-  const opts={method,headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}};
+  const opts={method,headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Prefer':'return=minimal'}};
   if(body)opts.body=JSON.stringify(body);
   const res=await fetch(SUPABASE_URL+path,opts);
+  if(res.status===204||res.status===201)return{};
   return res.json();
 }
 
