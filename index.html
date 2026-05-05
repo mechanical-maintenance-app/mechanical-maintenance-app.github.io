@@ -1300,6 +1300,8 @@ let dashBarChartInst=null,dashDonutChartInst=null;
 
 function renderDashboard(){
   if(!allRecords.length)return;
+  const dashView=document.getElementById('dashView');
+  if(!dashView||dashView.style.display==='none')return;
   const type=(document.getElementById('dashFilterType')?.value||'HEAT EXCHANGER').toUpperCase();
   const refinery=document.getElementById('dashFilterRefinery')?.value||'';
   const year=document.getElementById('dashFilterYear')?.value||'';
