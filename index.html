@@ -884,8 +884,7 @@ document.getElementById('cloudmcView').style.display=view==='cloudmc'?'block':'n
     const el=document.getElementById('nav-'+v);
     if(el){el.className='sb-item'+(v===view?' active'+(currentDiscipline==='rotating'?' rot':''):'');}
   });
-  const titles={tracking:'MC <span>History</span>',card:'Maintenance <span>Card</span>',equipment:'Equipment <span>List</span>',dashboard:'<span>Dashboard</span>',cloudmc:'Cloud <span>MCs</span>'
-  document.getElementById('mainTitle').innerHTML=titles[view]||'';
+const titles={tracking:'MC <span>History</span>',card:'Maintenance <span>Card</span>',equipment:'Equipment <span>List</span>',dashboard:'<span>Dashboard</span>',cloudmc:'Cloud <span>MCs</span>'};  document.getElementById('mainTitle').innerHTML=titles[view]||'';
   if(view==='equipment'&&equipmentList.length)renderEquipment(equipmentList);
   if(view==='card'){
     setTimeout(()=>{
