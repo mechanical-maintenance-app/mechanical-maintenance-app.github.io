@@ -1336,6 +1336,7 @@ function clearMCForm(){
   [0,1,2,3].forEach(i=>removePhoto(i));
   updateTypeDisplay();
 }
+  
 // ── SUPABASE ───────────────────────────────────
 async function sbFetch(path,method='GET',body=null){
   const opts={method,headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}};
