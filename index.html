@@ -1441,13 +1441,19 @@ function printMC(){
   setTimeout(()=>document.title=prevTitle, 1000);
 }
 function clearMCForm(){
-  ['mcWO','mcStart','mcEnd','mcTag','mcLoc','mcService','mcType','mcCode','mcBg','mcScope','mcActivity','mcComments']
-    .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['mcWO','mcStart','mcEnd','mcTag','mcLoc','mcService','mcType','mcCode'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  ['mcBg','mcScope','mcActivity','mcComments'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.innerHTML='';
+  });
   ['ckPrev','ckCorr','ckRedes','ckRepl','ckOther','attInsp','attPic','attHydro','attTorque']
     .forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
   document.querySelectorAll('input[name="prio"]').forEach(el=>el.checked=false);
   [0,1,2,3].forEach(i=>removePhoto(i));
+  currentMCActivityShort='';
   updateTypeDisplay();
+}
 }
   
 // ── SUPABASE ───────────────────────────────────
