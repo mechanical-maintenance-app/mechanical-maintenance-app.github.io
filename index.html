@@ -1530,10 +1530,10 @@ function loadMCIntoForm(mc){
   document.getElementById('mcService').value=mc.service||'';
   document.getElementById('mcType').value=mc.equipment_type||'';
   document.getElementById('mcCode').value=mc.applicable_code||'';
-  document.getElementById('mcBg').value=mc.background||'';
-  document.getElementById('mcScope').value=mc.scope||'';
-  document.getElementById('mcActivity').value=mc.activity||'';
-  document.getElementById('mcComments').value=mc.comments||'';
+ document.getElementById('mcBg').innerHTML=mc.background||'';
+document.getElementById('mcScope').innerHTML=mc.scope||'';
+document.getElementById('mcActivity').innerHTML=mc.activity||'';
+document.getElementById('mcComments').innerHTML=mc.comments||'';
   if(mc.priority)document.querySelector(`input[name="prio"][value="${mc.priority}"]`).checked=true;
   if(mc.classifications){
     document.getElementById('ckPrev').checked=mc.classifications.preventive||false;
