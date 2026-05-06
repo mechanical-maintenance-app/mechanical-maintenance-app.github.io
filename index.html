@@ -229,7 +229,15 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
 .mcd-radio-col{display:flex;flex-direction:column;gap:4px;}
 .mcd-ck{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;white-space:nowrap;}
 .mcd-ck input{width:13px;height:13px;accent-color:#CC2222;cursor:pointer;flex-shrink:0;}
-
+  
+.mcd-toolbar{display:flex;align-items:center;gap:4px;padding:4px 8px;background:#f3f4f6;border:1px solid #D1D5DB;border-bottom:none;}
+.mcd-tb-btn{width:26px;height:24px;border:1px solid #D1D5DB;border-radius:3px;background:white;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;}
+.mcd-tb-btn:hover{background:#e8f0fe;}
+.mcd-tb-sep{width:1px;height:18px;background:#D1D5DB;margin:0 2px;}
+.mcd-tb-color{width:26px;height:24px;padding:0;border:1px solid #D1D5DB;border-radius:3px;cursor:pointer;}
+.mcd-editor{min-height:24px;outline:none;font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#374151;line-height:1.65;}
+.mcd-editor:empty:before{content:attr(data-placeholder);color:#D1D5DB;font-style:italic;}
+  
 /* Sections */
 .mcd-section{margin-bottom:11px;}
 .mcd-sec-hd{font-size:9px;font-weight:700;color:white;background:#1a1f2e;padding:4px 9px;text-transform:uppercase;letter-spacing:.06em;}
@@ -668,22 +676,43 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
 </table>
 
             <!-- Background -->
-            <div class="mcd-section">
-              <div class="mcd-sec-hd">Background</div>
-              <textarea class="mcd-ta" id="mcBg" placeholder="Describe the situation that originated this maintenance activity..." rows="4"></textarea>
-            </div>
+<div class="mcd-section">
+  <div class="mcd-sec-hd">Background</div>
+  <div class="mcd-toolbar">
+    <button type="button" class="mcd-tb-btn" onclick="fmtText('mcBg','bold')" title="Bold"><b>B</b></button>
+    <button type="button" class="mcd-tb-btn" onclick="fmtText('mcBg','italic')" title="Italic"><i>I</i></button>
+    <button type="button" class="mcd-tb-btn" onclick="fmtText('mcBg','underline')" title="Underline"><u>U</u></button>
+    <div class="mcd-tb-sep"></div>
+    <input type="color" class="mcd-tb-color" title="Text color" onchange="fmtColor('mcBg',this.value)">
+  </div>
+  <div class="mcd-ta mcd-editor" id="mcBg" contenteditable="true" data-placeholder="Describe the situation that originated this maintenance activity..."></div>
+</div>
 
-            <!-- Scope -->
-            <div class="mcd-section">
-              <div class="mcd-sec-hd">Scope of Maintenance Activity</div>
-              <textarea class="mcd-ta" id="mcScope" placeholder="Describe the scope and objective of the activity..." rows="4"></textarea>
-            </div>
+         <!-- Scope -->
+<div class="mcd-section">
+  <div class="mcd-sec-hd">Scope of Maintenance Activity</div>
+  <div class="mcd-toolbar">
+    <button type="button" class="mcd-tb-btn" onclick="fmtText('mcScope','bold')" title="Bold"><b>B</b></button>
+    <button type="button" class="mcd-tb-btn" onclick="fmtText('mcScope','italic')" title="Italic"><i>I</i></button>
+    <button type="button" class="mcd-tb-btn" onclick="fmtText('mcScope','underline')" title="Underline"><u>U</u></button>
+    <div class="mcd-tb-sep"></div>
+    <input type="color" class="mcd-tb-color" title="Text color" onchange="fmtColor('mcScope',this.value)">
+  </div>
+  <div class="mcd-ta mcd-editor" id="mcScope" contenteditable="true" data-placeholder="Describe the scope and objective of the activity..."></div>
+</div>
 
             <!-- Activity Description -->
-            <div class="mcd-section">
-              <div class="mcd-sec-hd">Maintenance Activity Description</div>
-              <textarea class="mcd-ta" id="mcActivity" placeholder="Describe the maintenance activities performed in detail..." rows="8"></textarea>
-            </div>
+<div class="mcd-section">
+  <div class="mcd-sec-hd">Maintenance Activity Description</div>
+  <div class="mcd-toolbar">
+    <button type="button" class="mcd-tb-btn" onclick="fmtText('mcActivity','bold')" title="Bold"><b>B</b></button>
+    <button type="button" class="mcd-tb-btn" onclick="fmtText('mcActivity','italic')" title="Italic"><i>I</i></button>
+    <button type="button" class="mcd-tb-btn" onclick="fmtText('mcActivity','underline')" title="Underline"><u>U</u></button>
+    <div class="mcd-tb-sep"></div>
+    <input type="color" class="mcd-tb-color" title="Text color" onchange="fmtColor('mcActivity',this.value)">
+  </div>
+  <div class="mcd-ta mcd-editor" id="mcActivity" contenteditable="true" data-placeholder="Describe the maintenance activities performed in detail..."></div>
+</div>
 
             <!-- Attachments -->
             <table class="mcd-att-table">
@@ -697,10 +726,17 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
             </table>
 
             <!-- Comments -->
-            <div class="mcd-section">
-              <div class="mcd-sec-hd">Comments</div>
-              <textarea class="mcd-ta" id="mcComments" placeholder="Additional comments..." rows="3"></textarea>
-            </div>
+<div class="mcd-section">
+  <div class="mcd-sec-hd">Comments</div>
+  <div class="mcd-toolbar">
+    <button type="button" class="mcd-tb-btn" onclick="fmtText('mcComments','bold')" title="Bold"><b>B</b></button>
+    <button type="button" class="mcd-tb-btn" onclick="fmtText('mcComments','italic')" title="Italic"><i>I</i></button>
+    <button type="button" class="mcd-tb-btn" onclick="fmtText('mcComments','underline')" title="Underline"><u>U</u></button>
+    <div class="mcd-tb-sep"></div>
+    <input type="color" class="mcd-tb-color" title="Text color" onchange="fmtColor('mcComments',this.value)">
+  </div>
+  <div class="mcd-ta mcd-editor" id="mcComments" contenteditable="true" data-placeholder="Additional comments..."></div>
+</div>
 
             <!-- Signatures -->
             <div class="mcd-sig-title">Activity approved by</div>
@@ -1320,8 +1356,11 @@ function removePhoto(i){
   const cap=document.getElementById('pc'+i);if(cap){cap.value='';photos[i].caption='Photo '+(i+1);}
 }
 
-function mcVal(id){return(document.getElementById(id)||{}).value||'';}
-
+function mcVal(id){return(document.getElementById(id)||{}).value||'';}function mcVal(id){
+  const el=document.getElementById(id);
+  if(!el)return'';
+  return el.contentEditable==='true'?el.innerHTML:el.value||'';
+}
 function printMC(){
   const cardName = mcVal('mcWO') || mcVal('mcTag') || 'KAR - Mechanical Maintenance';
   const prevTitle = document.title;
