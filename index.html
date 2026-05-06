@@ -1540,6 +1540,21 @@ function viewMCFromCloud(mc){
     </div>`;
 }
 function loadMCIntoForm(mc){
+  // Restore editable state
+['mcWO','mcStart','mcEnd','mcTag','mcLoc','mcService','mcCode','mcBg','mcScope','mcActivity','mcComments'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el){el.removeAttribute('disabled');el.style.pointerEvents='';el.style.opacity='';}
+});
+document.querySelectorAll('.mcd-toolbar').forEach(t=>t.style.display='');
+document.querySelectorAll('.mcd-ck input,.mcd-att-table input').forEach(el=>el.disabled=false);
+document.getElementById('mcBottomBar').innerHTML=`
+  <div class="mc-bottom-info">Fill in the form then print / save as PDF</div>
+  <div style="display:flex;gap:10px">
+    <button class="btn btn-ghost" style="border-color:#8898aa;color:#1a2332;" onclick="switchView('cloudmc')">← Back</button>
+    <button class="btn btn-ghost" style="border-color:#8898aa;color:#1a2332;" onclick="clearMCForm()">🗑️ Clear</button>
+    <button class="btn btn-red" style="background:#1565c0;border-color:#1565c0;" onclick="saveMCToCloud()">☁️ Save to Cloud</button>
+    <button class="btn btn-red" onclick="printMC()">🖨️ Print / Save as PDF</button>
+  </div>`;
   clearMCForm();
   currentCloudMCId=mc.id;
   document.getElementById('mcWO').value=mc.wo||'';
