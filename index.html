@@ -353,6 +353,7 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
   .ph-img-area img{width:100%;height:100%;object-fit:cover;}
   .ph-cap-p{background:#1a1f2e;padding:5px 9px;font-size:10px;color:rgba(255,255,255,.8);text-align:center;}
   .ph-annex-title{font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;border-bottom:1px solid #D1D5DB;padding-bottom:6px;}
+ .mcd-toolbar{display:none!important;}
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
 }
 #printOutput{display:none;}
@@ -1354,6 +1355,18 @@ function removePhoto(i){
   slot.classList.remove('has-photo');slot.onclick=()=>triggerPhoto(i);
   slot.innerHTML=`<input type="file" id="pi${i}" accept="image/*" onchange="loadPhoto(${i},this)" style="display:none"><div class="mcd-ph-empty"><span class="mcd-ph-empty-icon">📷</span>Photo ${i+1}</div>`;
   const cap=document.getElementById('pc'+i);if(cap){cap.value='';photos[i].caption='Photo '+(i+1);}
+}
+// ── MC FORMAT ──────────────────────────────────
+function fmtText(id,cmd){
+  const el=document.getElementById(id);
+  el.focus();
+  document.execCommand(cmd,false,null);
+  el.focus();
+}
+function fmtColor(id,color){
+  const el=document.getElementById(id);
+  el.focus();
+  document.execCommand('foreColor',false,color);
 }
 
 function mcVal(id){return(document.getElementById(id)||{}).value||'';}function mcVal(id){
