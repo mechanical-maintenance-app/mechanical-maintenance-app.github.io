@@ -846,7 +846,16 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
         <div class="form-group"><label class="form-label">Year (auto)</label><input type="text" class="form-input" id="fYear" disabled></div>
         <div class="form-group"><label class="form-label">TAG <span class="req">*</span></label><input type="text" class="form-input" id="fTag" oninput="lookupEquipment(this.value)" placeholder="e.g. B-E-106"></div>
         <div class="form-group"><label class="form-label">Associated Asset (auto)</label><input type="text" class="form-input" id="fAsset" disabled></div>
-        <div class="form-group"><label class="form-label">Refinery / Location</label><input type="text" class="form-input" id="fRefinery" placeholder="e.g. Kar-2 Plan-B"></div>
+        <div class="form-group"><label class="form-label">Refinery / Location</label>
+<select class="form-input" id="fRefinery">
+  <option value="">— Select —</option>
+  <option value="KAR-1 Unit-1">KAR-1 Unit-1</option>
+  <option value="KAR-1 Unit-2">KAR-1 Unit-2</option>
+  <option value="KAR-1 Unit-3">KAR-1 Unit-3</option>
+  <option value="KAR-2 Unit-4">KAR-2 Unit-4</option>
+  <option value="KAR-2 Plant-B">KAR-2 Plant-B</option>
+  <option value="KAR-2 Plant-C">KAR-2 Plant-C</option>
+</select></div>
         <div class="form-group"><label class="form-label">Item No.</label><input type="text" class="form-input" id="fItemNo" placeholder="Auto"></div>
         <div class="form-group full"><label class="form-label">Activity Description <span class="req">*</span></label><input type="text" class="form-input" id="fActivity" placeholder="e.g. BUNDLE REPLACEMENT"></div>
         <div class="form-group full"><label class="form-label">Remark</label><textarea class="form-textarea" id="fRemark" placeholder="Optional notes..."></textarea></div>
@@ -1276,19 +1285,6 @@ function parseCard(val){
   if(dm){document.getElementById('fDate').value=`${dm[1]}-${dm[2]}-${dm[3]}`;document.getElementById('fYear').value=dm[1];}
   const tm=val.match(/\b([A-Z]+-[A-Z]+-?\d+[A-Z]*(?:\/[A-Z])?|[A-Z]+-\d+[A-Z]*(?:\/[A-Z])?)\b/);
   if(tm){document.getElementById('fTag').value=tm[1];lookupEquipment(tm[1]);}
-  const rm=val.match(/(Kar-\d+\s*(?:Plan-[A-Z]|Plant-[A-Z]|Unit-\d+)?)/i);
-  if(rm)document.getElementById('fRefinery').value=rm[1].trim();
-}
-function lookupEquipment(tag){
-  if(!tag)return;if(!equipmentList.length){setTimeout(()=>lookupEquipment(tag),1000);return;}
-  const t=tag.trim().toUpperCase();
-  const tagKey=Object.keys(equipmentList[0]).find(k=>k.toUpperCase().includes('TAG'))||'TAG';
-  const typeKey=Object.keys(equipmentList[0]).find(k=>k.toUpperCase().includes('TYPE'))||'TYPE';
-  let found=equipmentList.find(e=>String(e[tagKey]||'').toUpperCase()===t);
-  if(!found)found=equipmentList.find(e=>String(e[tagKey]||'').toUpperCase().endsWith('-'+t));
-  if(!found)found=equipmentList.find(e=>String(e[tagKey]||'').toUpperCase().startsWith(t));
-  if(!found)found=equipmentList.find(e=>String(e[tagKey]||'').toUpperCase().includes(t));
-  if(found)document.getElementById('fAsset').value=found[typeKey]||'';
 }
 
 // ── RECORD MODAL ───────────────────────────────
@@ -1357,7 +1353,7 @@ function generateMC(rowIndex){
       if(parts.length)document.getElementById('mcLoc').value=parts.join(', ');
     }
   }
-  if(!document.getElementById('mcLoc').value)document.getElementById('mcLoc').value=r['REFINERY']||'';
+document.getElementById('mcLoc').value=r['REFINERY']||'';
   updateTypeDisplay();
   switchView('card');
   toast('Form pre-filled from record.','info');
@@ -1559,13 +1555,14 @@ async function loadCloudMCList(){
   grid.innerHTML='<div style="color:var(--silver);font-size:13px">Loading...</div>';
   const mcs=await loadMCsFromCloud();
   if(!mcs.length){grid.innerHTML='<div style="color:var(--silver);font-size:13px">No MCs saved yet.</div>';return;}
-  grid.innerHTML=mcs.map(mc=>`
+  grid.innerHTML=mcs.map((mc,i)=>`
     <div style="background:white;border:1px solid var(--border);border-radius:8px;padding:16px;box-shadow:var(--shadow)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <span class="tag-badge">${mc.tag||'—'}</span>
         <span style="font-size:11px;color:var(--silver)">${mc.start_date||'—'}</span>
       </div>
-      <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px">${mc.wo||'No WO'}</div>
+      <div style="font-size:10px;color:var(--silver);margin-bottom:4px">ITEM #${mc.row_index||i+1}</div>
+      <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px">${mc.activity||mc.wo||'No description'}</div>
       <div style="font-size:12px;color:var(--text-light);margin-bottom:4px">${mc.location||'—'}</div>
       <div style="font-size:12px;color:var(--text-light);margin-bottom:12px">${mc.equipment_type||'—'}</div>
       <div style="display:flex;gap:8px">
