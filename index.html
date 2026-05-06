@@ -824,8 +824,9 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
   <div class="mc-bottom-bar hidden" id="mcBottomBar">
     <div class="mc-bottom-info">Fill in the form then print / save as PDF</div>
     <div style="display:flex;gap:10px">
-      <button class="btn btn-ghost" onclick="clearMCForm()">🗑️ Clear</button>
-<button class="btn btn-ghost" onclick="saveMCToCloud()">☁️ Save to Cloud</button>
+      <button class="btn btn-ghost" style="border-color:#8898aa;color:#1a2332;" onclick="switchView('cloudmc')">← Back</button>
+      <button class="btn btn-ghost" style="border-color:#8898aa;color:#1a2332;" onclick="clearMCForm()">🗑️ Clear</button>
+<button class="btn btn-red" style="background:#1565c0;border-color:#1565c0;" onclick="saveMCToCloud()">☁️ Save to Cloud</button>
       <button class="btn btn-red" onclick="printMC()">🖨️ Print / Save as PDF</button>
     </div>
   </div>
@@ -896,6 +897,7 @@ let sortCol='rowIndex',sortAsc=false,cbId=0;
 let currentView='tracking',currentDiscipline='static';
 let mcZoom=100;
   let currentMCActivityShort='';
+  let currentCloudMCId=null;
 
 // ── LOGO INJECT ─────────────────────────────────
 document.querySelectorAll('.kar-logo-img').forEach(img=>img.src=KAR_LOGO);
@@ -1452,6 +1454,7 @@ function clearMCForm(){
   document.querySelectorAll('input[name="prio"]').forEach(el=>el.checked=false);
   [0,1,2,3].forEach(i=>removePhoto(i));
   currentMCActivityShort='';
+  currentCloudMCId=null;
   updateTypeDisplay();
 }
   
@@ -1498,7 +1501,9 @@ activity_short:currentMCActivityShort,
     updated_at:new Date().toISOString()
   };
   try{
-    const res=await sbFetch('/rest/v1/maintenance_cards','POST',data);
+    const res=currentCloudMCId
+  ?await sbFetch('/rest/v1/maintenance_cards?id=eq.'+currentCloudMCId,'PATCH',data)
+  :await sbFetch('/rest/v1/maintenance_cards','POST',data);
     if(res.error)throw new Error(res.error.message);
     toast('MC saved to cloud ✅','success');
     return true;
@@ -1519,9 +1524,24 @@ async function deleteMCFromCloud(id){
     toast('MC deleted.','info');
   }catch(e){toast('Error deleting.','error');}
 }
-
+function viewMCFromCloud(mc){
+  loadMCIntoForm(mc);
+  ['mcWO','mcStart','mcEnd','mcTag','mcLoc','mcService','mcCode','mcBg','mcScope','mcActivity','mcComments'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.setAttribute('disabled','true');el.style.pointerEvents='none';el.style.opacity='.8';}
+  });
+  document.querySelectorAll('.mcd-toolbar').forEach(t=>t.style.display='none');
+  document.querySelectorAll('.mcd-ck input,.mcd-att-table input').forEach(el=>el.disabled=true);
+  document.getElementById('mcBottomBar').innerHTML=`
+    <div class="mc-bottom-info">View mode — read only</div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="border-color:#8898aa;color:#1a2332;" onclick="switchView('cloudmc')">← Back</button>
+      <button class="btn btn-red" onclick="printMC()">🖨️ Print / Save as PDF</button>
+    </div>`;
+}
 function loadMCIntoForm(mc){
   clearMCForm();
+  currentCloudMCId=mc.id;
   document.getElementById('mcWO').value=mc.wo||'';
   document.getElementById('mcTag').value=mc.tag||'';
   document.getElementById('mcStart').value=mc.start_date||'';
@@ -1574,7 +1594,8 @@ async function loadCloudMCList(){
       <div style="font-size:12px;color:var(--text-light);margin-bottom:4px">${mc.location||'—'}</div>
       <div style="font-size:12px;color:var(--text-light);margin-bottom:12px">${mc.equipment_type||'—'}</div>
       <div style="display:flex;gap:8px">
-        <button class="btn btn-red" style="flex:1;padding:6px;font-size:12px" onclick="loadMCIntoForm(${JSON.stringify(mc).replace(/"/g,'&quot;')})">📄 Open</button>
+      <button class="btn btn-ghost" style="flex:1;padding:6px;font-size:12px;border-color:#1565c0;color:#1565c0;" onclick="viewMCFromCloud(${JSON.stringify(mc).replace(/"/g,'&quot;')})">👁️ View</button>
+<button class="btn btn-red" style="flex:1;padding:6px;font-size:12px;" onclick="loadMCIntoForm(${JSON.stringify(mc).replace(/"/g,'&quot;')})">✏️ Edit</button>
         <button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="deleteMCFromCloud('${mc.id}').then(loadCloudMCList)">🗑️</button>
       </div>
     </div>
