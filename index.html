@@ -895,6 +895,7 @@ let currentPage=1,PAGE_SIZE=25,editingIndex=null;
 let sortCol='rowIndex',sortAsc=false,cbId=0;
 let currentView='tracking',currentDiscipline='static';
 let mcZoom=100;
+  let currentMCActivityShort='';
 
 // ── LOGO INJECT ─────────────────────────────────
 document.querySelectorAll('.kar-logo-img').forEach(img=>img.src=KAR_LOGO);
@@ -1340,6 +1341,7 @@ function generateMC(rowIndex){
   const tag=r['TAG']||'';
   document.getElementById('mcTag').value=tag;
   document.getElementById('mcStart').value=String(r['MAINTENANCE DATE']||'').substring(0,10);
+  currentMCActivityShort=r['ACTIVITY DESCRIPTION']||'';
   document.getElementById('mcType').value=r['ASSOCIATED ASSET']||'';
   if(tag){
     const t=tag.trim().toUpperCase();
@@ -1470,6 +1472,7 @@ async function saveMCToCloud(){
     background:mcVal('mcBg'),
     scope:mcVal('mcScope'),
     activity:mcVal('mcActivity'),
+activity_short:currentMCActivityShort,
     comments:mcVal('mcComments'),
     priority:document.querySelector('input[name="prio"]:checked')?.value||'',
     classifications:{
@@ -1562,7 +1565,7 @@ async function loadCloudMCList(){
         <span style="font-size:11px;color:var(--silver)">${mc.start_date||'—'}</span>
       </div>
       <div style="font-size:10px;color:var(--silver);margin-bottom:4px">ITEM #${mc.row_index||i+1}</div>
-      <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px">${mc.activity||mc.wo||'No description'}</div>
+     <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px">${mc.activity_short||mc.wo||'No description'}</div>
       <div style="font-size:12px;color:var(--text-light);margin-bottom:4px">${mc.location||'—'}</div>
       <div style="font-size:12px;color:var(--text-light);margin-bottom:12px">${mc.equipment_type||'—'}</div>
       <div style="display:flex;gap:8px">
