@@ -1657,9 +1657,27 @@ async function deleteSelectedMCs(){
   for(const id of selected)await deleteMCFromCloud(id);
   loadCloudMCList();
 }
-  function toggleSelectAllMCs(cb){ ... }
-function updateSelectedCount(){ ... }
-async function deleteSelectedMCs(){ ... }
+function toggleSelectAllMCs(cb){
+  document.querySelectorAll('.mc-select-cb').forEach(el=>el.checked=cb.checked);
+  updateSelectedCount();
+}
+
+function updateSelectedCount(){
+  const selected=document.querySelectorAll('.mc-select-cb:checked').length;
+  const total=document.querySelectorAll('.mc-select-cb').length;
+  const el=document.getElementById('selectedMCCount');
+  if(el)el.textContent=selected?`${selected} of ${total} selected`:'';
+  const selAll=document.getElementById('selectAllMCs');
+  if(selAll)selAll.checked=selected===total&&total>0;
+}
+
+async function deleteSelectedMCs(){
+  const selected=[...document.querySelectorAll('.mc-select-cb:checked')].map(cb=>cb.dataset.id);
+  if(!selected.length){toast('No MCs selected.','warning');return;}
+  if(!confirm(`Delete ${selected.length} MC(s)?`))return;
+  for(const id of selected)await deleteMCFromCloud(id);
+  loadCloudMCList();
+}
   // ── DASHBOARD ──────────────────────────────────
 let dashBarChartInst=null,dashDonutChartInst=null;
 
