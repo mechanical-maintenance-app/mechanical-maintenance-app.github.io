@@ -825,8 +825,7 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
     <div class="mc-bottom-info">Fill in the form then print / save as PDF</div>
     <div style="display:flex;gap:10px">
       <button class="btn btn-ghost" style="border-color:#8898aa;color:#1a2332;" onclick="switchView('cloudmc')">← Back</button>
-      <button class="btn btn-ghost" style="border-color:#8898aa;color:#1a2332;" onclick="clearMCForm()">🗑️ Clear</button>
-<button class="btn btn-red" style="background:#1565c0;border-color:#1565c0;" onclick="saveMCToCloud()">☁️ Save to Cloud</button>
+<button class="btn btn-ghost" style="border-color:#e67e22;color:#e67e22;" onclick="clearMCForm()">🗑️ Clear</button><button class="btn btn-red" style="background:#1565c0;border-color:#1565c0;" onclick="saveMCToCloud()">☁️ Save to Cloud</button>
       <button class="btn btn-red" onclick="printMC()">🖨️ Print / Save as PDF</button>
     </div>
   </div>
@@ -1551,8 +1550,7 @@ document.getElementById('mcBottomBar').innerHTML=`
   <div class="mc-bottom-info">Fill in the form then print / save as PDF</div>
   <div style="display:flex;gap:10px">
     <button class="btn btn-ghost" style="border-color:#8898aa;color:#1a2332;" onclick="switchView('cloudmc')">← Back</button>
-    <button class="btn btn-ghost" style="border-color:#8898aa;color:#1a2332;" onclick="clearMCForm()">🗑️ Clear</button>
-    <button class="btn btn-red" style="background:#1565c0;border-color:#1565c0;" onclick="saveMCToCloud()">☁️ Save to Cloud</button>
+<button class="btn btn-ghost" style="border-color:#e67e22;color:#e67e22;" onclick="clearMCForm()">🗑️ Clear</button>    <button class="btn btn-red" style="background:#1565c0;border-color:#1565c0;" onclick="saveMCToCloud()">☁️ Save to Cloud</button>
     <button class="btn btn-red" onclick="printMC()">🖨️ Print / Save as PDF</button>
   </div>`;
   clearMCForm();
@@ -1598,25 +1596,70 @@ async function loadCloudMCList(){
   const grid=document.getElementById('cloudMCGrid');
   grid.innerHTML='<div style="color:var(--silver);font-size:13px">Loading...</div>';
   const mcs=await loadMCsFromCloud();
-  if(!mcs.length){grid.innerHTML='<div style="color:var(--silver);font-size:13px">No MCs saved yet.</div>';return;}
+  if(!mcs||!mcs.length){grid.innerHTML='<div style="color:var(--silver);font-size:13px">No MCs saved yet.</div>';return;}
+
+  // Header con Select All + Delete Selected
+  const header=document.getElementById('cloudMCGrid').parentElement.querySelector('.cloud-mc-toolbar');
+  const toolbar=document.createElement('div');
+  toolbar.className='cloud-mc-toolbar';
+  toolbar.style.cssText='display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:10px 14px;background:white;border:1px solid var(--border);border-radius:6px;';
+  toolbar.innerHTML=`
+    <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;font-weight:500">
+      <input type="checkbox" id="selectAllMCs" onchange="toggleSelectAllMCs(this)"> Select All
+    </label>
+    <button class="btn btn-ghost" style="font-size:12px;padding:5px 14px;border-color:#c0392b;color:#c0392b;" onclick="deleteSelectedMCs()">🗑️ Delete Selected</button>
+    <span id="selectedMCCount" style="font-size:11px;color:var(--silver)"></span>`;
+
+  // Limpiar toolbar anterior si existe
+  const existing=document.getElementById('cloudMCGrid').parentElement.querySelector('.cloud-mc-toolbar');
+  if(existing)existing.remove();
+  document.getElementById('cloudMCGrid').before(toolbar);
+
   grid.innerHTML=mcs.map((mc,i)=>`
-    <div style="background:white;border:1px solid var(--border);border-radius:8px;padding:16px;box-shadow:var(--shadow)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <span class="tag-badge">${mc.tag||'—'}</span>
+    <div style="background:white;border:1px solid var(--border);border-radius:8px;padding:16px;box-shadow:var(--shadow);position:relative">
+      <input type="checkbox" class="mc-select-cb" data-id="${mc.id}" onchange="updateSelectedCount()"
+        style="position:absolute;top:12px;right:12px;width:15px;height:15px;accent-color:var(--red);cursor:pointer">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-right:24px">
+        <span class="tag-badge" style="cursor:pointer" onclick="filterByTag('${mc.tag||''}')">${mc.tag||'—'}</span>
         <span style="font-size:11px;color:var(--silver)">${mc.start_date||'—'}</span>
       </div>
       <div style="font-size:10px;color:var(--silver);margin-bottom:4px">ITEM #${mc.row_index||i+1}</div>
-     <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px">${mc.activity_short||mc.wo||'No description'}</div>
+      <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px">${mc.activity_short||mc.wo||'No description'}</div>
       <div style="font-size:12px;color:var(--text-light);margin-bottom:4px">${mc.location||'—'}</div>
       <div style="font-size:12px;color:var(--text-light);margin-bottom:12px">${mc.equipment_type||'—'}</div>
       <div style="display:flex;gap:8px">
-      <button class="btn btn-ghost" style="flex:1;padding:6px;font-size:12px;border-color:#1565c0;color:#1565c0;" onclick="viewMCFromCloud(${JSON.stringify(mc).replace(/"/g,'&quot;')})">👁️ View</button>
-<button class="btn btn-red" style="flex:1;padding:6px;font-size:12px;" onclick="loadMCIntoForm(${JSON.stringify(mc).replace(/"/g,'&quot;')})">✏️ Edit</button>
+        <button class="btn btn-ghost" style="flex:1;padding:6px;font-size:12px;border-color:#1565c0;color:#1565c0;" onclick="viewMCFromCloud(${JSON.stringify(mc).replace(/"/g,'&quot;')})">👁️ View</button>
+        <button class="btn btn-red" style="flex:1;padding:6px;font-size:12px;" onclick="loadMCIntoForm(${JSON.stringify(mc).replace(/"/g,'&quot;')})">✏️ Edit</button>
         <button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="deleteMCFromCloud('${mc.id}').then(loadCloudMCList)">🗑️</button>
       </div>
     </div>
   `).join('');
 }
+
+function toggleSelectAllMCs(cb){
+  document.querySelectorAll('.mc-select-cb').forEach(el=>el.checked=cb.checked);
+  updateSelectedCount();
+}
+
+function updateSelectedCount(){
+  const selected=document.querySelectorAll('.mc-select-cb:checked').length;
+  const total=document.querySelectorAll('.mc-select-cb').length;
+  const el=document.getElementById('selectedMCCount');
+  if(el)el.textContent=selected?`${selected} of ${total} selected`:'';
+  const selAll=document.getElementById('selectAllMCs');
+  if(selAll)selAll.checked=selected===total&&total>0;
+}
+
+async function deleteSelectedMCs(){
+  const selected=[...document.querySelectorAll('.mc-select-cb:checked')].map(cb=>cb.dataset.id);
+  if(!selected.length){toast('No MCs selected.','warning');return;}
+  if(!confirm(`Delete ${selected.length} MC(s)?`))return;
+  for(const id of selected)await deleteMCFromCloud(id);
+  loadCloudMCList();
+}
+  function toggleSelectAllMCs(cb){ ... }
+function updateSelectedCount(){ ... }
+async function deleteSelectedMCs(){ ... }
   // ── DASHBOARD ──────────────────────────────────
 let dashBarChartInst=null,dashDonutChartInst=null;
 
