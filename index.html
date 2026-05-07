@@ -1179,7 +1179,6 @@ function sortRecords(){filteredRecords.sort((a,b)=>{let va=a[sortCol]||'',vb=b[s
 function fmtDateDisplay(val){if(!val||val==='#ERROR!')return'–';const s=String(val);if(s.length>=10&&s[4]==='-'&&s[7]==='-')return s.substring(0,10);if(s.includes('T'))return s.substring(0,10);return s||'–';}
 
 // ── RENDER TABLE ───────────────────────────────
-// ── RENDER TABLE ───────────────────────────────
 function renderTable(){
   const tbody=document.getElementById('tableBody');
   const start=(currentPage-1)*PAGE_SIZE;
@@ -1214,10 +1213,9 @@ function renderTable(){
 }
 
 // ── LAZY FILE BADGES ───────────────────────────
-// ── LAZY FILE BADGES ───────────────────────────
 const fileCache={};
 async function resolveFIleBadges(page){
-  const BATCH=5;
+  const BATCH=3;
   for(let i=0;i<page.length;i+=BATCH){
     const batch=page.slice(i,i+BATCH);
     await Promise.all(batch.map(async r=>{
@@ -1226,24 +1224,33 @@ async function resolveFIleBadges(page){
       if(!card)return;
       const btn=document.getElementById('fb_'+r.rowIndex);
       if(!btn)return;
-      if(fileCache[r.rowIndex]!==undefined){
-        applyFileBadge(btn,fileCache[r.rowIndex]);
-        return;
+      if(fileCache[r.rowIndex]!==undefined){applyFileBadge(btn,fileCache[r.rowIndex]);return;}
+      if(isTokenValid()){
+        const result=await resolveFileInDrive(card,tag,r['REFINERY']||'',r['ASSOCIATED ASSET']||'');
+        const cached=result||{type:'none',url:null};
+        fileCache[r.rowIndex]=cached;
+        applyFileBadge(btn,cached);
+      }else{
+        try{
+          const res=await jsonp({action:'getFileUrl',filename:card,tag});
+          const cached={type:res.success?res.type:'none',url:res.url||null};
+          fileCache[r.rowIndex]=cached;
+          applyFileBadge(btn,cached);
+        }catch(e){btn.innerHTML='📄 ?';}
       }
-      try{
-        const res=await jsonp({action:'getFileUrl',filename:card,tag});
-        const result=res.success?res.type:'none';
-        fileCache[r.rowIndex]=result;
-        applyFileBadge(btn,result);
-      }catch(e){btn.innerHTML='📄 ?';}
     }));
-    await new Promise(res=>setTimeout(res,300));
+    await new Promise(res=>setTimeout(res,400));
   }
 }
-function applyFileBadge(btn,type){
-  if(type==='folder'){btn.className='file-btn type-folder';btn.innerHTML='📁 Folder';}
-  else if(type==='none'){btn.className='file-btn';btn.style.opacity='.4';btn.innerHTML='— None';}
-  else{btn.className='file-btn type-file';btn.innerHTML='📄 File';}
+function applyFileBadge(btn,cached){
+  const type=cached?.type||cached;
+  const url=cached?.url;
+  if(url)btn.onclick=e=>{e.preventDefault();window.open(url,'_blank');};
+  if(type==='pdf'){btn.className='file-btn type-file';btn.innerHTML='📄 PDF';}
+  else if(type==='excel'){btn.className='file-btn type-file';btn.style.background='#e8f5e9';btn.style.color='#2e7d32';btn.style.borderColor='#a5d6a7';btn.innerHTML='📊 Excel';}
+  else if(type==='word'){btn.className='file-btn type-file';btn.style.background='#e3f2fd';btn.style.color='#1565c0';btn.style.borderColor='#90caf9';btn.innerHTML='📝 Word';}
+  else if(type==='folder'){btn.className='file-btn type-folder';btn.innerHTML='📁 Folder';}
+  else{btn.className='file-btn';btn.style.opacity='.4';btn.innerHTML='— None';}
 }
 
 // ── PAGINATION ─────────────────────────────────
@@ -1274,13 +1281,80 @@ function renderEquipment(list){
   document.getElementById('eqGrid').innerHTML=filtered.map(e=>`<div class="eq-card"><div class="eq-tag" style="cursor:pointer" onclick="filterByTag('${e[tagKey]||''}')">${e[tagKey]||'–'}</div><div class="eq-service">${e[svcKey]||'–'}</div><div class="eq-meta">${e[typeKey]?`<span class="eq-chip eq-type-chip">${e[typeKey]}</span>`:''} ${e[unitKey]?`<span class="eq-chip">${e[unitKey]}</span>`:''} ${e['PLANT']?`<span class="eq-chip">Plant ${e['PLANT']}</span>`:''} ${e['AREA']?`<span class="eq-chip">Area ${e['AREA']}</span>`:''}</div></div>`).join('');
 }
 function filterEquipment(){if(equipmentList.length)renderEquipment(equipmentList);}
-
+async function resolveFileInDrive(cardName, tag, refinery, assetType){
+  if(!isTokenValid())return null;
+  const headers={Authorization:'Bearer '+googleAccessToken};
+  async function driveSearch(q){
+    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,mimeType,webViewLink)',{headers});
+    const d=await r.json();return d.files||[];
+  }
+  async function findFolder(name,parentId,exact=true){
+    let q=exact?`name='${name}'`:`name contains '${name}'`;
+    q+=` and mimeType='application/vnd.google-apps.folder' and trashed=false`;
+    if(parentId)q+=` and '${parentId}' in parents`;
+    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,webViewLink)',{headers});
+    const d=await r.json();return(d.files&&d.files.length)?d.files[0]:null;
+  }
+  try{
+    const ref=(refinery||'').toUpperCase();
+    const karName=ref.includes('KAR-1')||ref.includes('KAR 1')?'KAR-1':ref.includes('KAR-2')||ref.includes('KAR 2')?'KAR-2':null;
+    let assetParentId=null;
+    if(karName){
+      const karFolder=await findFolder(karName,null,true);
+      if(karFolder){
+        const assetClean=(assetType||'').replace(/^\d+\.?\s*[-–]\s*/,'').toUpperCase().trim();
+        const assetPlural=assetClean.endsWith('S')?assetClean:assetClean+'S';
+        const assetFolder=await findFolder(assetPlural,karFolder.id,false);
+        assetParentId=assetFolder?assetFolder.id:karFolder.id;
+      }
+    }
+    let tagFolder=null;
+    const tagVariants=[tag,tag.replace(/^[A-Z]-/,'')];
+    for(const v of tagVariants){
+      tagFolder=await findFolder(v,assetParentId,true);
+      if(tagFolder)break;
+      if(assetParentId){tagFolder=await findFolder(v,null,true);if(tagFolder)break;}
+    }
+    if(!tagFolder)return null;
+    const subRes=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(`'${tagFolder.id}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`)+'&fields=files(id)',{headers});
+    const subData=await subRes.json();
+    const locations=[tagFolder.id,...(subData.files||[]).map(f=>f.id)];
+    const PDF='application/pdf';
+    const EXCEL=['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/vnd.ms-excel'];
+    const WORD=['application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/msword'];
+    const searchName=cardName.substring(0,25);
+    let bestExcel=null,bestWord=null;
+    for(const pid of locations){
+      const files=await driveSearch(`name contains '${searchName}' and '${pid}' in parents and trashed=false and mimeType!='application/vnd.google-apps.folder'`);
+      const pdf=files.find(f=>f.mimeType===PDF);
+      if(pdf)return{type:'pdf',url:pdf.webViewLink};
+      if(!bestExcel){const ex=files.find(f=>EXCEL.includes(f.mimeType));if(ex)bestExcel={type:'excel',url:ex.webViewLink};}
+      if(!bestWord){const wd=files.find(f=>WORD.includes(f.mimeType));if(wd)bestWord={type:'word',url:wd.webViewLink};}
+    }
+    if(bestExcel)return bestExcel;
+    if(bestWord)return bestWord;
+    return{type:'folder',url:tagFolder.webViewLink};
+  }catch(e){console.error('resolveFileInDrive:',e);return null;}
+}
+  
 // ── OPEN FILE ──────────────────────────────────
 async function openFile(filename,tag,rowIndex){
-  const btn=document.getElementById('fb_'+rowIndex);if(btn){btn.classList.add('loading');btn.textContent='⏳';}
-  try{const res=await jsonp({action:'getFileUrl',filename,tag});if(res.success){window.open(res.url,'_blank');if(btn){btn.className='file-btn '+(res.type==='folder'?'type-folder':'type-file');btn.innerHTML=res.type==='folder'?'📁 Folder':'📄 Open';}if(res.type==='folder')toast(`Opened folder for TAG: ${tag}`,'warning');}else{toast('Not found: '+filename,'error');if(btn){btn.className='file-btn type-file';btn.innerHTML='📄 Open';}}}catch(e){toast('Error opening file.','error');if(btn){btn.className='file-btn type-file';btn.innerHTML='📄 Open';}}
+  const btn=document.getElementById('fb_'+rowIndex);
+  if(btn){btn.classList.add('loading');btn.textContent='⏳';}
+  if(fileCache[rowIndex]?.url){window.open(fileCache[rowIndex].url,'_blank');applyFileBadge(btn,fileCache[rowIndex]);return;}
+  const r=allRecords.find(x=>x.rowIndex===rowIndex);
+  if(isTokenValid()&&r){
+    const result=await resolveFileInDrive(filename,tag,r['REFINERY']||'',r['ASSOCIATED ASSET']||'');
+    if(result){fileCache[rowIndex]=result;window.open(result.url,'_blank');applyFileBadge(btn,result);}
+    else{toast('No file or folder found for: '+tag,'error');if(btn){btn.innerHTML='— None';btn.style.opacity='.4';}}
+  }else{
+    try{
+      const res=await jsonp({action:'getFileUrl',filename,tag});
+      if(res.success){const cached={type:res.type,url:res.url};fileCache[rowIndex]=cached;window.open(res.url,'_blank');applyFileBadge(btn,cached);}
+      else{toast('Not found: '+filename,'error');if(btn){btn.innerHTML='— None';btn.style.opacity='.4';}}
+    }catch(e){toast('Error opening file.','error');if(btn){btn.className='file-btn type-file';btn.innerHTML='📄 Open';}}
+  }
 }
-
 // ── PARSE CARD ─────────────────────────────────
 function parseCard(val){
   const dm=val.match(/^(\d{4})(\d{2})(\d{2})/);
