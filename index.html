@@ -824,7 +824,7 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
   <div class="mc-bottom-bar hidden" id="mcBottomBar">
     <div class="mc-bottom-info">Fill in the form then print / save as PDF</div>
     <div style="display:flex;gap:10px">
-      <button class="btn btn-ghost" style="border-color:#8898aa;color:#1a2332;" onclick="switchView('cloudmc')">← Back</button>
+      <button class="btn btn-ghost" style="border-color:#8898aa;color:rgba(255,255,255,.8);" onclick="switchView('cloudmc')">← Back</button>
 <button class="btn btn-ghost" style="border-color:#e67e22;color:#e67e22;" onclick="clearMCForm()">🗑️ Clear</button><button class="btn btn-red" style="background:#1565c0;border-color:#1565c0;" onclick="saveMCToCloud()">☁️ Save to Cloud</button>
       <button class="btn btn-red" onclick="printMC()">🖨️ Print / Save as PDF</button>
     </div>
@@ -1304,45 +1304,51 @@ async function resolveFileInDrive(cardName, tag, refinery, assetType){
     const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,webViewLink)',{headers});
     const d=await r.json();return(d.files&&d.files.length)?d.files[0]:null;
   }
+  const PDF='application/pdf';
+  const EXCEL=['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/vnd.ms-excel'];
+  const WORD=['application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/msword'];
+
   try{
-    const ref=(refinery||'').toUpperCase();
-    const karName=ref.includes('KAR-1')||ref.includes('KAR 1')?'KAR-1':ref.includes('KAR-2')||ref.includes('KAR 2')?'KAR-2':null;
-    let assetParentId=null;
-    if(karName){
-      const karFolder=await findFolder(karName,null,true);
-      if(karFolder){
-        const assetClean=(assetType||'').replace(/^\d+\.?\s*[-–]\s*/,'').toUpperCase().trim();
-        const assetPlural=assetClean.endsWith('S')?assetClean:assetClean+'S';
-        const assetFolder=await findFolder(assetPlural,karFolder.id,false);
-        assetParentId=assetFolder?assetFolder.id:karFolder.id;
+    // ── PASO 1: búsqueda por nombre exacto de la MC ──
+    const exts=[['pdf',PDF],['xlsx',EXCEL[0]],['xls',EXCEL[1]],['docx',WORD[0]],['doc',WORD[1]]];
+    for(const [ext,mime] of exts){
+      const files=await driveSearch(`name='${cardName}.${ext}' and trashed=false`);
+      if(files.length){
+        const f=files[0];
+        const type=ext==='pdf'?'pdf':ext.startsWith('xls')?'excel':'word';
+        return{type,url:f.webViewLink};
       }
     }
+
+    // ── PASO 2: fallback por jerarquía KAR → AssetType → TAG ──
+    const ref=(refinery||'').toUpperCase();
+    const karName=ref.includes('KAR-1')||ref.includes('KAR 1')?'KAR-1':
+                  ref.includes('KAR-2')||ref.includes('KAR 2')?'KAR-2':null;
+    if(!karName)return null;
+
+    const karFolder=await findFolder(karName,null,true);
+    if(!karFolder)return null;
+    const karFolderId=karFolder.id;
+
+    const assetClean=(assetType||'').replace(/^\d+\.?\s*[-–]\s*/,'').toUpperCase().trim();
+    const assetPlural=assetClean.endsWith('S')?assetClean:assetClean+'S';
+    const assetFolder=await findFolder(assetPlural,karFolderId,false);
+    const assetParentId=assetFolder?assetFolder.id:karFolderId;
+
+    // Buscar TAG siempre dentro del KAR correcto
     let tagFolder=null;
     const tagVariants=[tag,tag.replace(/^[A-Z]-/,'')];
     for(const v of tagVariants){
       tagFolder=await findFolder(v,assetParentId,true);
       if(tagFolder)break;
-      if(assetParentId){tagFolder=await findFolder(v,null,true);if(tagFolder)break;}
+      if(assetParentId!==karFolderId){
+        tagFolder=await findFolder(v,karFolderId,true);
+        if(tagFolder)break;
+      }
     }
     if(!tagFolder)return null;
-    const subRes=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(`'${tagFolder.id}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`)+'&fields=files(id)',{headers});
-    const subData=await subRes.json();
-    const locations=[tagFolder.id,...(subData.files||[]).map(f=>f.id)];
-    const PDF='application/pdf';
-    const EXCEL=['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/vnd.ms-excel'];
-    const WORD=['application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/msword'];
-    const searchName=cardName.substring(0,25);
-    let bestExcel=null,bestWord=null;
-    for(const pid of locations){
-      const files=await driveSearch(`name contains '${searchName}' and '${pid}' in parents and trashed=false and mimeType!='application/vnd.google-apps.folder'`);
-      const pdf=files.find(f=>f.mimeType===PDF);
-      if(pdf)return{type:'pdf',url:pdf.webViewLink};
-      if(!bestExcel){const ex=files.find(f=>EXCEL.includes(f.mimeType));if(ex)bestExcel={type:'excel',url:ex.webViewLink};}
-      if(!bestWord){const wd=files.find(f=>WORD.includes(f.mimeType));if(wd)bestWord={type:'word',url:wd.webViewLink};}
-    }
-    if(bestExcel)return bestExcel;
-    if(bestWord)return bestWord;
     return{type:'folder',url:tagFolder.webViewLink};
+
   }catch(e){console.error('resolveFileInDrive:',e);return null;}
 }
   
@@ -1617,7 +1623,7 @@ function viewMCFromCloud(mc){
   document.getElementById('mcBottomBar').innerHTML=`
     <div class="mc-bottom-info">View mode — read only</div>
     <div style="display:flex;gap:10px">
-      <button class="btn btn-ghost" style="border-color:#8898aa;color:#1a2332;" onclick="switchView('cloudmc')">← Back</button>
+      <button class="btn btn-ghost" style="border-color:#8898aa;color:rgba(255,255,255,.8);" onclick="switchView('cloudmc')">← Back</button>
       <button class="btn btn-red" onclick="printMC()">🖨️ Print / Save as PDF</button>
     </div>`;
 }
@@ -1632,7 +1638,7 @@ document.querySelectorAll('.mcd-ck input,.mcd-att-table input').forEach(el=>el.d
 document.getElementById('mcBottomBar').innerHTML=`
   <div class="mc-bottom-info">Fill in the form then print / save as PDF</div>
   <div style="display:flex;gap:10px">
-    <button class="btn btn-ghost" style="border-color:#8898aa;color:#1a2332;" onclick="switchView('cloudmc')">← Back</button>
+    <button class="btn btn-ghost" style="border-color:#8898aa;color:rgba(255,255,255,.8);" onclick="switchView('cloudmc')">← Back</button>
 <button class="btn btn-ghost" style="border-color:#e67e22;color:#e67e22;" onclick="clearMCForm()">🗑️ Clear</button>    <button class="btn btn-red" style="background:#1565c0;border-color:#1565c0;" onclick="saveMCToCloud()">☁️ Save to Cloud</button>
     <button class="btn btn-red" onclick="printMC()">🖨️ Print / Save as PDF</button>
   </div>`;
