@@ -988,7 +988,7 @@ function jsonp(params){
 
 // ── GOOGLE OAUTH ──────────────────────────────
 function signInGoogle(){
-  const params=new URLSearchParams({client_id:GOOGLE_CLIENT_ID,redirect_uri:window.location.origin+window.location.pathname,response_type:'token',scope:DRIVE_SCOPE,prompt:'consent'});
+  const params=new URLSearchParams({client_id:GOOGLE_CLIENT_ID,redirect_uri:window.location.origin+window.location.pathname,response_type:'token',scope:DRIVE_SCOPE,prompt:'select_account'});
   window.location.href='https://accounts.google.com/o/oauth2/v2/auth?'+params.toString();
 }
 function checkGoogleToken(){
@@ -998,17 +998,26 @@ function checkGoogleToken(){
     googleAccessToken=params.get('access_token');
     const expiresIn=parseInt(params.get('expires_in'))||3600;
     googleTokenExpiry=Date.now()+(expiresIn*1000);
+    localStorage.setItem('gat',googleAccessToken);
+    localStorage.setItem('gatExp',googleTokenExpiry);
     history.replaceState(null,'',window.location.pathname);
     updateGoogleBtn(true);
     toast('Google Drive connected!','success');
-  }else if(googleAccessToken&&Date.now()<googleTokenExpiry){updateGoogleBtn(true);}
+  }else{
+    const saved=localStorage.getItem('gat');
+    const exp=parseInt(localStorage.getItem('gatExp'))||0;
+    if(saved&&Date.now()<exp){
+      googleAccessToken=saved;
+      googleTokenExpiry=exp;
+      updateGoogleBtn(true);
+    }
+  }
 }
 function updateGoogleBtn(connected){
   const btn=document.getElementById('googleSignInBtn');if(!btn)return;
   if(connected){btn.innerHTML='<span>✅</span> Drive Connected';btn.style.color='#4cd98a';btn.style.borderColor='#4cd98a';btn.onclick=null;btn.style.cursor='default';}
 }
 function isTokenValid(){return googleAccessToken&&Date.now()<googleTokenExpiry;}
-
 // ── DRIVE FILE UPLOAD ──────────────────────────
 let selectedFile=null;
 function handleFileSelected(input){selectedFile=input.files[0];if(!selectedFile)return;document.getElementById('attachFileName').textContent=selectedFile.name;document.getElementById('uploadBtn').style.display='inline-block';}
