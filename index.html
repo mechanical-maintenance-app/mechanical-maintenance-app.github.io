@@ -471,52 +471,55 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
         </div>
       </div>
     </div>
+
+    <div style="padding:8px 28px 4px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:white;border-bottom:1px solid var(--border)">
+      <span id="refChipAll" onclick="setRefineryChip('')" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;background:var(--navy);color:white;border:1.5px solid var(--navy)">Todos</span>
+      <span style="width:1px;height:18px;background:var(--border);margin:0 4px"></span>
+      <span onclick="setRefineryChip('KAR-1')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;background:white;color:var(--navy);border:1.5px solid var(--border)">KAR-1</span>
+      <span onclick="setRefineryChip('KAR-1 Unit-1')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;background:white;color:var(--text-light);border:1.5px solid var(--border)">Unit-1</span>
+      <span onclick="setRefineryChip('KAR-1 Unit-2')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;background:white;color:var(--text-light);border:1.5px solid var(--border)">Unit-2</span>
+      <span onclick="setRefineryChip('KAR-1 Unit-3')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;background:white;color:var(--text-light);border:1.5px solid var(--border)">Unit-3</span>
+      <span style="width:1px;height:18px;background:var(--border);margin:0 4px"></span>
+      <span onclick="setRefineryChip('KAR-2')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;background:white;color:var(--navy);border:1.5px solid var(--border)">KAR-2</span>
+      <span onclick="setRefineryChip('KAR-2 Unit-4')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;background:white;color:var(--text-light);border:1.5px solid var(--border)">Unit-4</span>
+      <span onclick="setRefineryChip('KAR-2 Plant-B')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;background:white;color:var(--text-light);border:1.5px solid var(--border)">Plant-B</span>
+      <span onclick="setRefineryChip('KAR-2 Plant-C')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;background:white;color:var(--text-light);border:1.5px solid var(--border)">Plant-C</span>
+    </div>
+
     <div class="stats-bar">
-   <div style="padding:8px 28px 4px;display:flex;flex-wrap:wrap;gap:6px;align-items:center">
-  <span id="refChipAll" onclick="setRefineryChip('')" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;background:var(--navy);color:white;border:1.5px solid var(--navy)">Todos</span>
-  <span style="width:1px;height:18px;background:var(--border);margin:0 4px"></span>
-  <span onclick="setRefineryChip('KAR-1')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;background:white;color:var(--navy);border:1.5px solid var(--border)">KAR-1</span>
-  <span onclick="setRefineryChip('KAR-1 Unit-1')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;background:white;color:var(--text-light);border:1.5px solid var(--border)">Unit-1</span>
-  <span onclick="setRefineryChip('KAR-1 Unit-2')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;background:white;color:var(--text-light);border:1.5px solid var(--border)">Unit-2</span>
-  <span onclick="setRefineryChip('KAR-1 Unit-3')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;background:white;color:var(--text-light);border:1.5px solid var(--border)">Unit-3</span>
-  <span style="width:1px;height:18px;background:var(--border);margin:0 4px"></span>
-  <span onclick="setRefineryChip('KAR-2')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;background:white;color:var(--navy);border:1.5px solid var(--border)">KAR-2</span>
-  <span onclick="setRefineryChip('KAR-2 Unit-4')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;background:white;color:var(--text-light);border:1.5px solid var(--border)">Unit-4</span>
-  <span onclick="setRefineryChip('KAR-2 Plant-B')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;background:white;color:var(--text-light);border:1.5px solid var(--border)">Plant-B</span>
-  <span onclick="setRefineryChip('KAR-2 Plant-C')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;background:white;color:var(--text-light);border:1.5px solid var(--border)">Plant-C</span>
-</div>
-<div class="stats-bar">
-  <div class="stat-chip"><div class="stat-dot" style="background:var(--red)"></div>Showing <strong id="showingCount">0</strong> of <strong id="totalRecords">0</strong> records</div>
-  <div style="font-size:11px;color:var(--silver)">Page <strong id="pageIndicator">1</strong></div>
-</div>
-<div class="table-wrapper">
-  <div class="table-scroll">
-    <table>
-      <thead>
-        <tr>
-          <th onclick="sortBy('ITEM NO.')">NO.</th>
-          <th onclick="sortBy('MAINTENANCE DATE')">DATE ↕</th>
-          <th onclick="sortBy('YEAR')">YEAR</th>
-          <th onclick="sortBy('ASSOCIATED ASSET')">ASSET TYPE</th>
-          <th onclick="sortBy('TAG')">TAG</th>
-          <th>MAINTENANCE CARD</th>
-          <th>ACTIVITY DESCRIPTION</th>
-          <th onclick="sortBy('REFINERY')">REFINERY</th>
-          <th>REMARK</th>
-          <th>FILE</th>
-          <th>ACTIONS</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody">
-        <tr><td colspan="11"><div class="table-msg"><div class="spinner"></div><p>Connecting to Google Sheets...</p></div></td></tr>
-      </tbody>
-    </table>
+      <div class="stat-chip"><div class="stat-dot" style="background:var(--red)"></div>Showing <strong id="showingCount">0</strong> of <strong id="totalRecords">0</strong> records</div>
+      <div style="font-size:11px;color:var(--silver)">Page <strong id="pageIndicator">1</strong></div>
+    </div>
+
+    <div class="table-wrapper">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th onclick="sortBy('ITEM NO.')">NO.</th>
+              <th onclick="sortBy('MAINTENANCE DATE')">DATE ↕</th>
+              <th onclick="sortBy('YEAR')">YEAR</th>
+              <th onclick="sortBy('ASSOCIATED ASSET')">ASSET TYPE</th>
+              <th onclick="sortBy('TAG')">TAG</th>
+              <th>MAINTENANCE CARD</th>
+              <th>ACTIVITY DESCRIPTION</th>
+              <th onclick="sortBy('REFINERY')">REFINERY</th>
+              <th>REMARK</th>
+              <th>FILE</th>
+              <th>ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr><td colspan="11"><div class="table-msg"><div class="spinner"></div><p>Connecting to Google Sheets...</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <div class="page-info" id="pageInfo">Loading...</div>
+        <div class="page-btns" id="pageBtns"></div>
+      </div>
+    </div>
   </div>
-  <div class="pagination">
-    <div class="page-info" id="pageInfo">Loading...</div>
-    <div class="page-btns" id="pageBtns"></div>
-  </div>
-</div>
   <!-- ── EQUIPMENT LIST VIEW ── -->
   <div id="eqView" style="display:none">
     <div class="eq-stats" id="eqStats"></div>
