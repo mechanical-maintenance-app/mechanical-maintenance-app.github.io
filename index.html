@@ -1157,6 +1157,47 @@ function applyFilters(){
   document.getElementById('searchTag').value=tag;
   applyFilters();
 }
+  function setRefineryChip(val){
+  // Reset todos los chips
+  document.querySelectorAll('.ref-chip').forEach(c=>{
+    c.style.background='white';
+    c.style.borderColor='var(--border)';
+    c.style.color=c.style.fontWeight==='600'?'var(--navy)':'var(--text-light)';
+  });
+  const allChip=document.getElementById('refChipAll');
+  if(!val){
+    allChip.style.background='var(--navy)';
+    allChip.style.color='white';
+  }else{
+    allChip.style.background='white';
+    allChip.style.color='var(--navy)';
+    allChip.style.border='1.5px solid var(--border)';
+    // Highlight chip activo
+    document.querySelectorAll('.ref-chip').forEach(c=>{
+      if(c.getAttribute('onclick')===`setRefineryChip('${val}')`){
+        c.style.background='var(--navy)';
+        c.style.color='white';
+        c.style.borderColor='var(--navy)';
+      }
+    });
+  }
+  // Aplicar filtro — si es KAR-1 o KAR-2 sin unidad, filtra por contains
+  document.getElementById('filterRefinery').value='';
+  if(!val){
+    clearFilters();
+    return;
+  }
+  // Filtrar directamente en filteredRecords
+  filteredRecords=allRecords.filter(r=>{
+    const ref=String(r['REFINERY']||'');
+    return ref===val||ref.startsWith(val);
+  });
+  currentPage=1;
+  renderTable();
+  renderPagination();
+  document.getElementById('showingCount').textContent=filteredRecords.length;
+  document.getElementById('totalRecords').textContent=allRecords.length;
+}
 function clearFilters(){
   ['searchInput','searchTag','filterDateFrom','filterDateTo'].forEach(id=>document.getElementById(id).value='');
   ['filterAsset','filterRefinery','filterYear'].forEach(id=>document.getElementById(id).selectedIndex=0);
