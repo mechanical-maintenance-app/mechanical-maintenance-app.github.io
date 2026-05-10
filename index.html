@@ -880,6 +880,7 @@ let sortCol='rowIndex',sortAsc=false,cbId=0;
 let currentView='tracking',currentDiscipline='static';
 let mcZoom=100;
   let currentMCActivityShort='';
+  let activeRefineryChip='';
   let currentCloudMCId=null;
 
 // ── LOGO INJECT ─────────────────────────────────
@@ -1138,7 +1139,7 @@ function applyFilters(){
   const fdt=document.getElementById('filterDateTo').value;
   const hasSearch=q||tag||fa||fr||fy||fd||fdt;
   if(hasSearch&&!allRecordsLoaded){toast('Loading all records to search...','info');loadAllRecords().then(()=>applyFilters());return;}
-  filteredRecords=allRecords.filter(r=>{
+filteredRecords=allRecords.filter(r=>{
     if(q&&![r['MAINTENANCE CARD'],r['ACTIVITY DESCRIPTION'],r['REFINERY'],r['REMARK']].join(' ').toLowerCase().includes(q))return false;
     if(tag&&String(r['TAG']||'').trim().toUpperCase()!==tag)return false;
     if(fa&&r['ASSOCIATED ASSET']!==fa)return false;
@@ -1146,6 +1147,7 @@ function applyFilters(){
     if(fy&&String(r['YEAR'])!==fy)return false;
     if(fd&&String(r['MAINTENANCE DATE']||'').substring(0,10)<fd)return false;
     if(fdt&&String(r['MAINTENANCE DATE']||'').substring(0,10)>fdt)return false;
+    if(activeRefineryChip){const ref=String(r['REFINERY']||'');if(ref!==activeRefineryChip&&!ref.startsWith(activeRefineryChip))return false;}
     return true;
   });
   sortRecords();currentPage=1;renderTable();renderPagination();
