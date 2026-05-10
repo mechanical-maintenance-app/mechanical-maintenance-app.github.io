@@ -480,16 +480,16 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
         <table>
           <thead>
             <tr>
-              <th onclick="sortBy('ITEM NO.')">NO.</th>
+       <th onclick="sortBy('ITEM NO.')">NO.</th>
               <th onclick="sortBy('MAINTENANCE DATE')">DATE ↕</th>
               <th onclick="sortBy('YEAR')">YEAR</th>
               <th onclick="sortBy('ASSOCIATED ASSET')">ASSET TYPE</th>
               <th onclick="sortBy('TAG')">TAG</th>
               <th>MAINTENANCE CARD</th>
-              <th>FILE</th>
               <th>ACTIVITY DESCRIPTION</th>
               <th onclick="sortBy('REFINERY')">REFINERY</th>
               <th>REMARK</th>
+              <th>FILE</th>
               <th>ACTIONS</th>
             </tr>
           </thead>
@@ -1197,17 +1197,17 @@ function renderTable(){
     const date=fmtDateDisplay(r['MAINTENANCE DATE']);
     const sc=card.replace(/\\/g,'\\\\').replace(/'/g,"\\'"),st=tag.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
     const fb=card?`<a href="#" class="file-btn type-file" id="fb_${r.rowIndex}" onclick="openFile('${sc}','${st}',${r.rowIndex});return false;">📄 ?</a>`:'–';
-    return`<tr>
+return`<tr>
       <td class="td-no">${r['ITEM NO.']||(start+i+1)}</td>
       <td class="td-date">${date||'–'}</td>
       <td class="td-year">${r['YEAR']||''}</td>
       <td><span class="asset-badge">${r['ASSOCIATED ASSET']||'–'}</span></td>
       <td><span class="tag-badge" style="cursor:pointer" onclick="filterByTag('${tag}')">${tag||'–'}</span></td>
       <td class="wrap" style="font-size:12px;color:var(--text-light)">${card}</td>
-      <td>${fb}</td>
       <td class="wrap">${r['ACTIVITY DESCRIPTION']||'–'}</td>
       <td><span class="refinery-badge">${r['REFINERY']||'–'}</span></td>
       <td style="font-size:12px;color:var(--text-light);max-width:130px;white-space:normal">${r['REMARK']||''}</td>
+      <td>${fb}</td>
       <td><div class="td-actions">
         <button class="action-btn edit" title="Edit" onclick="editRecord(${r.rowIndex})">✏️</button>
         <button class="action-btn mc" title="Generate MC" onclick="generateMC(${r.rowIndex})">📄</button>
