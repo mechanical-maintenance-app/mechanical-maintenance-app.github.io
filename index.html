@@ -1272,7 +1272,28 @@ function renderPagination(){
   for(let p=1;p<=pages;p++)mk(p,p,false,p===currentPage);
   mk('›',currentPage+1,currentPage>=pages||!pages,false);
 }
-
+async function openGADrawing(tag){
+  if(!isTokenValid()){toast('Connect Google Drive first.','warning');return;}
+  toast('Searching GA Drawing...','info');
+  try{
+    const headers={Authorization:'Bearer '+googleAccessToken};
+    // Buscar carpeta "Equipment Dwg"
+    const folderRes=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(`name='Equipment Dwg' and mimeType='application/vnd.google-apps.folder' and trashed=false`)+'&fields=files(id)',{headers});
+    const folderData=await folderRes.json();
+    const folderId=folderData.files&&folderData.files.length?folderData.files[0].id:null;
+    // Buscar archivo dentro de la carpeta
+    let q=`name='${tag} GA Dwg.pdf' and trashed=false`;
+    if(folderId)q+=` and '${folderId}' in parents`;
+    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,webViewLink)',{headers});
+    const d=await r.json();
+    if(d.files&&d.files.length){
+      window.open(d.files[0].webViewLink,'_blank');
+    }else{
+      toast('GA Drawing not found for: '+tag,'error');
+    }
+  }catch(e){toast('Error searching file.','error');}
+}
+  
 // ── EQUIPMENT LIST ─────────────────────────────
 function renderEquipment(list){
   const q=(document.getElementById('eqSearch')?.value||'').toLowerCase();
@@ -1286,8 +1307,7 @@ function renderEquipment(list){
   const units=[...new Set(list.map(e=>e[unitKey]).filter(Boolean))].sort();
   const fUnit=document.getElementById('eqFilterUnit');if(fUnit.options.length<=1){units.forEach(u=>{const o=document.createElement('option');o.value=o.textContent=u;fUnit.appendChild(o);});}
   document.getElementById('eqCount').textContent=`Showing ${filtered.length} of ${list.length} equipment`;
-  document.getElementById('eqGrid').innerHTML=filtered.map(e=>`<div class="eq-card"><div class="eq-tag" style="cursor:pointer" onclick="filterByTag('${e[tagKey]||''}')">${e[tagKey]||'–'}</div><div class="eq-service">${e[svcKey]||'–'}</div><div class="eq-meta">${e[typeKey]?`<span class="eq-chip eq-type-chip">${e[typeKey]}</span>`:''} ${e[unitKey]?`<span class="eq-chip">${e[unitKey]}</span>`:''} ${e['PLANT']?`<span class="eq-chip">Plant ${e['PLANT']}</span>`:''} ${e['AREA']?`<span class="eq-chip">Area ${e['AREA']}</span>`:''}</div></div>`).join('');
-}
+document.getElementById('eqGrid').innerHTML=filtered.map(e=>`<div class="eq-card"><div class="eq-tag" style="cursor:pointer" onclick="filterByTag('${e[tagKey]||''}')">${e[tagKey]||'–'}</div><div class="eq-service">${e[svcKey]||'–'}</div><div class="eq-meta">${e[typeKey]?`<span class="eq-chip eq-type-chip">${e[typeKey]}</span>`:''} ${e[unitKey]?`<span class="eq-chip">${e[unitKey]}</span>`:''} ${e['PLANT']?`<span class="eq-chip">Plant ${e['PLANT']}</span>`:''} ${e['AREA']?`<span class="eq-chip">Area ${e['AREA']}</span>`:''}</div><div style="margin-top:10px"><button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;border-color:#1565c0;color:#1565c0;" onclick="openGADrawing('${e[tagKey]||''}')">📐 GA Dwg</button></div></div>`).join('');}
 function filterEquipment(){if(equipmentList.length)renderEquipment(equipmentList);}
 async function resolveFileInDrive(cardName, tag, refinery, assetType){
   if(!isTokenValid())return null;
