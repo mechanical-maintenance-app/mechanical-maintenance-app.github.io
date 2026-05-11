@@ -171,6 +171,9 @@ td.wrap{white-space:normal;min-width:160px;max-width:260px;}
 .modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;}
 .req{color:var(--red);}
 
+  .td-tooltip{position:relative;cursor:default;}
+.td-tooltip .tooltip-box{display:none;position:absolute;left:0;top:100%;z-index:999;background:var(--navy);color:white;font-size:12px;padding:8px 12px;border-radius:6px;min-width:200px;max-width:320px;white-space:normal;line-height:1.5;box-shadow:var(--shadow-lg);pointer-events:none;}
+.td-tooltip.active .tooltip-box{display:block;}
 /* ══ TOAST ══ */
 .toast-container{position:fixed;bottom:24px;right:24px;z-index:300;display:flex;flex-direction:column;gap:8px;}
 .toast{background:var(--navy);color:white;padding:12px 18px;border-radius:6px;font-size:13px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;max-width:360px;animation:slideIn .2s ease;}
@@ -1262,7 +1265,7 @@ return`<tr>
       <td><span class="asset-badge">${r['ASSOCIATED ASSET']||'–'}</span></td>
       <td><span class="tag-badge" style="cursor:pointer" onclick="filterByTag('${tag}')">${tag||'–'}</span></td>
       <td class="wrap" style="font-size:12px;color:var(--text-light)">${card}</td>
-      <td class="wrap">${r['ACTIVITY DESCRIPTION']||'–'}</td>
+      <td class="wrap td-tooltip" onmouseenter="startTooltip(this,${r.rowIndex})" onmouseleave="clearTooltip(this)">${r['ACTIVITY DESCRIPTION']||'–'}<div class="tooltip-box" id="tt_${r.rowIndex}"></div></td>
       <td><span class="refinery-badge">${r['REFINERY']||'–'}</span></td>
       <td style="font-size:12px;color:var(--text-light);max-width:130px;white-space:normal">${r['REMARK']||''}</td>
       <td>${fb}</td>
@@ -1577,7 +1580,20 @@ function exportCSV(){
   a.download=`KAR_${currentDiscipline}_${new Date().toISOString().substring(0,10)}.csv`;
   a.click();toast('CSV exported!','success');
 }
-
+let tooltipTimer=null;
+function startTooltip(el,rowIndex){
+  tooltipTimer=setTimeout(()=>{
+    const r=allRecords.find(x=>x.rowIndex===rowIndex);
+    const comment=r?r['COMMENTS']||'':'';
+    if(!comment)return;
+    const box=document.getElementById('tt_'+rowIndex);
+    if(box){box.textContent=comment;el.classList.add('active');}
+  },2000);
+}
+function clearTooltip(el){
+  clearTimeout(tooltipTimer);
+  el.classList.remove('active');
+}
 // ── TOAST ──────────────────────────────────────
 function toast(msg,type='info'){const t=document.createElement('div');t.className=`toast ${type}`;t.innerHTML=`<span>${type==='success'?'✅':type==='error'?'❌':type==='warning'?'⚠️':'ℹ️'}</span> ${msg}`;document.getElementById('toastContainer').appendChild(t);setTimeout(()=>t.remove(),5000);}
 document.getElementById('modalOverlay').addEventListener('click',e=>{e.stopPropagation();});
