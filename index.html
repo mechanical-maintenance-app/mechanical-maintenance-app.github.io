@@ -873,7 +873,7 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
 </select></div>
         <div class="form-group"><label class="form-label">Item No.</label><input type="text" class="form-input" id="fItemNo" placeholder="Auto"></div>
         <div class="form-group full"><label class="form-label">Activity Description <span class="req">*</span></label><input type="text" class="form-input" id="fActivity" placeholder="e.g. BUNDLE REPLACEMENT"></div>
-        <div class="form-group full"><label class="form-label">Remark</label><textarea class="form-textarea" id="fRemark" placeholder="Optional notes..."></textarea></div>
+        <div class="form-group full"><label class="form-label">Insp. Notes</label><textarea class="form-textarea" id="fRemark" placeholder="Inspection notes..."></textarea></div> <div class="form-group full"><label class="form-label">Additional Comments</label><textarea class="form-textarea" id="fComments" placeholder="Additional comments..."></textarea></div>
       </div>
       <div style="margin-top:12px;padding:10px 14px;background:#f1f8e9;border-radius:5px;border:1px solid #c8e6c9;font-size:11px;color:#388e3c;">💡 Write the Maintenance Card name first — date, year, tag and refinery will auto-fill.</div>
       <div style="margin-top:12px;padding:12px 14px;background:#e3f2fd;border-radius:5px;border:1px solid #bbdefb;">
@@ -1474,7 +1474,7 @@ function parseCard(val){
 function openModal(record=null){
   editingIndex=record?record.rowIndex:null;
   document.getElementById('modalTitle').textContent=record?'Edit Record':'New Maintenance Record';
-  const map={fItemNo:'ITEM NO.',fDate:'MAINTENANCE DATE',fYear:'YEAR',fTag:'TAG',fAsset:'ASSOCIATED ASSET',fRefinery:'REFINERY',fActivity:'ACTIVITY DESCRIPTION',fRemark:'REMARK'};
+  const map={fItemNo:'ITEM NO.',fDate:'MAINTENANCE DATE',fYear:'YEAR',fTag:'TAG',fAsset:'ASSOCIATED ASSET',fRefinery:'REFINERY',fActivity:'ACTIVITY DESCRIPTION',fRemark:'REMARK',fComments:'COMMENTS'};
 Object.entries(map).forEach(([id,key])=>{const el=document.getElementById(id);if(!el)return;const v=String(record?record[key]||'':'');el.value=record?(key==='MAINTENANCE DATE'?v.substring(0,10):v):'';});  document.getElementById('fCard').value=record?(record['MAINTENANCE CARD']||''):'';
   if(!record){const maxNo=allRecords.reduce((max,r)=>{const n=parseInt(r['ITEM NO.'])||0;return n>max?n:max;},0);document.getElementById('fItemNo').value=maxNo+1;}
   selectedFile=null;
@@ -1496,6 +1496,7 @@ async function saveRecord(){
   params['ASSOCIATED ASSET']=document.getElementById('fAsset').value||'';params['TAG']=document.getElementById('fTag').value||'';
   params['MAINTENANCE CARD']=card;params['FILE']='2';params['ACTIVITY DESCRIPTION']=act;
   params['REFINERY']=document.getElementById('fRefinery').value||'';params['REMARK']=document.getElementById('fRemark').value||'';
+  params['COMMENTS']=document.getElementById('fComments').value||'';
   try{const res=await jsonp(params);if(res.success){
   toast(editingIndex?'Record updated!':'Record added!','success');
   if(!editingIndex){
@@ -1579,7 +1580,7 @@ function exportCSV(){
 
 // ── TOAST ──────────────────────────────────────
 function toast(msg,type='info'){const t=document.createElement('div');t.className=`toast ${type}`;t.innerHTML=`<span>${type==='success'?'✅':type==='error'?'❌':type==='warning'?'⚠️':'ℹ️'}</span> ${msg}`;document.getElementById('toastContainer').appendChild(t);setTimeout(()=>t.remove(),5000);}
-document.getElementById('modalOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+document.getElementById('modalOverlay').addEventListener('click',e=>{e.stopPropagation();});
 
 // ══ MC FORM ════════════════════════════════════
 const photos=[{src:null,caption:'Photo 1'},{src:null,caption:'Photo 2'},{src:null,caption:'Photo 3'},{src:null,caption:'Photo 4'}];
