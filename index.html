@@ -101,7 +101,7 @@ tbody tr{border-bottom:1px solid var(--border);transition:background .12s;}
 tbody tr:hover{background:#f5f8ff;}
 tbody tr:last-child{border-bottom:none;}
 td{padding:10px 14px;vertical-align:middle;white-space:nowrap;}
-td.wrap{white-space:normal;min-width:160px;max-width:260px;}
+td.wrap{white-space:normal;min-width:220px;max-width:320px;}
 .td-no{font-weight:600;color:var(--silver);font-size:12px;}
 .td-date{font-size:12px;color:var(--text-light);}
 .td-year{font-family:'Rajdhani',sans-serif;font-weight:700;color:var(--navy-light);font-size:14px;}
@@ -506,7 +506,7 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
               <th>ACTIVITY DESCRIPTION</th>
               <th onclick="sortBy('REFINERY')">REFINERY</th>
               <th>INSP. NOTES</th>
-              <th>FILE</th>
+              <th>DRIVE FILE</th>
               <th>ACTIONS</th>
             </tr>
           </thead>
@@ -1267,11 +1267,12 @@ return`<tr>
       <td><span class="refinery-badge">${r['REFINERY']||'–'}</span></td>
       <td style="font-size:12px;color:var(--text-light);max-width:130px;white-space:normal">${r['REMARK']||''}</td>
       <td>${fb}</td>
-      <td><div class="td-actions">
+<td><div class="td-actions">
         <button class="action-btn edit" title="Edit" onclick="editRecord(${r.rowIndex})">✏️</button>
         <button class="action-btn mc" title="Generate MC" onclick="generateMC(${r.rowIndex})">📄</button>
         <button class="action-btn prnt" title="Print row" onclick="printRow(${r.rowIndex})">🖨️</button>
         <button class="action-btn" title="Delete" onclick="deleteRecord(${r.rowIndex})">🗑️</button>
+        <button class="action-btn" title="View Cloud MC" onclick="openCloudMCFromHistory('${tag}','${String(r['MAINTENANCE DATE']||'').substring(0,10)}')">☁️</button>
       </div></td>
     </tr>`;
   }).join('');
@@ -1795,6 +1796,16 @@ document.getElementById('mcComments').innerHTML=mc.comments||'';
   updateTypeDisplay();
   switchView('card');
   toast('MC loaded from cloud.','info');
+}
+  async function openCloudMCFromHistory(tag, date){
+  toast('Searching cloud MC...','info');
+  try{
+    const res=await sbFetch(`/rest/v1/maintenance_cards?tag=eq.${encodeURIComponent(tag)}&start_date=eq.${date}&select=*&limit=1`);
+    if(res.error)throw new Error(res.error.message);
+    if(!res||!res.length){toast('No cloud MC found for this record.','warning');return;}
+    const mc=res[0];
+    viewMCFromCloud(mc);
+  }catch(e){toast('Error searching cloud MC: '+e.message,'error');}
 }
  // ── CLOUD MC LIST ──────────────────────────────
 async function loadCloudMCList(){
