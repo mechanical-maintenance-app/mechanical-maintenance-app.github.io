@@ -286,9 +286,9 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
 
 /* ══ PRINT ══ */
 @media print {
-  .sidebar, .main-header, .search-panel, .stats-bar, .pagination, .td-actions,
+.sidebar, .main-header, .search-panel, .stats-bar, .pagination, .td-actions,
   .modal-overlay, .toast-container, .mc-bottom-bar, .mc-zoom-bar, 
-  #mcView .mc-section-card, #mcView .photo-slot, #eqView { 
+  #mcView .mc-section-card, #mcView .photo-slot, #eqView, #refChipsRow { 
     display: none !important; 
   }
  thead th:nth-child(10), td:nth-child(10),
@@ -473,7 +473,7 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
       </div>
     </div>
 
-   <div style="padding:8px 28px 4px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:white;border-bottom:1px solid var(--border)">
+   <div id="refChipsRow" style="padding:8px 28px 4px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:white;border-bottom:1px solid var(--border)">
       <span id="refChipAll" onclick="setRefineryChip('')" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;background:var(--navy);color:white;border:1.5px solid var(--navy)">All</span>
       <span style="width:1px;height:18px;background:var(--border);margin:0 4px"></span>
       <span onclick="setRefineryChip('KAR-1')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9">KAR-1</span>
