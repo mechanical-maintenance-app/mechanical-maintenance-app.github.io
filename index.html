@@ -152,7 +152,7 @@ td.wrap{white-space:normal;min-width:220px;max-width:320px;}
 
 /* ══ MODAL ══ */
 .modal-overlay{position:fixed;inset:0;background:rgba(26,35,50,.6);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;}
-.activity-guide{position:fixed;top:50%;right:calc(50% - 420px);transform:translateY(-50%);background:var(--navy);border-radius:10px;padding:16px 18px;width:200px;z-index:201;box-shadow:0 8px 32px rgba(0,0,0,.3);display:none;}
+.activity-guide{position:fixed;top:50%;right:calc(50% - 580px);transform:translateY(-50%);background:var(--navy);border-radius:10px;padding:16px 18px;width:200px;z-index:201;box-shadow:0 8px 32px rgba(0,0,0,.3);display:none;}
 .activity-guide.open{display:block;}
 .activity-guide-title{font-size:10px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;}
 .activity-guide-step{display:flex;gap:8px;align-items:flex-start;margin-bottom:10px;font-size:12px;color:rgba(255,255,255,.7);line-height:1.4;}
@@ -368,6 +368,15 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
 }
 #printOutput{display:none;}
+.td-expand{cursor:pointer;user-select:none;}
+.td-expand:hover{background:#f0f4ff;}
+.expand-row{display:none;background:#f8faff;border-bottom:2px solid var(--border);}
+.expand-row.open{display:table-row;}
+.expand-cell{padding:10px 14px 12px 40px;font-size:12px;color:var(--text-light);}
+.expand-comment{margin-bottom:6px;line-height:1.6;}
+.expand-mc-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;}
+.expand-mc-badge.found{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;}
+.expand-mc-badge.notfound{background:#fff3e0;color:#e65100;border:1px solid #ffcc80;}
 </style>
 </head>
 <body>
@@ -1307,8 +1316,7 @@ return`<tr>
       <td><span class="asset-badge">${r['ASSOCIATED ASSET']||'–'}</span></td>
       <td><span class="tag-badge" style="cursor:pointer" onclick="filterByTag('${tag}')">${tag||'–'}</span></td>
       <td class="wrap" style="font-size:12px;color:var(--text-light)">${card}</td>
-      <td class="wrap td-tooltip" onmouseenter="startTooltip(this,${r.rowIndex})" onmouseleave="clearTooltip(this)">${r['ACTIVITY DESCRIPTION']||'–'}<div class="tooltip-box" id="tt_${r.rowIndex}"></div></td>
-      <td><span class="refinery-badge">${r['REFINERY']||'–'}</span></td>
+<td class="wrap td-expand" onclick="toggleExpand(${r.rowIndex})" style="font-size:12px;color:var(--text-light)">${r['ACTIVITY DESCRIPTION']||'–'} <span style="font-size:10px;color:var(--silver)">▾</span></td>      <td><span class="refinery-badge">${r['REFINERY']||'–'}</span></td>
       <td style="font-size:12px;color:var(--text-light);max-width:130px;white-space:normal">${r['REMARK']||''}</td>
       <td>${fb}</td>
 <td><div class="td-actions">
@@ -1316,7 +1324,16 @@ return`<tr>
         <button class="action-btn mc" title="Generate MC" onclick="generateMC(${r.rowIndex})">📄</button>
         <button class="action-btn" title="Delete" onclick="deleteRecord(${r.rowIndex})">🗑️</button>
         <button class="action-btn" title="View Cloud MC" onclick="openCloudMCFromHistory('${tag}','${String(r['MAINTENANCE DATE']||'').substring(0,10)}')">☁️</button>
-      </div></td>
+</div></td>
+    </tr>
+    <tr class="expand-row" id="exp_${r.rowIndex}">
+      <td class="expand-cell" colspan="11">
+        <div class="expand-comment">
+          <strong style="font-size:10px;color:var(--silver);text-transform:uppercase;letter-spacing:1px">Comments</strong><br>
+          ${r['COMMENTS']||'<em style="color:var(--silver)">No comments</em>'}
+        </div>
+        <div id="exp_mc_${r.rowIndex}"><span class="expand-mc-badge notfound">⏳ Checking Drive MC...</span></div>
+      </td>
     </tr>`;
   }).join('');
   document.getElementById('pageIndicator').textContent=currentPage;
@@ -1589,7 +1606,7 @@ document.getElementById('gs3').classList.add('done');
       });
     }
   }
-  closeModal();await reload();}else toast('Error: '+(res.message||'unknown'),'error');}
+  await reload();}else toast('Error: '+(res.message||'unknown'),'error');}
   catch(e){toast('Network error.','error');}finally{btn.textContent='Save Record';btn.disabled=false;}
 }
 async function deleteRecord(ri){
@@ -1657,6 +1674,38 @@ function exportCSV(){
   a.click();toast('CSV exported!','success');
 }
 let tooltipTimer=null;
+  async function toggleExpand(rowIndex){
+  const row=document.getElementById('exp_'+rowIndex);
+  if(!row)return;
+  const isOpen=row.classList.contains('open');
+  document.querySelectorAll('.expand-row.open').forEach(r=>r.classList.remove('open'));
+  if(isOpen)return;
+  row.classList.add('open');
+  const r=allRecords.find(x=>x.rowIndex===rowIndex);
+  if(!r)return;
+  const mcEl=document.getElementById('exp_mc_'+rowIndex);
+  if(!mcEl)return;
+  if(!isTokenValid()){
+    mcEl.innerHTML='<span class="expand-mc-badge notfound">🔑 Connect Drive to check MC</span>';
+    return;
+  }
+  try{
+    const tag=r['TAG']||'';
+    const date=String(r['MAINTENANCE DATE']||'').substring(0,10);
+    const fileName=tag+' \u00b7 '+date+'.json';
+    const q="name='"+fileName+"' and mimeType='application/json' and trashed=false";
+    const res=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name)&pageSize=1',
+      {headers:{Authorization:'Bearer '+googleAccessToken}});
+    const d=await res.json();
+    if(d.files&&d.files.length){
+      mcEl.innerHTML='<span class="expand-mc-badge found">\u2705 MC saved in Drive</span> <button style="margin-left:8px;padding:2px 8px;font-size:11px;border:1px solid #1565c0;color:#1565c0;border-radius:4px;background:white;cursor:pointer" onclick="openCloudMCFromHistory(\''+tag+'\',\''+date+'\')">👁️ View</button>';
+    }else{
+      mcEl.innerHTML='<span class="expand-mc-badge notfound">\uD83D\uDCC4 No MC in Drive yet</span>';
+    }
+  }catch(e){
+    mcEl.innerHTML='<span class="expand-mc-badge notfound">\u26A0\uFE0F Could not check Drive</span>';
+  }
+}
 function startTooltip(el,rowIndex){
   tooltipTimer=setTimeout(()=>{
     const r=allRecords.find(x=>x.rowIndex===rowIndex);
