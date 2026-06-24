@@ -1475,7 +1475,18 @@ async function openFile(filename,tag,rowIndex){
       else{toast('Not found: '+filename,'error');if(btn){btn.innerHTML='— None';btn.style.opacity='.4';}}
     }catch(e){toast('Error opening file.','error');if(btn){btn.className='file-btn type-file';btn.innerHTML='📄 Open';}}
   }
+}function lookupEquipment(tag){
+  if(!tag||!equipmentList.length)return;
+  const t=tag.trim().toUpperCase();
+  const tagKey=Object.keys(equipmentList[0]||{}).find(k=>k.toUpperCase().includes('TAG'))||'TAG';
+  const typeKey=Object.keys(equipmentList[0]||{}).find(k=>k.toUpperCase().includes('TYPE'))||'TYPE';
+  const eq=equipmentList.find(e=>String(e[tagKey]||'').toUpperCase()===t)||
+            equipmentList.find(e=>String(e[tagKey]||'').toUpperCase().startsWith(t.split('-').slice(0,2).join('-')));
+  if(eq){
+    document.getElementById('fAsset').value=eq[typeKey]||'';
+  }
 }
+  
 // ── PARSE CARD ─────────────────────────────────
 function parseCard(val){
   const dm=val.match(/^(\d{4})(\d{2})(\d{2})/);
