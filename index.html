@@ -152,6 +152,13 @@ td.wrap{white-space:normal;min-width:220px;max-width:320px;}
 
 /* ══ MODAL ══ */
 .modal-overlay{position:fixed;inset:0;background:rgba(26,35,50,.6);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;}
+.activity-guide{position:fixed;top:50%;right:calc(50% - 420px);transform:translateY(-50%);background:var(--navy);border-radius:10px;padding:16px 18px;width:200px;z-index:201;box-shadow:0 8px 32px rgba(0,0,0,.3);display:none;}
+.activity-guide.open{display:block;}
+.activity-guide-title{font-size:10px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;}
+.activity-guide-step{display:flex;gap:8px;align-items:flex-start;margin-bottom:10px;font-size:12px;color:rgba(255,255,255,.7);line-height:1.4;}
+.activity-guide-step:last-child{margin-bottom:0;}
+.activity-guide-num{background:var(--red);color:white;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px;}
+.activity-guide-step.done .activity-guide-num{background:var(--green);}
 .modal-overlay.open{display:flex;}
 .modal{background:white;border-radius:10px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);}
 .modal-header{background:var(--navy);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;border-radius:10px 10px 0 0;}
@@ -175,7 +182,7 @@ td.wrap{white-space:normal;min-width:220px;max-width:320px;}
 .td-tooltip .tooltip-box{display:none;position:absolute;left:0;top:100%;z-index:999;background:var(--navy);color:white;font-size:12px;padding:8px 12px;border-radius:6px;min-width:200px;max-width:320px;white-space:normal;line-height:1.5;box-shadow:var(--shadow-lg);pointer-events:none;}
 .td-tooltip.active .tooltip-box{display:block;}
 /* ══ TOAST ══ */
-.toast-container{position:fixed;bottom:24px;right:24px;z-index:300;display:flex;flex-direction:column;gap:8px;}
+.toast-container{position:fixed;top:24px;right:24px;z-index:300;display:flex;flex-direction:column;gap:8px;}
 .toast{background:var(--navy);color:white;padding:12px 18px;border-radius:6px;font-size:13px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;max-width:360px;animation:slideIn .2s ease;}
 .toast.success{border-left:4px solid var(--green);}
 .toast.error{border-left:4px solid var(--red);}
@@ -847,7 +854,31 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
   </div>
 
 </div><!-- end main -->
-
+  
+<!-- ACTIVITY GUIDE -->
+<div class="activity-guide" id="activityGuide">
+  <div class="activity-guide-title">ℹ️ How to log</div>
+  <div class="activity-guide-step" id="gs1">
+    <div class="activity-guide-num">1</div>
+    <div>Fill <strong>Card Name</strong> — fields auto-fill</div>
+  </div>
+  <div class="activity-guide-step" id="gs2">
+    <div class="activity-guide-num">2</div>
+    <div>Complete <strong>Activity</strong> & other fields</div>
+  </div>
+  <div class="activity-guide-step" id="gs3">
+    <div class="activity-guide-num">3</div>
+    <div>Click <strong>💾 Save Record</strong> → creates Drive folder</div>
+  </div>
+  <div class="activity-guide-step" id="gs4">
+    <div class="activity-guide-num">4</div>
+    <div><em>(Optional)</em> Select file → <strong>⬆️ Upload</strong></div>
+  </div>
+  <div class="activity-guide-step" id="gs5">
+    <div class="activity-guide-num">5</div>
+    <div>Click <strong>✅ Close</strong> when done</div>
+  </div>
+</div>
 <!-- RECORD MODAL -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
@@ -880,18 +911,19 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
       <div style="margin-top:12px;padding:12px 14px;background:#e3f2fd;border-radius:5px;border:1px solid #bbdefb;">
         <div style="font-size:11px;font-weight:600;color:#1565c0;margin-bottom:8px;">📎 Attach File to Drive</div>
         <div style="display:flex;gap:8px;align-items:center;">
-          <input type="file" id="attachFile" style="display:none" onchange="handleFileSelected(this)">
-          <button onclick="document.getElementById('attachFile').click()" style="padding:6px 14px;background:#1565c0;color:white;border:none;border-radius:4px;font-size:12px;cursor:pointer;">📎 Select File</button>
+          <<input type="file" id="attachFile" style="display:none" onchange="handleFileSelected(this)" disabled>
+<button id="selectFileBtn" onclick="document.getElementById('attachFile').click()" style="padding:6px 14px;background:#8898aa;color:white;border:none;border-radius:4px;font-size:12px;cursor:not-allowed;opacity:.6;" disabled>📎 Select File</button>
           <span id="attachFileName" style="font-size:12px;color:#5a6a80;">No file selected</span>
           <button id="uploadBtn" onclick="uploadFileToDrive()" style="display:none;padding:6px 14px;background:#27ae60;color:white;border:none;border-radius:4px;font-size:12px;cursor:pointer;">⬆️ Upload to Drive</button>
         </div>
         <div id="uploadStatus" style="margin-top:6px;font-size:11px;color:#5a6a80;"></div>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-red" id="saveBtn" onclick="saveRecord()">Save Record</button>
-    </div>
+ <div class="modal-footer">
+  <button class="btn btn-ghost" id="closeBtn" onclick="closeModal()">Cancel</button>
+  <button class="btn btn-red" id="saveBtn" onclick="saveRecord()">💾 Save Record</button>
+  <button class="btn btn-ghost" id="doneBtn" style="display:none;border-color:var(--green);color:var(--green)" onclick="closeModal()">✅ Close</button>
+</div>
   </div>
 </div>
 
@@ -1282,7 +1314,6 @@ return`<tr>
 <td><div class="td-actions">
         <button class="action-btn edit" title="Edit" onclick="editRecord(${r.rowIndex})">✏️</button>
         <button class="action-btn mc" title="Generate MC" onclick="generateMC(${r.rowIndex})">📄</button>
-        <button class="action-btn prnt" title="Print row" onclick="printRow(${r.rowIndex})">🖨️</button>
         <button class="action-btn" title="Delete" onclick="deleteRecord(${r.rowIndex})">🗑️</button>
         <button class="action-btn" title="View Cloud MC" onclick="openCloudMCFromHistory('${tag}','${String(r['MAINTENANCE DATE']||'').substring(0,10)}')">☁️</button>
       </div></td>
@@ -1497,6 +1528,16 @@ function parseCard(val){
 
 // ── RECORD MODAL ───────────────────────────────
 function openModal(record=null){
+  document.getElementById('activityGuide').classList.add('open');
+document.getElementById('doneBtn').style.display='none';
+document.getElementById('closeBtn').style.display='';
+document.getElementById('saveBtn').style.display='';
+document.getElementById('selectFileBtn').disabled=true;
+document.getElementById('selectFileBtn').style.background='#8898aa';
+document.getElementById('selectFileBtn').style.cursor='not-allowed';
+document.getElementById('selectFileBtn').style.opacity='.6';
+document.getElementById('attachFile').disabled=true;
+document.getElementById('uploadBtn').style.display='none';
   editingIndex=record?record.rowIndex:null;
   document.getElementById('modalTitle').textContent=record?'Edit Record':'New Maintenance Record';
   const map={fItemNo:'ITEM NO.',fDate:'MAINTENANCE DATE',fYear:'YEAR',fTag:'TAG',fAsset:'ASSOCIATED ASSET',fRefinery:'REFINERY',fActivity:'ACTIVITY DESCRIPTION',fRemark:'REMARK',fComments:'COMMENTS'};
@@ -1507,7 +1548,11 @@ Object.entries(map).forEach(([id,key])=>{const el=document.getElementById(id);if
   if(fn)fn.textContent='No file selected';if(ub){ub.style.display='none';ub.textContent='⬆️ Upload to Drive';ub.disabled=false;}if(us)us.textContent='';if(af)af.value='';
   document.getElementById('modalOverlay').classList.add('open');
 }
-function closeModal(){document.getElementById('modalOverlay').classList.remove('open');editingIndex=null;}
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.getElementById('activityGuide').classList.remove('open');
+  editingIndex=null;
+}
 function editRecord(ri){const r=allRecords.find(x=>x.rowIndex===ri);if(r)openModal(r);}
 
 async function saveRecord(){
@@ -1524,6 +1569,15 @@ async function saveRecord(){
   params['COMMENTS']=document.getElementById('fComments').value||'';
   try{const res=await jsonp(params);if(res.success){
   toast(editingIndex?'Record updated!':'Record added!','success');
+    document.getElementById('doneBtn').style.display='';
+document.getElementById('closeBtn').style.display='none';
+document.getElementById('saveBtn').style.display='none';
+document.getElementById('selectFileBtn').disabled=false;
+document.getElementById('selectFileBtn').style.background='#1565c0';
+document.getElementById('selectFileBtn').style.cursor='pointer';
+document.getElementById('selectFileBtn').style.opacity='1';
+document.getElementById('attachFile').disabled=false;
+document.getElementById('gs3').classList.add('done');
   if(!editingIndex){
     const cardName=document.getElementById('fCard').value.trim();
     const tag=document.getElementById('fTag').value.trim();
