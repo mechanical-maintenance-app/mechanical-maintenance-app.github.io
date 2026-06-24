@@ -1113,11 +1113,9 @@ async function createActivityFolder(cardName,tag,assetType,refinery){
     const karName=ref.includes('KAR-1')||ref.includes('KAR 1')?'KAR-1':
                   ref.includes('KAR-2')||ref.includes('KAR 2')?'KAR-2':null;
     if(!karName)return null;
-    const rootFolder=await driveSearchFolder('KAR Maintenance',null,true);
-    if(!rootFolder)return null;
-    const mcFolder=await driveSearchFolder('Maintenance Cards',rootFolder.id,true);
-    const mcParentId=mcFolder?mcFolder.id:rootFolder.id;
-    const karFolder=await driveSearchFolder(karName,mcParentId,true);
+    const mcFolder=await driveSearchFolder('Maintenance Cards',null,true);
+    if(!mcFolder)return null;
+    const karFolder=await driveSearchFolder(karName,mcFolder.id,true);
     if(!karFolder)return null;
     const assetClean=(assetType||''  ).replace(/^\d+\.?\s*[-\u2013]\s*/,'').toUpperCase().trim();
     const assetPlural=assetClean.endsWith('S')?assetClean:assetClean+'S';
