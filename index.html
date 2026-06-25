@@ -1883,7 +1883,7 @@ const folderId=currentDriveMCFileId?null:await createActivityFolder(actFolderNam
       const res=await fetch('https://www.googleapis.com/upload/drive/v3/files/'+currentDriveMCFileId+'?uploadType=multipart&fields=id',{
         method:'PATCH',headers:{Authorization:'Bearer '+googleAccessToken},body:form});
       const d=await res.json();
-      if(d.id)toast('MC updated in Drive ✅','success');
+      if(d.id){toast('MC updated in Drive ✅','success');if(saveBtn){saveBtn.textContent='💾 Save to Drive';saveBtn.disabled=false;}}
       else throw new Error(d.error?.message||'Update failed');
     }else{
       const metadata={name:fileName,mimeType:'application/json'};
@@ -1893,8 +1893,7 @@ const folderId=currentDriveMCFileId?null:await createActivityFolder(actFolderNam
       const res=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{
         method:'POST',headers:{Authorization:'Bearer '+googleAccessToken},body:form});
       const d=await res.json();
-      if(d.id){currentDriveMCFileId=d.id;toast('MC saved to Drive ✅','success');}
-        if(saveBtn){saveBtn.textContent='💾 Save to Drive';saveBtn.disabled=false;}
+   if(d.id){currentDriveMCFileId=d.id;toast('MC saved to Drive ✅','success');if(saveBtn){saveBtn.textContent='💾 Save to Drive';saveBtn.disabled=false;}}
       else throw new Error(d.error?.message||'Save failed');
     }
     return true;
