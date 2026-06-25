@@ -1874,11 +1874,11 @@ if(saveBtn){saveBtn.textContent='⏳ Saving...';saveBtn.disabled=true;}
     card_name:actFolderName,updated_at:new Date().toISOString()
   };
   try{
-    const fileName=actFolderName+'.json';
+    const fileName=currentDriveMCFileId?undefined:(actFolderName+'.json');
     const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
     const form=new FormData();
     if(currentDriveMCFileId){
-      form.append('metadata',new Blob([JSON.stringify({name:fileName})],{type:'application/json'}));
+      form.append('metadata',new Blob([JSON.stringify(fileName?{name:fileName}:{})],{type:'application/json'}));
       form.append('file',blob);
       const res=await fetch('https://www.googleapis.com/upload/drive/v3/files/'+currentDriveMCFileId+'?uploadType=multipart&fields=id',{
         method:'PATCH',headers:{Authorization:'Bearer '+googleAccessToken},body:form});
