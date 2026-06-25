@@ -953,6 +953,7 @@ let sortCol='rowIndex',sortAsc=false,cbId=0;
 let currentView='tracking',currentDiscipline='static';
 let mcZoom=100;
   let currentMCActivityShort='';
+  let currentMCCardName='';
   let activeRefineryChip='';
   let currentDriveMCFileId=null;
 
@@ -1630,6 +1631,7 @@ function generateMC(rowIndex){
   document.getElementById('mcTag').value=tag;
   document.getElementById('mcStart').value=String(r['MAINTENANCE DATE']||'').substring(0,10);
   currentMCActivityShort=r['ACTIVITY DESCRIPTION']||'';
+  currentMCCardName=r['MAINTENANCE CARD']||'';
   document.getElementById('mcType').value=r['ASSOCIATED ASSET']||'';
   if(tag){
     const t=tag.trim().toUpperCase();
@@ -1785,6 +1787,7 @@ function clearMCForm(){
   document.querySelectorAll('input[name="prio"]').forEach(el=>el.checked=false);
   [0,1,2,3].forEach(i=>removePhoto(i));
   currentMCActivityShort='';
+  currentMCCardName='';
   currentCloudMCId=null;
   updateTypeDisplay();
 }
@@ -1819,7 +1822,7 @@ async function saveMCToDrive(){
   if(!isTokenValid()){toast('Connect Google Drive to save MCs.','warning');signInGoogle();return;}
   const tag=mcVal('mcTag'),start=mcVal('mcStart');
   if(!tag||!start){toast('Fill TAG and Start Date first.','error');return;}
-  const actFolderName=tag+' · '+start;
+  const actFolderName=currentMCCardName||(tag+' · '+start);
   const folderId=await createActivityFolder(actFolderName,tag,mcVal('mcType'),mcVal('mcLoc'));
   try{
     for(let i=0;i<photos.length;i++){
