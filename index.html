@@ -1839,7 +1839,7 @@ async function saveMCToDrive(){
   const saveBtn=document.querySelector('[onclick="saveMCToDrive()"]');
 if(saveBtn){saveBtn.textContent='⏳ Saving...';saveBtn.disabled=true;}
   const actFolderName=currentMCCardName||(tag+' · '+start);
-  const folderId=await createActivityFolder(actFolderName,tag,mcVal('mcType'),mcVal('mcLoc'));
+const folderId=currentDriveMCFileId?null:await createActivityFolder(actFolderName,tag,mcVal('mcType'),mcVal('mcLoc'));
   try{
     for(let i=0;i<photos.length;i++){
       if(photos[i].src&&photos[i].src.startsWith('data:')){
