@@ -686,12 +686,13 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
   <label class="mcd-ck"><input type="checkbox" id="ckRedes"> Re-Design</label>
   <label class="mcd-ck"><input type="checkbox" id="ckRepl"> Replacement</label>
   <label class="mcd-ck"><input type="checkbox" id="ckOther"> Other</label>
-  <div style="width:1px;height:16px;background:#D1D5DB;margin:0 4px"></div>
-  <span style="font-size:9px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.07em;margin-right:4px">Priority</span>
-  <label class="mcd-ck"><input type="radio" name="prio" value="Urgent (U)"> Urgent (U)</label>
-  <label class="mcd-ck"><input type="radio" name="prio" value="Normal (N)"> Normal (N)</label>
-  <label class="mcd-ck"><input type="radio" name="prio" value="Planned (P)"> Planned (P)</label>
-</div>
+<div style="width:1px;height:16px;background:#D1D5DB;margin:0 4px;flex-shrink:0"></div>
+  <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+    <span style="font-size:9px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.07em">Priority</span>
+    <label class="mcd-ck"><input type="radio" name="prio" value="Urgent (U)"> Urgent (U)</label>
+    <label class="mcd-ck"><input type="radio" name="prio" value="Normal (N)"> Normal (N)</label>
+    <label class="mcd-ck"><input type="radio" name="prio" value="Planned (P)"> Planned (P)</label>
+  </div>
 
             <!-- Background -->
 <div class="mcd-section">
