@@ -1119,27 +1119,6 @@ async function uploadFileToDrive(){
     uploadBtn.textContent='⬆️ Upload';uploadBtn.disabled=false;
   }
 }
-    const tagVariants=[tag];
-    const stripped=tag.replace(/^[A-Z]-/,'');
-    if(stripped!==tag)tagVariants.push(stripped);
-    const parts=tag.split('-');
-    if(parts.length>2){const lastTwo=parts.slice(-2).join('-');if(!tagVariants.includes(lastTwo))tagVariants.push(lastTwo);}
-    let folderId=null,foundName=tag,karParentId=null;
-    if(karFolder){statusEl.textContent='Searching in '+karFolder+'...';const karFolderObj=await searchFolderInParent(karFolder,null);if(karFolderObj)karParentId=karFolderObj.id;}
-    for(const v of tagVariants){
-      if(karParentId){const f=await searchFolderInParent(v,karParentId);if(f){folderId=f.id;foundName=v;break;}}
-      const f=await searchFolderInParent(v,null);if(f){folderId=f.id;foundName=v;break;}
-    }
-    if(folderId)statusEl.textContent='Folder found: '+(karFolder?karFolder+' → ':'')+foundName+'. Uploading...';
-    else{statusEl.textContent='Folder "'+tag+'" not found. Uploading to Drive root...';toast('Folder '+tag+' not found — uploaded to Drive root.','warning');}
-    const metadata={name:selectedFile.name};if(folderId)metadata.parents=[folderId];
-    const form=new FormData();form.append('metadata',new Blob([JSON.stringify(metadata)],{type:'application/json'}));form.append('file',selectedFile);
-    const uploadRes=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink',{method:'POST',headers:{Authorization:'Bearer '+googleAccessToken},body:form});
-    const uploadData=await uploadRes.json();
-    if(uploadData.id){statusEl.innerHTML='✅ <a href="'+uploadData.webViewLink+'" target="_blank" style="color:#1565c0">'+uploadData.name+'</a>';toast('File uploaded to '+tag+' folder!','success');uploadBtn.textContent='✅ Uploaded';}
-    else{statusEl.textContent='❌ '+(uploadData.error?.message||'Upload failed');toast('Upload failed.','error');uploadBtn.textContent='⬆️ Upload';uploadBtn.disabled=false;}
-  }catch(e){statusEl.textContent='❌ Error: '+e.message;toast('Upload error.','error');uploadBtn.textContent='⬆️ Upload';uploadBtn.disabled=false;}
-}
 // ── DRIVE FOLDER HELPERS ──────────────────────────
 async function driveSearchFolder(name,parentId,exact=true){
   if(!isTokenValid())return null;
