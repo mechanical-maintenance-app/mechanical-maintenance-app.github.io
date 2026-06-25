@@ -1774,6 +1774,12 @@ function printMC(){
   setTimeout(()=>document.title=prevTitle, 1000);
 }
 function clearMCForm(){
+  ['mcWO','mcStart','mcEnd','mcTag','mcLoc','mcService','mcCode','mcBg','mcScope','mcActivity','mcComments'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el){el.removeAttribute('disabled');el.style.pointerEvents='';el.style.opacity='';}
+});
+document.querySelectorAll('.mcd-toolbar').forEach(t=>t.style.display='');
+document.querySelectorAll('.mcd-ck input,.mcd-att-table input').forEach(el=>el.disabled=false);
   ['mcWO','mcStart','mcEnd','mcTag','mcLoc','mcService','mcType','mcCode'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.value='';
   });
