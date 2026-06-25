@@ -1678,7 +1678,7 @@ let tooltipTimer=null;
   const row=document.getElementById('exp_'+rowIndex);
   if(!row)return;
   const isOpen=row.classList.contains('open');
-  document.querySelectorAll('.expand-row.open').forEach(r=>r.classList.remove('open'));
+  document.querySelectorAll('.expand-row.open').forEach(el=>el.classList.remove('open'));
   if(isOpen)return;
   row.classList.add('open');
   const r=allRecords.find(x=>x.rowIndex===rowIndex);
