@@ -1702,8 +1702,9 @@ let tooltipTimer=null;
     }else{
       mcEl.innerHTML='<span class="expand-mc-badge notfound">\uD83D\uDCC4 No MC in Drive yet</span>';
     }
-  }catch(e){
-    mcEl.innerHTML='<span class="expand-mc-badge notfound">\u26A0\uFE0F Could not check Drive</span>';
+ }catch(e){
+    console.log('toggleExpand error:',e.message);
+    mcEl.innerHTML='<span class="expand-mc-badge notfound">⚠️ Could not check Drive</span>';
   }
 }
 function startTooltip(el,rowIndex){
