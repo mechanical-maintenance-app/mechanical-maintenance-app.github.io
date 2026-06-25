@@ -1987,6 +1987,8 @@ async function openCloudMCFromHistory(tag,date){
   if(!isTokenValid()){toast('Connect Drive to search MCs.','warning');return;}
   toast('Searching Drive MC...','info');
   try{
+    const rec=allRecords.find(x=>String(x['MAINTENANCE DATE']||'').substring(0,10)===date&&String(x['TAG']||'')===tag);
+const fileName=(rec&&rec['MAINTENANCE CARD']?rec['MAINTENANCE CARD']:tag+' · '+date)+'.json';
     const q="name='"+fileName+"' and mimeType='application/json' and trashed=false";
     const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name)&pageSize=1',
       {headers:{Authorization:'Bearer '+googleAccessToken}});
