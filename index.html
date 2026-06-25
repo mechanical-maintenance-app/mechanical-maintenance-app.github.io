@@ -182,7 +182,7 @@ td.wrap{white-space:normal;min-width:220px;max-width:320px;}
 .td-tooltip .tooltip-box{display:none;position:absolute;left:0;top:100%;z-index:999;background:var(--navy);color:white;font-size:12px;padding:8px 12px;border-radius:6px;min-width:200px;max-width:320px;white-space:normal;line-height:1.5;box-shadow:var(--shadow-lg);pointer-events:none;}
 .td-tooltip.active .tooltip-box{display:block;}
 /* ══ TOAST ══ */
-.toast-container{position:fixed;top:24px;right:24px;z-index:300;display:flex;flex-direction:column;gap:8px;}
+.toast-container{position:fixed;top:80px;right:24px;z-index:300;display:flex;flex-direction:column;gap:8px;}
 .toast{background:var(--navy);color:white;padding:12px 18px;border-radius:6px;font-size:13px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;max-width:360px;animation:slideIn .2s ease;}
 .toast.success{border-left:4px solid var(--green);}
 .toast.error{border-left:4px solid var(--red);}
@@ -905,12 +905,12 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
         <div class="form-group"><label class="form-label">Refinery / Location</label>
 <select class="form-input" id="fRefinery">
   <option value="">— Select —</option>
-  <option value="KAR-1 Unit-1">KAR-1 Unit-1</option>
-  <option value="KAR-1 Unit-2">KAR-1 Unit-2</option>
-  <option value="KAR-1 Unit-3">KAR-1 Unit-3</option>
-  <option value="KAR-2 Unit-4">KAR-2 Unit-4</option>
-  <option value="KAR-2 Plant-B">KAR-2 Plant-B</option>
-  <option value="KAR-2 Plant-C">KAR-2 Plant-C</option>
+  <option value="KAR-1 UNIT-1">KAR-1 UNIT-1</option>
+  <option value="KAR-1 UNIT-2">KAR-1 UNIT-2</option>
+  <option value="KAR-1 UNIT-3">KAR-1 UNIT-3</option>
+  <option value="KAR-2 UNIT-4">KAR-2 UNIT-4</option>
+  <option value="KAR-2 PLANT-B">KAR-2 PLANT-B</option>
+  <option value="KAR-2 PLANT-C">KAR-2 PLANT-C</option>
 </select></div>
         <div class="form-group"><label class="form-label">Item No.</label><input type="text" class="form-input" id="fItemNo" placeholder="Auto"></div>
         <div class="form-group full"><label class="form-label">Activity Description <span class="req">*</span></label><input type="text" class="form-input" id="fActivity" placeholder="e.g. BUNDLE REPLACEMENT"></div>
@@ -1535,6 +1535,18 @@ async function openFile(filename,tag,rowIndex){
 }
   
 // ── PARSE CARD ─────────────────────────────────
+  function appendLocationToCard(){
+  const refinery=document.getElementById('fRefinery').value;
+  if(!refinery)return;
+  let card=document.getElementById('fCard').value.trim();
+  if(!card)return;
+  const locations=['KAR-1 UNIT-1','KAR-1 UNIT-2','KAR-1 UNIT-3',
+                   'KAR-2 UNIT-4','KAR-2 PLANT-B','KAR-2 PLANT-C','KAR-1','KAR-2'];
+  locations.forEach(loc=>{
+    if(card.endsWith(' '+loc))card=card.slice(0,-(loc.length+1)).trim();
+  });
+  document.getElementById('fCard').value=card+' '+refinery;
+}
 function parseCard(val){
   const dm=val.match(/^(\d{4})(\d{2})(\d{2})/);
   if(dm){document.getElementById('fDate').value=`${dm[1]}-${dm[2]}-${dm[3]}`;document.getElementById('fYear').value=dm[1];}
