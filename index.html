@@ -1681,20 +1681,20 @@ let tooltipTimer=null;
   document.querySelectorAll('.expand-row.open').forEach(el=>el.classList.remove('open'));
   if(isOpen)return;
   row.classList.add('open');
-  const r=allRecords.find(x=>x.rowIndex===rowIndex);
-  if(!r)return;
-  const mcEl=document.getElementById('exp_mc_'+rowIndex);
-  if(!mcEl)return;
-  if(!isTokenValid()){
-    mcEl.innerHTML='<span class="expand-mc-badge notfound">🔑 Connect Drive to check MC</span>';
-    return;
-  }
-  try{
-    const tag=r['TAG']||'';
-    const date=String(r['MAINTENANCE DATE']||'').substring(0,10);
-    const r=allRecords.find(x=>String(x['MAINTENANCE DATE']||'').substring(0,10)===date&&String(x['TAG']||'')===tag); const fileName=(r&&r['MAINTENANCE CARD']?r['MAINTENANCE CARD']:tag+' · '+date)+'.json';
-    const q="name='"+fileName+"' and mimeType='application/json' and trashed=false";
-    const res=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name)&pageSize=1',
+
+    conconst r=allRecords.find(x=>x.rowIndex===rowIndex);
+if(!r)return;
+const mcEl=document.getElementById('exp_mc_'+rowIndex);
+if(!mcEl)return;
+if(!isTokenValid()){
+  mcEl.innerHTML='<span class="expand-mc-badge notfound">🔑 Connect Drive to check MC</span>';
+  return;
+}
+try{
+  const tag=r['TAG']||'';
+  const date=String(r['MAINTENANCE DATE']||'').substring(0,10);
+  const fileName=(r['MAINTENANCE CARD']?r['MAINTENANCE CARD']:tag+' · '+date)+'.json';
+  const q="name='"+fileName+"' and mimeType='application/json' and trashed=false";const res=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name)&pageSize=1',
       {headers:{Authorization:'Bearer '+googleAccessToken}});
     const d=await res.json();
     if(d.files&&d.files.length){
