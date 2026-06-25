@@ -903,7 +903,7 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
         <div class="form-group"><label class="form-label">TAG <span class="req">*</span></label><input type="text" class="form-input" id="fTag" oninput="lookupEquipment(this.value)" placeholder="e.g. B-E-106"></div>
         <div class="form-group"><label class="form-label">Associated Asset (auto)</label><input type="text" class="form-input" id="fAsset" disabled></div>
         <div class="form-group"><label class="form-label">Refinery / Location</label>
-<select class="form-input" id="fRefinery">
+<select class="form-input" id="fRefinery" onchange="appendLocationToCard()">
   <option value="">— Select —</option>
   <option value="KAR-1 UNIT-1">KAR-1 UNIT-1</option>
   <option value="KAR-1 UNIT-2">KAR-1 UNIT-2</option>
