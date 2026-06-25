@@ -1621,17 +1621,38 @@ document.getElementById('gs3').classList.add('done');
   catch(e){toast('Network error.','error');}finally{btn.textContent='Save Record';btn.disabled=false;}
 }
 async function deleteRecord(ri){
-  if(!confirm('Delete this record?'))return;
+  if(!confirm('Delete this record and move its Drive folder to trash?'))return;
   try{
     const res=await jsonp({action:'deleteRecord',rowIndex:ri,module:currentDiscipline});
     if(res.success){
       toast('Deleted.','info');
+      // Move Drive folder to trash
+      const r=allRecords.find(x=>x.rowIndex===ri);
+      if(r&&isTokenValid()){
+        const cardName=r['MAINTENANCE CARD']||'';
+        const tag=r['TAG']||'';
+        const assetType=r['ASSOCIATED ASSET']||'';
+        const refinery=r['REFINERY']||'';
+        if(cardName&&tag){
+          try{
+            const folderId=await createActivityFolder(cardName,tag,assetType,refinery);
+            if(folderId){
+              await fetch('https://www.googleapis.com/drive/v3/files/'+folderId,{
+                method:'PATCH',
+                headers:{Authorization:'Bearer '+googleAccessToken,'Content-Type':'application/json'},
+                body:JSON.stringify({trashed:true})
+              });
+              toast('Drive folder moved to trash.','info');
+            }
+          }catch(e){console.log('Drive trash error:',e);}
+        }
+      }
       allRecords=allRecords.filter(r=>r.rowIndex!==ri);
       Object.keys(cachedRecords).forEach(k=>{cachedRecords[k]=cachedRecords[k].filter(r=>r.rowIndex!==ri);});
       applyFilters();
     }else{toast('Error: '+(res.message||'unknown'),'error');}
   }catch(e){toast('Error deleting.','error');}
-}async function reload(){allRecords=[];sortCol='rowIndex';sortAsc=false;cachedRecords={};allRecordsLoaded=false;resetFilters();await init();}
+}
 
 // ── GENERATE MC ────────────────────────────────
 function generateMC(rowIndex){
