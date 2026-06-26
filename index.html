@@ -1862,7 +1862,7 @@ async function uploadPhotoToFolder(blob,filename,folderId){
   await fetch('https://www.googleapis.com/drive/v3/files/'+data.id+'/permissions',{
     method:'POST',headers:{Authorization:'Bearer '+googleAccessToken,'Content-Type':'application/json'},
     body:JSON.stringify({role:'reader',type:'anyone'})});
-  return 'https://drive.google.com/uc?export=view&id='+data.id;
+  return 'https://lh3.googleusercontent.com/d/'+data.id;
 }
 
 async function saveMCToDrive(){
