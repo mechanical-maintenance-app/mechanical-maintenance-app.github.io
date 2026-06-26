@@ -1597,6 +1597,15 @@ async function saveRecord(){
   params['COMMENTS']=document.getElementById('fComments').value||'';
   try{const res=await jsonp(params);if(res.success){
   toast(editingIndex?'Record updated!':'Record added!','success');
+    if(editingIndex){
+  const updatedRecord=allRecords.find(r=>r.rowIndex===editingIndex);
+  if(updatedRecord){
+    updatedRecord['COMMENTS']=document.getElementById('fComments').value||'';
+    updatedRecord['ACTIVITY DESCRIPTION']=document.getElementById('fActivity').value||'';
+    updatedRecord['REMARK']=document.getElementById('fRemark').value||'';
+    updatedRecord['MAINTENANCE CARD']=document.getElementById('fCard').value||'';
+  }
+}
     document.getElementById('doneBtn').style.display='';
 document.getElementById('closeBtn').style.display='none';
 document.getElementById('saveBtn').style.display='none';
