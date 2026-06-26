@@ -839,19 +839,23 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
                 <input class="mcd-cap-inp" id="pc3" placeholder="Caption for Photo 4..." oninput="photos[3].caption=this.value">
               </div>
             </div>
-
-            <!-- Footer -->
+    <!-- Add Photo Page button -->
+            <div id="addPhotoPageBtn" style="text-align:center;margin-top:16px;" class="no-print">
+              <button class="btn btn-ghost" style="border-color:#3b82f6;color:#3b82f6;font-size:12px;" onclick="addPhotoPage()">➕ Add Photo Page (Photos 5–8)</button>
+            </div>
+          <!-- Footer -->
             <div class="mcd-footer" style="margin-top:20px">
               <span>Mechanical Maintenance Management · KAR Group · Static Equipment's</span>
               <span>Pag. 2/2</span>
             </div>
           </div><!-- end page 2 -->
-
+          <!-- Page 3 placeholder -->
+         <div id="mcPage3" style="display:none;">
+          </div>
         </div><!-- end #mcDoc -->
       </div><!-- end #mcDocScaler -->
     </div><!-- end .mc-doc-outer -->
   </div><!-- end #mcView -->
-
   <!-- MC Bottom Bar -->
   <div class="mc-bottom-bar hidden" id="mcBottomBar">
     <div class="mc-bottom-info">Fill in the form then print / save as PDF</div>
@@ -1029,6 +1033,7 @@ function updateTypeDisplay(){
   const wo=document.getElementById('mcWO')?document.getElementById('mcWO').value:'';
   if(document.getElementById('mcTypeDisplay'))document.getElementById('mcTypeDisplay').textContent=clean;
   if(document.getElementById('mcTypeDisplay2'))document.getElementById('mcTypeDisplay2').textContent=clean;
+  if(extraPhotoPageAdded)syncPage3Header();
   if(document.getElementById('mcWODisplay2'))document.getElementById('mcWODisplay2').textContent=wo?'WO: '+wo:'';
 }
 
@@ -1768,7 +1773,7 @@ function toast(msg,type='info'){const t=document.createElement('div');t.classNam
 document.getElementById('modalOverlay').addEventListener('click',e=>{e.stopPropagation();});
 
 // ══ MC FORM ════════════════════════════════════
-const photos=[{src:null,caption:'Photo 1'},{src:null,caption:'Photo 2'},{src:null,caption:'Photo 3'},{src:null,caption:'Photo 4'}];
+const photos=[{src:null,caption:'Photo 1'},{src:null,caption:'Photo 2'},{src:null,caption:'Photo 3'},{src:null,caption:'Photo 4'},{src:null,caption:'Photo 5'},{src:null,caption:'Photo 6'},{src:null,caption:'Photo 7'},{src:null,caption:'Photo 8'}]; let extraPhotoPageAdded=false;
 
 function triggerPhoto(i){if(!photos[i].src)document.getElementById('pi'+i).click();}
 function loadPhoto(i,input){
@@ -1785,6 +1790,82 @@ function renderPhotoSlot(i){
     const cap=document.getElementById('pc'+i);if(cap)cap.value=photos[i].caption;
   }
 }
+  function addPhotoPage(){
+  if(extraPhotoPageAdded)return;
+  extraPhotoPageAdded=true;
+  document.getElementById('addPhotoPageBtn').style.display='none';
+  document.getElementById('mcPage3').style.display='';
+  document.getElementById('mcPage3').innerHTML=`
+    <div class="mcd-page" id="page3" style="margin-top:32px;">
+      <div class="mcd-header">
+        <div class="mcd-logo-area"><img src="https://i.imgur.com/YOUR_LOGO.png" class="mcd-logo" onerror="this.style.display='none'"><div class="mcd-company">KAR Group</div><div class="mcd-dept">Mechanical Maintenance</div></div>
+        <div class="mcd-title-center">
+          <div class="mcd-main-title">MAINTENANCE CARD</div>
+          <div class="mcd-sub-title" id="mcTypeDisplay3">—</div>
+          <div class="mcd-wo-area" style="margin-top:5px;font-size:10px;color:#9CA3AF;font-family:Consolas,monospace;justify-content:center" id="mcWODisplay3"></div>
+        </div>
+        <div class="mcd-header-spacer"></div>
+      </div>
+      <div class="mcd-photo-annex-title">Photographic Annex — Field Documentation (cont.)</div>
+      <div class="mcd-photo-grid">
+        <div class="mcd-photo-wrap">
+          <div class="mcd-photo-slot" id="ps4" onclick="triggerPhoto(4)">
+            <input type="file" id="pi4" accept="image/*" onchange="loadPhoto(4,this)" style="display:none">
+            <div class="mcd-ph-empty"><span class="mcd-ph-empty-icon">📷</span>Photo 5</div>
+          </div>
+          <input class="mcd-cap-inp" id="pc4" placeholder="Caption for Photo 5..." oninput="photos[4].caption=this.value">
+        </div>
+        <div class="mcd-photo-wrap">
+          <div class="mcd-photo-slot" id="ps5" onclick="triggerPhoto(5)">
+            <input type="file" id="pi5" accept="image/*" onchange="loadPhoto(5,this)" style="display:none">
+            <div class="mcd-ph-empty"><span class="mcd-ph-empty-icon">📷</span>Photo 6</div>
+          </div>
+          <input class="mcd-cap-inp" id="pc5" placeholder="Caption for Photo 6..." oninput="photos[5].caption=this.value">
+        </div>
+        <div class="mcd-photo-wrap">
+          <div class="mcd-photo-slot" id="ps6" onclick="triggerPhoto(6)">
+            <input type="file" id="pi6" accept="image/*" onchange="loadPhoto(6,this)" style="display:none">
+            <div class="mcd-ph-empty"><span class="mcd-ph-empty-icon">📷</span>Photo 7</div>
+          </div>
+          <input class="mcd-cap-inp" id="pc6" placeholder="Caption for Photo 7..." oninput="photos[6].caption=this.value">
+        </div>
+        <div class="mcd-photo-wrap">
+          <div class="mcd-photo-slot" id="ps7" onclick="triggerPhoto(7)">
+            <input type="file" id="pi7" accept="image/*" onchange="loadPhoto(7,this)" style="display:none">
+            <div class="mcd-ph-empty"><span class="mcd-ph-empty-icon">📷</span>Photo 8</div>
+          </div>
+          <input class="mcd-cap-inp" id="pc7" placeholder="Caption for Photo 8..." oninput="photos[7].caption=this.value">
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:16px;" class="no-print">
+        <button class="btn btn-ghost" style="border-color:#ef4444;color:#ef4444;font-size:12px;" onclick="removePhotoPage()">🗑️ Remove Photo Page</button>
+      </div>
+      <div class="mcd-footer" style="margin-top:20px">
+        <span>Mechanical Maintenance Management · KAR Group · Static Equipment's</span>
+        <span>Pag. 3/3</span>
+      </div>
+    </div>
+  `;
+  syncPage3Header();
+}
+
+function removePhotoPage(){
+  extraPhotoPageAdded=false;
+  for(let i=4;i<8;i++){photos[i].src=null;photos[i].caption='Photo '+(i+1);}
+  document.getElementById('mcPage3').style.display='none';
+  document.getElementById('mcPage3').innerHTML='';
+  document.getElementById('addPhotoPageBtn').style.display='';
+}
+
+function syncPage3Header(){
+  const t=document.getElementById('mcTypeDisplay2');
+  const w=document.getElementById('mcWODisplay2');
+  const t3=document.getElementById('mcTypeDisplay3');
+  const w3=document.getElementById('mcWODisplay3');
+  if(t3)t3.textContent=t?t.textContent:'—';
+  if(w3)w3.textContent=w?w.textContent:'';
+}
+
 function removePhoto(i){
   photos[i].src=null;photos[i].caption='Photo '+(i+1);
   const slot=document.getElementById('ps'+i);if(!slot)return;
@@ -1818,6 +1899,7 @@ function printMC(){
   setTimeout(()=>document.title=prevTitle, 1000);
 }
 function clearMCForm(){
+  if(extraPhotoPageAdded)removePhotoPage();
   ['mcWO','mcStart','mcEnd','mcTag','mcLoc','mcService','mcCode','mcBg','mcScope','mcActivity','mcComments'].forEach(id=>{
   const el=document.getElementById(id);
   if(el){el.removeAttribute('disabled');el.style.pointerEvents='';el.style.opacity='';}
