@@ -1796,9 +1796,16 @@ function renderPhotoSlot(i){
   document.getElementById('addPhotoPageBtn').style.display='none';
   document.getElementById('mcPage3').style.display='';
   document.getElementById('mcPage3').innerHTML=`
-    <div class="mcd-page" id="page3" style="margin-top:32px;">
+    <div class="mc-doc-page" id="page3">
       <div class="mcd-header">
-        <div class="mcd-logo-area"><img src="https://i.imgur.com/YOUR_LOGO.png" class="mcd-logo" onerror="this.style.display='none'"><div class="mcd-company">KAR Group</div><div class="mcd-dept">Mechanical Maintenance</div></div>
+        <div class="mcd-logo-area">
+          <img class="kar-logo-img mcd-logo-img" src="" alt="KAR">
+          <div>
+            <div class="mcd-logo-name">KAR Group</div>
+            <div class="mcd-logo-sub">Mechanical Maintenance Management</div>
+            <div class="mcd-logo-sub">Static Equipment's</div>
+          </div>
+        </div>
         <div class="mcd-title-center">
           <div class="mcd-main-title">MAINTENANCE CARD</div>
           <div class="mcd-sub-title" id="mcTypeDisplay3">—</div>
@@ -1855,6 +1862,9 @@ function removePhotoPage(){
   document.getElementById('mcPage3').style.display='none';
   document.getElementById('mcPage3').innerHTML='';
   document.getElementById('addPhotoPageBtn').style.display='';
+  // Reset footer pagination
+  const footers=document.querySelectorAll('.mcd-footer span:last-child');
+  footers.forEach((f,idx)=>{f.textContent='Pag. '+(idx+1)+'/2';});
 }
 
 function syncPage3Header(){
@@ -1864,6 +1874,11 @@ function syncPage3Header(){
   const w3=document.getElementById('mcWODisplay3');
   if(t3)t3.textContent=t?t.textContent:'—';
   if(w3)w3.textContent=w?w.textContent:'';
+  // Re-init logo on page 3
+  document.querySelectorAll('.kar-logo-img').forEach(img=>img.src=KAR_LOGO);
+  // Update footer pagination
+  const footers=document.querySelectorAll('.mcd-footer span:last-child');
+  footers.forEach((f,idx)=>{f.textContent='Pag. '+(idx+1)+'/'+footers.length;});
 }
 
 function removePhoto(i){
@@ -2116,6 +2131,9 @@ function loadMCIntoForm(mc){
     mc.photos.forEach((p,i)=>{
       if(p.src){photos[i].src=p.src;photos[i].caption=p.caption;renderPhotoSlot(i);}
     });
+    // Auto-open page 3 if photos 5-8 exist
+    const hasExtraPhotos=mc.photos.slice(4).some(p=>p&&p.src);
+    if(hasExtraPhotos&&!extraPhotoPageAdded)addPhotoPage();
   }
   updateTypeDisplay();
   switchView('card');
