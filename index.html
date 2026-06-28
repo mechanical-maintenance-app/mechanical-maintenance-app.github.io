@@ -331,7 +331,7 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
 @media print {
 .sidebar, .main-header, .search-panel, .stats-bar, .pagination, .td-actions,
   .modal-overlay, .toast-container, .mc-bottom-bar, .mc-zoom-bar, 
-  #mcView .mc-section-card, #mcView .photo-slot, #eqView, #refChipsRow { 
+  #mcView .mc-section-card, #mcView .photo-slot, #eqView, #refChipsRow, #histPanel, #addPhotoPageBtn, .mcd-photo-slot:not(.has-photo), .mcd-photo-slot:not(.has-photo) + .mcd-cap-inp { 
     display: none !important; 
   }
  thead th:nth-child(10), td:nth-child(10),
@@ -340,8 +340,11 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
   
   /* Ajuste para PDF real y eliminación de recuadros grises/sombras */
   .mc-doc-scaler { transform: none !important; display: block !important; }
-  .mc-doc-outer { padding-top: 0 !important; margin-top: 0 !important; background: white !important; }
-  .mc-doc-page { box-shadow: none !important; border: none !important; }
+ .mc-doc-outer { padding: 0 !important; margin: 0 !important; background: white !important; display: block !important; }
+  .mc-doc-page { box-shadow: none !important; border: none !important; page-break-after: always; }
+.mc-doc-page:last-child { page-break-after: auto; }
+.mc-view-wrapper { display: block !important; }
+.mc-content-area { overflow: visible !important; }
 
   body{background:white;font-family:'Segoe UI',Tahoma,sans-serif;font-size:12px;}
   #printOutput{display:block!important;}
