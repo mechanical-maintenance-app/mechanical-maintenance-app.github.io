@@ -295,7 +295,7 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
 @media print {
 .sidebar, .main-header, .search-panel, .stats-bar, .pagination, .td-actions,
   .modal-overlay, .toast-container, .mc-bottom-bar, .mc-zoom-bar, 
-  #mcView .mc-section-card, #mcView .photo-slot, #eqView, #refChipsRow { 
+  #mcView .mc-section-card, #mcView .photo-slot, #eqView, #refChipsRow, .no-print { 
     display: none !important; 
   }
  thead th:nth-child(10), td:nth-child(10),
@@ -1796,7 +1796,7 @@ function renderPhotoSlot(i){
   document.getElementById('addPhotoPageBtn').style.display='none';
   document.getElementById('mcPage3').style.display='';
   document.getElementById('mcPage3').innerHTML=`
-    <div class="mc-doc-page" id="page3">
+    <div class="mc-doc-page" id="page3" style="margin-top:28px;">
       <div class="mcd-header">
         <div class="mcd-logo-area">
           <img class="kar-logo-img mcd-logo-img" src="" alt="KAR">
@@ -1862,7 +1862,6 @@ function removePhotoPage(){
   document.getElementById('mcPage3').style.display='none';
   document.getElementById('mcPage3').innerHTML='';
   document.getElementById('addPhotoPageBtn').style.display='';
-  // Reset footer pagination
   const footers=document.querySelectorAll('.mcd-footer span:last-child');
   footers.forEach((f,idx)=>{f.textContent='Pag. '+(idx+1)+'/2';});
 }
@@ -1874,9 +1873,7 @@ function syncPage3Header(){
   const w3=document.getElementById('mcWODisplay3');
   if(t3)t3.textContent=t?t.textContent:'—';
   if(w3)w3.textContent=w?w.textContent:'';
-  // Re-init logo on page 3
   document.querySelectorAll('.kar-logo-img').forEach(img=>img.src=KAR_LOGO);
-  // Update footer pagination
   const footers=document.querySelectorAll('.mcd-footer span:last-child');
   footers.forEach((f,idx)=>{f.textContent='Pag. '+(idx+1)+'/'+footers.length;});
 }
@@ -2131,7 +2128,6 @@ function loadMCIntoForm(mc){
     mc.photos.forEach((p,i)=>{
       if(p.src){photos[i].src=p.src;photos[i].caption=p.caption;renderPhotoSlot(i);}
     });
-    // Auto-open page 3 if photos 5-8 exist
     const hasExtraPhotos=mc.photos.slice(4).some(p=>p&&p.src);
     if(hasExtraPhotos&&!extraPhotoPageAdded)addPhotoPage();
   }
