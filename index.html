@@ -2589,8 +2589,9 @@ function histShowMCPreview(mc,fallback){
     ${sec('Activity Description',mc.activity)}
     ${sec('Comments',mc.comments)}
     <div style="padding:8px;margin-top:4px;">
-      <button onclick="loadMCIntoForm(${JSON.stringify(mc).replace(/</g,'\\u003c').replace(/>/g,'\\u003e').replace(/&/g,'\\u0026').replace(/'/g,'\\'').replace(/"/g,'&quot;')})" style="width:100%;padding:5px;font-size:10px;background:#1565c0;color:white;border:none;border-radius:3px;cursor:pointer;font-weight:600;">✏️ Open for editing</button>
+      <button id="histOpenEditBtn" style="width:100%;padding:5px;font-size:10px;background:#1565c0;color:white;border:none;border-radius:3px;cursor:pointer;font-weight:600;">✏️ Open for editing</button>
     </div>`;
+  document.getElementById('histOpenEditBtn').onclick=()=>loadMCIntoForm(mc);
 }
 
 // Auto-trigger history panel when TAG field changes in MC form
