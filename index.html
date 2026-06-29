@@ -850,14 +850,18 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
               <div class="mcd-sig"><div class="mcd-sig-line"></div><div class="mcd-sig-lbl">MM Maintenance Eng.</div></div>
               <div class="mcd-sig"><div class="mcd-sig-line"></div><div class="mcd-sig-lbl">MM Manager</div></div>
             </div>
-
+ <!-- Add Activity Page button -->
+            <div id="addActivityPageBtn" style="text-align:center;margin-top:12px;" class="no-print">
+              <button class="btn btn-ghost" style="border-color:#8b5cf6;color:#8b5cf6;font-size:12px;" onclick="addActivityPage()">➕ Add Activity Page (cont.)</button>
+            </div>
             <!-- Footer -->
             <div class="mcd-footer">
               <span>Mechanical Maintenance Management · KAR Group · Static Equipment's</span>
               <span>Pag. 1/2</span>
             </div>
           </div><!-- end page 1 -->
-
+          <!-- Page 1B placeholder -->
+          <div id="mcPage1B" style="display:none;"></div>
           <!-- ══ PAGE 2 — PHOTOS ══ -->
           <div class="mc-doc-page">
 
@@ -1957,7 +1961,72 @@ function renderPhotoSlot(i){
   `;
   syncPage3Header();
 }
+let extraActivityPageAdded=false;
 
+function addActivityPage(){
+  if(extraActivityPageAdded)return;
+  extraActivityPageAdded=true;
+  document.getElementById('addActivityPageBtn').style.display='none';
+  document.getElementById('mcPage1B').style.display='';
+  document.getElementById('mcPage1B').innerHTML=`
+    <div class="mc-doc-page" style="margin-top:28px;">
+      <div class="mcd-header">
+        <div class="mcd-logo-area">
+          <img class="kar-logo-img mcd-logo-img" src="" alt="KAR">
+          <div>
+            <div class="mcd-logo-name">KAR Group</div>
+            <div class="mcd-logo-sub">Mechanical Maintenance Management</div>
+            <div class="mcd-logo-sub">Static Equipment's</div>
+          </div>
+        </div>
+        <div class="mcd-title-center">
+          <div class="mcd-main-title">MAINTENANCE CARD</div>
+          <div class="mcd-sub-title" id="mcTypeDisplay1B">—</div>
+        </div>
+        <div class="mcd-header-spacer"></div>
+      </div>
+      <div class="mcd-section">
+        <div class="mcd-sec-hd">Maintenance Activity Description (cont.)</div>
+        <div class="mcd-toolbar">
+          <button type="button" class="mcd-tb-btn" onclick="fmtText('mcActivity1B','bold')" title="Bold"><b>B</b></button>
+          <button type="button" class="mcd-tb-btn" onclick="fmtText('mcActivity1B','italic')" title="Italic"><i>I</i></button>
+          <button type="button" class="mcd-tb-btn" onclick="fmtText('mcActivity1B','underline')" title="Underline"><u>U</u></button>
+          <div class="mcd-tb-sep"></div>
+          <input type="color" class="mcd-tb-color" title="Text color" onchange="fmtColor('mcActivity1B',this.value)">
+        </div>
+        <div class="mcd-ta mcd-editor" id="mcActivity1B" contenteditable="true" data-placeholder="Continue activity description here..."></div>
+      </div>
+      <div style="text-align:center;margin-top:16px;" class="no-print">
+        <button class="btn btn-ghost" style="border-color:#ef4444;color:#ef4444;font-size:12px;" onclick="removeActivityPage()">🗑️ Remove Activity Page</button>
+      </div>
+      <div class="mcd-footer" style="margin-top:auto;">
+        <span>Mechanical Maintenance Management · KAR Group · Static Equipment's</span>
+        <span>Pag. 1B</span>
+      </div>
+    </div>`;
+  document.querySelectorAll('.kar-logo-img').forEach(img=>img.src=KAR_LOGO);
+  const t=document.getElementById('mcTypeDisplay');
+  const t1B=document.getElementById('mcTypeDisplay1B');
+  if(t1B&&t)t1B.textContent=t.textContent;
+  syncFooterPagination();
+}
+
+function removeActivityPage(){
+  extraActivityPageAdded=false;
+  document.getElementById('mcPage1B').style.display='none';
+  document.getElementById('mcPage1B').innerHTML='';
+  document.getElementById('addActivityPageBtn').style.display='';
+  syncFooterPagination();
+}
+
+function syncFooterPagination(){
+  const footers=document.querySelectorAll('.mcd-footer span:last-child');
+  const total=footers.length;
+  footers.forEach((f,idx)=>{
+    const txt=f.textContent;
+    if(txt.startsWith('Pag.'))f.textContent='Pag. '+(idx+1)+'/'+total;
+  });
+}
 function removePhotoPage(){
   extraPhotoPageAdded=false;
   for(let i=4;i<8;i++){photos[i].src=null;photos[i].caption='Photo '+(i+1);}
@@ -2008,7 +2077,8 @@ function printMC(){
   setTimeout(()=>document.title=prevTitle, 1000);
 }
 function clearMCForm(){
-  if(extraPhotoPageAdded)removePhotoPage();
+  if(extraActivityPageAdded)removeActivityPage();
+  if(extraActivityPageAdded)removeActivityPage();
   closeHistPanel();
   ['mcWO','mcStart','mcEnd','mcTag','mcLoc','mcService','mcCode','mcBg','mcScope','mcActivity','mcComments'].forEach(id=>{
   const el=document.getElementById(id);
@@ -2089,7 +2159,7 @@ const folderId=currentDriveMCFileId?null:await createActivityFolder(actFolderNam
     location:mcVal('mcLoc'),service:mcVal('mcService'),equipment_type:mcVal('mcType'),
     applicable_code:mcVal('mcCode'),background:mcVal('mcBg'),
     scope:mcVal('mcScope'),activity:mcVal('mcActivity'),
-    activity_short:currentMCActivityShort,comments:mcVal('mcComments'),
+   activity1B:mcVal('mcActivity1B'),activity_short:currentMCActivityShort,comments:mcVal('mcComments'),
     priority:document.querySelector('input[name="prio"]:checked')?.value||'',
     classifications:{
       preventive:document.getElementById('ckPrev')?.checked||false,
@@ -2207,6 +2277,7 @@ function loadMCIntoForm(mc){
   document.getElementById('mcBg').innerHTML=mc.background||'';
   document.getElementById('mcScope').innerHTML=mc.scope||'';
   document.getElementById('mcActivity').innerHTML=mc.activity||'';
+  if(mc.activity1B){if(!extraActivityPageAdded)addActivityPage();document.getElementById('mcActivity1B').innerHTML=mc.activity1B||'';}
   document.getElementById('mcComments').innerHTML=mc.comments||'';
   if(mc.priority){const el=document.querySelector('input[name="prio"][value="'+mc.priority+'"]');if(el)el.checked=true;}
   if(mc.classifications){
