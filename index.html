@@ -191,7 +191,7 @@ td.wrap{white-space:normal;min-width:220px;max-width:320px;}
 @keyframes slideIn{from{transform:translateX(40px);opacity:0;}to{transform:translateX(0);opacity:1;}}
 
 /* ══ MC WYSIWYG ══ */
-#mcView{display:none;}
+#mcView{display:none;flex-direction:column;flex:1;}
 .mc-zoom-bar{background:var(--navy-mid);padding:8px 24px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.08);position:sticky;top:62px;z-index:85;}
 .mc-zoom-btn{width:28px;height:28px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;border-radius:4px;cursor:pointer;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:background .15s;line-height:1;}
 .mc-zoom-btn:hover{background:rgba(255,255,255,.22);}
@@ -339,10 +339,47 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
 .ai-memory-clear:hover{background:rgba(192,57,43,.35);}
 .ai-zoom-btn-ai{margin-left:8px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);border:1px solid #7c3aed;color:white;border-radius:4px;padding:0 14px;font-size:11px;font-weight:600;cursor:pointer;height:28px;display:flex;align-items:center;gap:5px;transition:all .15s;}
 .ai-zoom-btn-ai:hover{opacity:.9;}
+
+/* ══ HISTORY PANEL ══ */
+.mc-view-wrapper{display:flex;flex:1;overflow:hidden;position:relative;}
+.hist-panel{width:0;min-width:0;background:white;display:flex;flex-direction:column;overflow:hidden;transition:width .25s ease,min-width .25s ease;flex-shrink:0;position:fixed;top:110px;left:calc(var(--sidebar-w) + 12px);z-index:95;border-radius:10px;box-shadow:0 8px 32px rgba(26,35,50,.22);border:1px solid var(--border);}
+.hist-panel.open{width:268px;min-width:268px;}
+.hist-panel-list{flex:1;overflow-y:auto;max-height:calc(100vh - 280px);}
+.hist-panel-header{background:var(--navy);padding:10px 12px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;border-radius:10px 10px 0 0;}
+.hist-panel-title{color:white;font-size:11px;font-weight:600;letter-spacing:.3px;}
+.hist-panel-close{background:none;border:none;color:rgba(255,255,255,.6);cursor:pointer;font-size:16px;line-height:1;padding:0 2px;}
+.hist-panel-close:hover{color:white;}
+.hist-panel-tag{display:inline-block;background:var(--red);color:white;font-size:9px;padding:1px 7px;border-radius:3px;font-family:Consolas,monospace;font-weight:700;margin-top:3px;}
+.hist-panel-count{padding:5px 10px;font-size:10px;color:var(--silver);border-bottom:1px solid var(--border);flex-shrink:0;}
+.hist-card{padding:9px 10px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;}
+.hist-card:hover{background:#f5f8ff;}
+.hist-card.active{background:#eff6ff;border-left:3px solid #1565c0;}
+.hist-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;}
+.hist-card-date{font-size:9px;color:var(--silver);}
+.hist-card-type{font-size:8px;padding:1px 6px;border-radius:3px;font-weight:600;}
+.hist-card-type.leak{background:#fce8e6;color:#c0392b;}
+.hist-card-type.prev{background:#e8f5e9;color:#2e7d32;}
+.hist-card-type.corr{background:#fff3e0;color:#e67e22;}
+.hist-card-type.repl{background:#e3f2fd;color:#1565c0;}
+.hist-card-desc{font-size:10px;color:var(--text);font-weight:500;line-height:1.3;margin-bottom:2px;}
+.hist-card-ref{font-size:9px;color:var(--silver);}
+.hist-mc-viewer{flex:1;overflow-y:auto;max-height:calc(100vh - 280px);padding:10px;background:#f8faff;-webkit-user-select:text;user-select:text;}
+.hist-mc-viewer *{-webkit-user-select:text;user-select:text;}
+.hist-back-btn{display:flex;align-items:center;gap:6px;padding:6px 10px;font-size:11px;color:#1565c0;cursor:pointer;border-bottom:1px solid var(--border);background:white;border:none;width:100%;text-align:left;}
+.hist-back-btn:hover{background:#f0f4ff;}
+.hist-mc-block{margin-bottom:8px;}
+.hist-mc-block-hd{font-size:8px;font-weight:700;color:white;background:#1a1f2e;padding:3px 8px;text-transform:uppercase;letter-spacing:.05em;}
+.hist-mc-block-body{border:1px solid #D1D5DB;border-top:none;padding:6px 8px;font-size:11px;color:#374151;line-height:1.55;}
+.hist-panel-footer{padding:8px 10px;border-top:1px solid var(--border);flex-shrink:0;}
+.hist-panel-footer button{width:100%;background:var(--navy);color:white;border:none;border-radius:4px;padding:5px 0;font-size:10px;font-weight:600;cursor:pointer;letter-spacing:.3px;}
+.hist-panel-footer button:hover{background:var(--navy-light);}
+.mc-content-area{flex:1;overflow:auto;display:flex;flex-direction:column;min-width:0;width:100%;}
+.hist-empty{padding:20px 12px;text-align:center;font-size:11px;color:var(--silver);line-height:1.6;}
+
 @media print {
 .sidebar, .main-header, .search-panel, .stats-bar, .pagination, .td-actions,
   .modal-overlay, .toast-container, .mc-bottom-bar, .mc-zoom-bar, 
-  #mcView .mc-section-card, #mcView .photo-slot, #eqView, #refChipsRow { 
+  #mcView .mc-section-card, #mcView .photo-slot, #eqView, #refChipsRow, #histPanel, #addPhotoPageBtn, #addActivityPageBtn, .mcd-photo-slot:not(.has-photo), .mcd-photo-slot:not(.has-photo) + .mcd-cap-inp, .mcd-photo-remove { 
     display: none !important; 
   }
  thead th:nth-child(10), td:nth-child(10),
@@ -662,6 +699,32 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
       <button class="ai-zoom-btn-ai no-print" onclick="openAIChat()">✨ Fill with AI</button>
     </div>
 
+    <!-- History panel + doc area wrapper -->
+    <div class="mc-view-wrapper">
+
+      <!-- ══ HISTORY PANEL (LEFT) ══ -->
+      <div class="hist-panel no-print" id="histPanel">
+        <div class="hist-panel-header">
+          <div>
+            <div class="hist-panel-title">MC History</div>
+            <div class="hist-panel-tag" id="histPanelTag">—</div>
+          </div>
+          <button class="hist-panel-close" onclick="closeHistPanel()" title="Close">×</button>
+        </div>
+        <div class="hist-panel-count" id="histPanelCount"></div>
+        <div class="hist-panel-list" id="histPanelList"></div>
+        <div style="display:none;flex:1;flex-direction:column;overflow:hidden;" id="histPanelViewer">
+          <button class="hist-back-btn" onclick="histBackToList()">← Back to list</button>
+          <div class="hist-mc-viewer" id="histMCContent"></div>
+        </div>
+        <div class="hist-panel-footer" id="histPanelFooter">
+          <button onclick="filterByTag(document.getElementById('histPanelTag').textContent)">View all in MC History</button>
+        </div>
+      </div>
+
+      <!-- MC Document area -->
+      <div class="mc-content-area">
+
     <!-- Document outer -->
     <div class="mc-doc-outer">
       <div class="mc-doc-scaler" id="mcDocScaler">
@@ -706,7 +769,7 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
   <tr>
     <td>
       <div class="mcd-cell-lbl">TAG *</div>
-      <input class="mcd-cell-inp tag-inp" id="mcTag" placeholder="e.g. C-E-106" oninput="updateTypeDisplay()">
+      <input class="mcd-cell-inp tag-inp" id="mcTag" placeholder="e.g. C-E-106" oninput="updateTypeDisplay();if(this.value.trim().length>=3)openHistPanel(this.value.trim().toUpperCase())">
     </td>
     <td>
       <div class="mcd-cell-lbl">Location *</div>
@@ -903,6 +966,9 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
         </div><!-- end #mcDoc -->
       </div><!-- end #mcDocScaler -->
     </div><!-- end .mc-doc-outer -->
+
+      </div><!-- end .mc-content-area -->
+    </div><!-- end .mc-view-wrapper -->
   </div><!-- end #mcView -->
   <!-- MC Bottom Bar -->
   <div class="mc-bottom-bar hidden" id="mcBottomBar">
@@ -1077,7 +1143,7 @@ function switchView(view){
   document.body.dataset.view=view;
   document.getElementById('trackingView').style.display=view==='tracking'?'block':'none';
   document.getElementById('eqView').style.display=view==='equipment'?'block':'none';
-  document.getElementById('mcView').style.display=view==='card'?'block':'none';
+  document.getElementById('mcView').style.display=view==='card'?'flex':'none';
  document.getElementById('dashView').style.display=view==='dashboard'?'block':'none';
 document.getElementById('cloudmcView').style.display=view==='cloudmc'?'block':'none';
   document.getElementById('mcBottomBar').classList.toggle('hidden',view!=='card');
@@ -1781,6 +1847,7 @@ function generateMC(rowIndex){
 document.getElementById('mcLoc').value=r['REFINERY']||'';
   updateTypeDisplay();
   switchView('card');
+  if(tag)setTimeout(()=>openHistPanel(tag.trim().toUpperCase()),300);
   toast('Form pre-filled from record.','info');
 }
 
@@ -1986,6 +2053,9 @@ function printMC(){
   setTimeout(()=>document.title=prevTitle, 1000);
 }
 function clearMCForm(){
+  if(typeof extraActivityPageAdded!=='undefined'&&extraActivityPageAdded)removeActivityPage();
+  if(typeof extraPhotoPageAdded!=='undefined'&&extraPhotoPageAdded)removePhotoPage();
+  closeHistPanel();
   if(extraPhotoPageAdded)removePhotoPage();
   ['mcWO','mcStart','mcEnd','mcTag','mcLoc','mcService','mcCode','mcBg','mcScope','mcActivity','mcComments'].forEach(id=>{
   const el=document.getElementById(id);
@@ -2718,6 +2788,139 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 
 // ── GEMINI AI CHAT ──────────────────────────────
+
+// ── HISTORY PANEL ──────────────────────────────
+let histPanelCurrentTag='';
+let histPanelMode='list';
+
+function openHistPanel(tag){
+  if(!tag)return;
+  histPanelCurrentTag=tag;
+  const panel=document.getElementById('histPanel');
+  panel.classList.add('open');
+  document.getElementById('histPanelTag').textContent=tag;
+  document.getElementById('histPanelCount').textContent='Loading...';
+  document.getElementById('histPanelList').innerHTML='';
+  histShowList();
+  loadHistPanelRecords(tag);
+}
+
+function closeHistPanel(){
+  document.getElementById('histPanel').classList.remove('open');
+  histPanelCurrentTag='';
+}
+
+function histShowList(){
+  histPanelMode='list';
+  document.getElementById('histPanelList').style.display='';
+  const viewer=document.getElementById('histPanelViewer');
+  viewer.style.display='none';
+  document.getElementById('histPanelFooter').style.display='';
+}
+
+function histBackToList(){
+  histShowList();
+  document.querySelectorAll('.hist-card').forEach(c=>c.classList.remove('active'));
+}
+
+function loadHistPanelRecords(tag){
+  const tagUpper=tag.trim().toUpperCase();
+  const recs=allRecords.filter(r=>String(r['TAG']||'').trim().toUpperCase()===tagUpper)
+    .sort((a,b)=>String(b['MAINTENANCE DATE']||'').localeCompare(String(a['MAINTENANCE DATE']||'')));
+  const count=recs.length;
+  document.getElementById('histPanelCount').textContent=count
+    ?count+' maintenance card'+(count>1?'s':'')+' found'
+    :'No records found for this TAG';
+  if(!count){
+    document.getElementById('histPanelList').innerHTML=`<div class="hist-empty">No maintenance history found for<br><strong>${tag}</strong></div>`;
+    return;
+  }
+  function getCardType(desc){
+    const d=(desc||'').toUpperCase();
+    if(/LEAK/.test(d))return{cls:'leak',lbl:'LEAK'};
+    if(/REPLACEMENT/.test(d))return{cls:'repl',lbl:'REPL'};
+    if(/PREVENTIVE/.test(d))return{cls:'prev',lbl:'PREV'};
+    if(/CORRECTIVE/.test(d))return{cls:'corr',lbl:'CORR'};
+    return{cls:'corr',lbl:'ACTIVITY'};
+  }
+  document.getElementById('histPanelList').innerHTML=recs.map(r=>{
+    const date=String(r['MAINTENANCE DATE']||'').substring(0,10);
+    const desc=r['ACTIVITY DESCRIPTION']||'—';
+    const card=r['MAINTENANCE CARD']||'';
+    const {cls,lbl}=getCardType(desc);
+    return`<div class="hist-card" onclick="histOpenRecord('${card.replace(/'/g,"\\'")}','${(r['TAG']||'').replace(/'/g,"\\'")}','${date}','${(r['REFINERY']||'').replace(/'/g,"\\'")}',${r.rowIndex})" data-rowindex="${r.rowIndex}">
+      <div class="hist-card-top">
+        <span class="hist-card-type ${cls}">${lbl}</span>
+        <span class="hist-card-date">${date}</span>
+      </div>
+      <div class="hist-card-desc">${desc}</div>
+      <div class="hist-card-ref">${r['REFINERY']||''}</div>
+    </div>`;
+  }).join('');
+}
+
+async function histOpenRecord(cardName,tag,date,refinery,rowIndex){
+  document.querySelectorAll('.hist-card').forEach(c=>c.classList.remove('active'));
+  const card=document.querySelector(`.hist-card[data-rowindex="${rowIndex}"]`);
+  if(card)card.classList.add('active');
+  if(!isTokenValid()){histShowMCPreview(null,{cardName,tag,date,refinery});return;}
+  const rec=allRecords.find(x=>x.rowIndex===rowIndex);
+  const fileName=(rec&&rec['MAINTENANCE CARD']?rec['MAINTENANCE CARD']:tag+' · '+date)+'.json';
+  try{
+    const q="name='"+fileName+"' and mimeType='application/json' and trashed=false";
+    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,webViewLink)&pageSize=1',
+      {headers:{Authorization:'Bearer '+googleAccessToken}});
+    const d=await r.json();
+    if(d.files&&d.files.length){
+      const cr=await fetch('https://www.googleapis.com/drive/v3/files/'+d.files[0].id+'?alt=media',
+        {headers:{Authorization:'Bearer '+googleAccessToken}});
+      const mc=await cr.json();mc.id=d.files[0].id;
+      histShowMCPreview(mc,{cardName,tag,date,refinery});
+    }else{
+      const legacy=await resolveFileInDrive(cardName,tag,refinery,rec?rec['ASSOCIATED ASSET']||'':'');
+      if(legacy&&legacy.url){window.open(legacy.url,'_blank');toast('Legacy file opened in new tab.','info');}
+      else histShowMCPreview(null,{cardName,tag,date,refinery});
+    }
+  }catch(e){histShowMCPreview(null,{cardName,tag,date,refinery});}
+}
+
+function histShowMCPreview(mc,fallback){
+  histPanelMode='mc';
+  document.getElementById('histPanelList').style.display='none';
+  document.getElementById('histPanelFooter').style.display='none';
+  const viewer=document.getElementById('histPanelViewer');
+  viewer.style.display='flex';
+  const content=document.getElementById('histMCContent');
+  if(!mc){
+    content.innerHTML=`<div style="padding:12px;font-size:11px;color:var(--text-light)">
+      <div style="font-weight:600;color:var(--text);margin-bottom:6px">${fallback.cardName||fallback.tag+' · '+fallback.date}</div>
+      <div style="color:var(--silver);margin-bottom:10px">${fallback.refinery||''}</div>
+      <div style="color:#e65100;font-size:10px">No JSON MC found in Drive for this record.</div>
+    </div>`;
+    return;
+  }
+  const sec=(hd,body)=>body?`<div class="hist-mc-block"><div class="hist-mc-block-hd">${hd}</div><div class="hist-mc-block-body">${body}</div></div>`:'';
+  const field=(lbl,val)=>val?`<div style="margin-bottom:3px"><span style="font-size:8px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.06em;">${lbl}</span><div style="font-size:11px;color:#111827;font-weight:500">${val}</div></div>`:'';
+  content.innerHTML=`
+    <div style="padding:8px 10px;background:#1a1f2e;margin-bottom:8px;">
+      <div style="font-family:Consolas,monospace;font-size:12px;font-weight:700;color:#CC2222">${mc.tag||'—'}</div>
+      <div style="font-size:9px;color:rgba(255,255,255,.5);margin-top:2px">${mc.start_date||''} ${mc.end_date?'→ '+mc.end_date:''}</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.7);margin-top:2px">${mc.equipment_type||''}</div>
+    </div>
+    <div style="padding:0 8px 8px;">
+      ${field('WO',mc.wo)}${field('Location',mc.location)}${field('Service',mc.service)}${field('Priority',mc.priority)}
+    </div>
+    ${sec('Background',mc.background)}
+    ${sec('Scope',mc.scope)}
+    ${sec('Activity Description',mc.activity)}
+    ${sec('Comments',mc.comments)}
+    <div style="padding:8px;margin-top:4px;">
+      <button id="histOpenEditBtn" style="width:100%;padding:5px;font-size:10px;background:#1565c0;color:white;border:none;border-radius:3px;cursor:pointer;font-weight:600;">✏️ Open for editing</button>
+    </div>`;
+  document.getElementById('histOpenEditBtn').onclick=()=>loadMCIntoForm(mc);
+}
+
+// ── HISTORY PANEL ──────────────────────────────
 
 // Init
 document.querySelectorAll('.kar-logo-img').forEach(img=>img.src=KAR_LOGO);
