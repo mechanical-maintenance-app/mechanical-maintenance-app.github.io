@@ -332,9 +332,10 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
 @media print {
 .sidebar, .main-header, .search-panel, .stats-bar, .pagination, .td-actions,
   .modal-overlay, .toast-container, .mc-bottom-bar, .mc-zoom-bar, 
-  #mcView .mc-section-card, #mcView .photo-slot, #eqView, #refChipsRow, #histPanel, #addPhotoPageBtn, .mcd-photo-slot:not(.has-photo), .mcd-photo-slot:not(.has-photo) + .mcd-cap-inp { 
+  #mcView .mc-section-card, #mcView .photo-slot, #eqView, #refChipsRow, #histPanel, #addPhotoPageBtn, .mcd-photo-slot:not(.has-photo), .mcd-photo-slot:not(.has-photo) + .mcd-cap-inp, .mcd-photo-remove { 
     display: none !important; 
   }
+  .mcd-footer { margin-top: auto !important; }
  thead th:nth-child(10), td:nth-child(10),
 thead th:nth-child(11), td:nth-child(11) { display: none !important; }
   .main{margin-left:0;}
@@ -342,7 +343,7 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
   /* Ajuste para PDF real y eliminación de recuadros grises/sombras */
   .mc-doc-scaler { transform: none !important; display: block !important; }
  .mc-doc-outer { padding: 0 !important; margin: 0 !important; background: white !important; display: block !important; }
-  .mc-doc-page { box-shadow: none !important; border: none !important; page-break-after: always; }
+.mc-doc-page { box-shadow: none !important; border: none !important; page-break-after: always; display: flex !important; flex-direction: column !important; }
 .mc-doc-page:last-child { page-break-after: auto; }
 .mc-view-wrapper { display: block !important; }
 .mc-content-area { overflow: visible !important; }
@@ -1141,6 +1142,7 @@ function checkGoogleToken(){
     history.replaceState(null,'',window.location.pathname);
     updateGoogleBtn(true);
     toast('Google Drive connected!','success');
+    scheduleTokenRefresh(expiresIn);
   }else{
     const saved=localStorage.getItem('gat');
     const exp=parseInt(localStorage.getItem('gatExp'))||0;
@@ -1148,12 +1150,44 @@ function checkGoogleToken(){
       googleAccessToken=saved;
       googleTokenExpiry=exp;
       updateGoogleBtn(true);
+      const remaining=Math.floor((exp-Date.now())/1000);
+      scheduleTokenRefresh(remaining);
     }
   }
+}
+function scheduleTokenRefresh(expiresInSeconds){
+  const refreshIn=Math.max((expiresInSeconds-300),30)*1000;
+  setTimeout(()=>silentTokenRefresh(),refreshIn);
+}
+function silentTokenRefresh(){
+  const iframe=document.createElement('iframe');
+  iframe.style.display='none';
+  const params=new URLSearchParams({client_id:GOOGLE_CLIENT_ID,redirect_uri:window.location.origin+window.location.pathname,response_type:'token',scope:DRIVE_SCOPE,prompt:'none'});
+  iframe.src='https://accounts.google.com/o/oauth2/v2/auth?'+params.toString();
+  iframe.onload=()=>{
+    try{
+      const iframeHash=iframe.contentWindow.location.hash;
+      if(iframeHash.includes('access_token')){
+        const p=new URLSearchParams(iframeHash.substring(1));
+        googleAccessToken=p.get('access_token');
+        const expiresIn=parseInt(p.get('expires_in'))||3600;
+        googleTokenExpiry=Date.now()+(expiresIn*1000);
+        localStorage.setItem('gat',googleAccessToken);
+        localStorage.setItem('gatExp',googleTokenExpiry);
+        scheduleTokenRefresh(expiresIn);
+      }
+    }catch(e){
+      // Silent refresh failed — show connect button again
+      updateGoogleBtn(false);
+    }
+  document.body.removeChild(iframe);
+  };
+  document.body.appendChild(iframe);
 }
 function updateGoogleBtn(connected){
   const btn=document.getElementById('googleSignInBtn');if(!btn)return;
   if(connected){btn.innerHTML='<span>✅</span> Drive Connected';btn.style.color='#4cd98a';btn.style.borderColor='#4cd98a';btn.onclick=null;btn.style.cursor='default';}
+  else{btn.innerHTML='🔑 Connect Drive';btn.style.color='rgba(255,255,255,.8)';btn.style.borderColor='rgba(255,255,255,.25)';btn.onclick=signInGoogle;btn.style.cursor='pointer';}
 }
 function isTokenValid(){return googleAccessToken&&Date.now()<googleTokenExpiry;}
 // ── DRIVE FILE UPLOAD ──────────────────────────
