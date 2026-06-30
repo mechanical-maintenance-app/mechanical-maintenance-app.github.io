@@ -200,10 +200,11 @@ td.wrap{white-space:normal;min-width:220px;max-width:320px;}
 .mc-zoom-hint{margin-left:auto;font-size:11px;color:rgba(255,255,255,.3);}
 .mc-doc-outer{background:#c8cdd6;min-height:calc(100vh - 124px);padding:28px 20px 60px;display:flex;flex-direction:column;align-items:center;}
 .mc-doc-scaler{display:flex;justify-content:center;width:100%;}
-.mc-doc{width:794px;transform-origin:top center;display:flex;flex-direction:column;gap:20px;}
+.mc-doc{width:210mm;transform-origin:top center;display:flex;flex-direction:column;gap:20px;}
 
-/* Document Page */
-.mc-doc-page{background:white;width:794px;min-height:1060px;padding:36px 44px;box-shadow:0 3px 24px rgba(0,0,0,.18);font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#1a2332;box-sizing:border-box;display:flex;flex-direction:column;}
+/* Document Page — fixed A4 size, footer pinned absolute */
+.mc-doc-page{position:relative;background:white;width:210mm;height:297mm;padding:18mm 16mm 16mm;box-shadow:0 3px 24px rgba(0,0,0,.18);font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#1a2332;box-sizing:border-box;overflow:hidden;}
+.mcd-page-body{height:100%;display:flex;flex-direction:column;padding-bottom:14mm;overflow:hidden;}
 
 /* Document Header */
 .mcd-header{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:2px solid #1a1f2e;padding-bottom:12px;margin-bottom:14px;}
@@ -269,13 +270,13 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
 .mcd-sig-lbl{font-size:9px;color:#6B7280;text-transform:uppercase;letter-spacing:.05em;}
 
 /* Footer */
-.mcd-footer{border-top:1px solid #D1D5DB;padding-top:8px;display:flex;justify-content:space-between;align-items:center;margin-top:auto;font-size:9px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.05em;}
+.mcd-footer{position:absolute;left:16mm;right:16mm;bottom:8mm;border-top:1px solid #D1D5DB;padding-top:6px;display:flex;justify-content:space-between;align-items:center;font-size:9px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.05em;background:white;}
 
 /* Photos page */
 .mcd-photo-annex-title{font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;border-bottom:1px solid #D1D5DB;padding-bottom:6px;}
-.mcd-photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1;}
+.mcd-photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .mcd-photo-wrap{display:flex;flex-direction:column;gap:7px;}
-.mcd-photo-slot{border:2px dashed #D1D5DB;border-radius:6px;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;overflow:hidden;position:relative;background:#F9FAFB;}
+.mcd-photo-slot{border:2px dashed #D1D5DB;border-radius:6px;aspect-ratio:4/3.6;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;overflow:hidden;position:relative;background:#F9FAFB;max-height:108mm;}
 .mcd-photo-slot:hover{border-color:#CC2222;background:#fff8f8;}
 .mcd-photo-slot.has-photo{border-style:solid;border-color:#27ae60;background:black;}
 .mcd-photo-slot img{width:100%;height:100%;object-fit:cover;display:block;}
@@ -385,11 +386,25 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
  thead th:nth-child(10), td:nth-child(10),
 thead th:nth-child(11), td:nth-child(11) { display: none !important; }
   .main{margin-left:0;}
-  
-  /* Ajuste para PDF real y eliminación de recuadros grises/sombras */
-  .mc-doc-scaler { transform: none !important; display: block !important; }
-  .mc-doc-outer { padding-top: 0 !important; margin-top: 0 !important; background: white !important; }
-  .mc-doc-page { box-shadow: none !important; border: none !important; }
+
+  /* ── Fixed A4 print pipeline — no transforms, no flex-driven sizing ── */
+  @page { size: A4; margin: 0; }
+  .main, .mc-view-wrapper, .mc-content-area, .mc-doc-outer{
+    margin:0 !important; padding:0 !important; background:white !important;
+    display:block !important; overflow:visible !important; height:auto !important; min-height:0 !important;
+  }
+  .mc-doc-scaler{ transform:none !important; display:block !important; }
+  .mc-doc{ width:210mm !important; transform:none !important; gap:0 !important; }
+  .mc-doc-page{
+    box-shadow:none !important; border:none !important;
+    width:210mm; height:297mm; page-break-after:always; page-break-inside:avoid;
+    margin:0 !important;
+  }
+  #mcDoc > .mc-doc-page:last-of-type,
+  #mcDoc > div:last-child .mc-doc-page{ page-break-after:auto; }
+  #mcPage3[style*="display: none"] .mc-doc-page,
+  #mcPage1B[style*="display: none"] .mc-doc-page{ display:none !important; }
+  .mcd-page-body{ overflow:visible !important; }
 
   body{background:white;font-family:'Segoe UI',Tahoma,sans-serif;font-size:12px;}
   #printOutput{display:block!important;}
@@ -732,6 +747,7 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
 
           <!-- ══ PAGE 1 ══ -->
           <div class="mc-doc-page">
+            <div class="mcd-page-body">
 
             <!-- Header -->
             <div class="mcd-header">
@@ -890,15 +906,23 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
               <div class="mcd-sig"><div class="mcd-sig-line"></div><div class="mcd-sig-lbl">MM Manager</div></div>
             </div>
 
+            <!-- Add Activity Page button -->
+            <div id="addActivityPageBtn" style="text-align:center;margin-top:12px;" class="no-print">
+              <button class="btn btn-ghost" style="border-color:#8b5cf6;color:#8b5cf6;font-size:12px;" onclick="addActivityPage()">➕ Add Activity Page (cont.)</button>
+            </div>
+            </div><!-- end mcd-page-body -->
             <!-- Footer -->
             <div class="mcd-footer">
               <span>Mechanical Maintenance Management · KAR Group · Static Equipment's</span>
-              <span>Pag. 1/2</span>
+              <span class="mcd-pageno">Pag. 1/2</span>
             </div>
           </div><!-- end page 1 -->
+          <!-- Page 1B placeholder -->
+          <div id="mcPage1B" style="display:none;"></div>
 
           <!-- ══ PAGE 2 — PHOTOS ══ -->
           <div class="mc-doc-page">
+            <div class="mcd-page-body">
 
             <!-- Header -->
             <div class="mcd-header">
@@ -950,19 +974,19 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
                 <input class="mcd-cap-inp" id="pc3" placeholder="Caption for Photo 4..." oninput="photos[3].caption=this.value">
               </div>
             </div>
-    <!-- Add Photo Page button -->
-            <div id="addPhotoPageBtn" style="text-align:center;margin-top:16px;" class="no-print">
+            <!-- Add Photo Page button -->
+            <div id="addPhotoPageBtn" style="text-align:center;margin-top:12px;" class="no-print">
               <button class="btn btn-ghost" style="border-color:#3b82f6;color:#3b82f6;font-size:12px;" onclick="addPhotoPage()">➕ Add Photo Page (Photos 5–8)</button>
             </div>
-          <!-- Footer -->
-            <div class="mcd-footer" style="margin-top:20px">
+            </div><!-- end mcd-page-body -->
+            <!-- Footer -->
+            <div class="mcd-footer">
               <span>Mechanical Maintenance Management · KAR Group · Static Equipment's</span>
-              <span>Pag. 2/2</span>
+              <span class="mcd-pageno">Pag. 2/2</span>
             </div>
           </div><!-- end page 2 -->
           <!-- Page 3 placeholder -->
-         <div id="mcPage3" style="display:none;">
-          </div>
+          <div id="mcPage3" style="display:none;"></div>
         </div><!-- end #mcDoc -->
       </div><!-- end #mcDocScaler -->
     </div><!-- end .mc-doc-outer -->
@@ -1158,6 +1182,7 @@ const titles={tracking:'MC <span>History</span>',card:'Maintenance <span>Card</s
       const doc=document.getElementById('mcDoc');
       const scaler=document.getElementById('mcDocScaler');
       if(doc&&scaler)scaler.style.height=Math.round(doc.offsetHeight*mcZoom/100)+'px';
+      syncDocPagination();
     },80);
   }
   if(view==='dashboard')renderDashboard();
@@ -1186,6 +1211,7 @@ function updateTypeDisplay(){
   const wo=document.getElementById('mcWO')?document.getElementById('mcWO').value:'';
   if(document.getElementById('mcTypeDisplay'))document.getElementById('mcTypeDisplay').textContent=clean;
   if(document.getElementById('mcTypeDisplay2'))document.getElementById('mcTypeDisplay2').textContent=clean;
+  if(document.getElementById('mcTypeDisplay1B'))document.getElementById('mcTypeDisplay1B').textContent=clean;
   if(extraPhotoPageAdded)syncPage3Header();
   if(document.getElementById('mcWODisplay2'))document.getElementById('mcWODisplay2').textContent=wo?'WO: '+wo:'';
 }
@@ -1927,7 +1953,7 @@ function toast(msg,type='info'){const t=document.createElement('div');t.classNam
 document.getElementById('modalOverlay').addEventListener('click',e=>{e.stopPropagation();});
 
 // ══ MC FORM ════════════════════════════════════
-const photos=[{src:null,caption:'Photo 1'},{src:null,caption:'Photo 2'},{src:null,caption:'Photo 3'},{src:null,caption:'Photo 4'},{src:null,caption:'Photo 5'},{src:null,caption:'Photo 6'},{src:null,caption:'Photo 7'},{src:null,caption:'Photo 8'}]; let extraPhotoPageAdded=false;
+const photos=[{src:null,caption:'Photo 1'},{src:null,caption:'Photo 2'},{src:null,caption:'Photo 3'},{src:null,caption:'Photo 4'},{src:null,caption:'Photo 5'},{src:null,caption:'Photo 6'},{src:null,caption:'Photo 7'},{src:null,caption:'Photo 8'}]; let extraPhotoPageAdded=false; let extraActivityPageAdded=false;
 
 function triggerPhoto(i){if(!photos[i].src)document.getElementById('pi'+i).click();}
 function loadPhoto(i,input){
@@ -1944,15 +1970,23 @@ function renderPhotoSlot(i){
     const cap=document.getElementById('pc'+i);if(cap)cap.value=photos[i].caption;
   }
 }
-  function addPhotoPage(){
+function addPhotoPage(){
   if(extraPhotoPageAdded)return;
   extraPhotoPageAdded=true;
   document.getElementById('addPhotoPageBtn').style.display='none';
   document.getElementById('mcPage3').style.display='';
   document.getElementById('mcPage3').innerHTML=`
-    <div class="mcd-page" id="page3" style="margin-top:32px;">
+    <div class="mc-doc-page">
+      <div class="mcd-page-body">
       <div class="mcd-header">
-        <div class="mcd-logo-area"><img src="https://i.imgur.com/YOUR_LOGO.png" class="mcd-logo" onerror="this.style.display='none'"><div class="mcd-company">KAR Group</div><div class="mcd-dept">Mechanical Maintenance</div></div>
+        <div class="mcd-logo-area">
+          <img class="kar-logo-img mcd-logo-img" src="" alt="KAR">
+          <div>
+            <div class="mcd-logo-name">KAR Group</div>
+            <div class="mcd-logo-sub">Mechanical Maintenance Management</div>
+            <div class="mcd-logo-sub">Static Equipment's</div>
+          </div>
+        </div>
         <div class="mcd-title-center">
           <div class="mcd-main-title">MAINTENANCE CARD</div>
           <div class="mcd-sub-title" id="mcTypeDisplay3">—</div>
@@ -1991,16 +2025,18 @@ function renderPhotoSlot(i){
           <input class="mcd-cap-inp" id="pc7" placeholder="Caption for Photo 8..." oninput="photos[7].caption=this.value">
         </div>
       </div>
-      <div style="text-align:center;margin-top:16px;" class="no-print">
+      <div style="text-align:center;margin-top:12px;" class="no-print">
         <button class="btn btn-ghost" style="border-color:#ef4444;color:#ef4444;font-size:12px;" onclick="removePhotoPage()">🗑️ Remove Photo Page</button>
       </div>
-      <div class="mcd-footer" style="margin-top:20px">
+      </div><!-- end mcd-page-body -->
+      <div class="mcd-footer">
         <span>Mechanical Maintenance Management · KAR Group · Static Equipment's</span>
-        <span>Pag. 3/3</span>
+        <span class="mcd-pageno">Pag. 3</span>
       </div>
-    </div>
-  `;
+    </div>`;
+  document.querySelectorAll('#mcPage3 .kar-logo-img').forEach(img=>img.src=KAR_LOGO);
   syncPage3Header();
+  syncDocPagination();
 }
 
 function removePhotoPage(){
@@ -2009,6 +2045,7 @@ function removePhotoPage(){
   document.getElementById('mcPage3').style.display='none';
   document.getElementById('mcPage3').innerHTML='';
   document.getElementById('addPhotoPageBtn').style.display='';
+  syncDocPagination();
 }
 
 function syncPage3Header(){
@@ -2018,6 +2055,78 @@ function syncPage3Header(){
   const w3=document.getElementById('mcWODisplay3');
   if(t3)t3.textContent=t?t.textContent:'—';
   if(w3)w3.textContent=w?w.textContent:'';
+}
+
+// ── PAGE 1B — Activity Description continuation ─────────
+function addActivityPage(){
+  if(typeof extraActivityPageAdded!=='undefined'&&extraActivityPageAdded)return;
+  extraActivityPageAdded=true;
+  document.getElementById('addActivityPageBtn').style.display='none';
+  document.getElementById('mcPage1B').style.display='';
+  document.getElementById('mcPage1B').innerHTML=`
+    <div class="mc-doc-page">
+      <div class="mcd-page-body">
+      <div class="mcd-header">
+        <div class="mcd-logo-area">
+          <img class="kar-logo-img mcd-logo-img" src="" alt="KAR">
+          <div>
+            <div class="mcd-logo-name">KAR Group</div>
+            <div class="mcd-logo-sub">Mechanical Maintenance Management</div>
+            <div class="mcd-logo-sub">Static Equipment's</div>
+          </div>
+        </div>
+        <div class="mcd-title-center">
+          <div class="mcd-main-title">MAINTENANCE CARD</div>
+          <div class="mcd-sub-title" id="mcTypeDisplay1B">—</div>
+        </div>
+        <div class="mcd-header-spacer"></div>
+      </div>
+      <div class="mcd-section">
+        <div class="mcd-sec-hd">Maintenance Activity Description (cont.)</div>
+        <div class="mcd-toolbar">
+          <button type="button" class="mcd-tb-btn" onclick="fmtText('mcActivity1B','bold')" title="Bold"><b>B</b></button>
+          <button type="button" class="mcd-tb-btn" onclick="fmtText('mcActivity1B','italic')" title="Italic"><i>I</i></button>
+          <button type="button" class="mcd-tb-btn" onclick="fmtText('mcActivity1B','underline')" title="Underline"><u>U</u></button>
+          <div class="mcd-tb-sep"></div>
+          <input type="color" class="mcd-tb-color" title="Text color" onchange="fmtColor('mcActivity1B',this.value)">
+        </div>
+        <div class="mcd-ta mcd-editor" id="mcActivity1B" contenteditable="true" data-placeholder="Continue activity description here..." style="min-height:200mm;"></div>
+      </div>
+      <div style="text-align:center;margin-top:12px;" class="no-print">
+        <button class="btn btn-ghost" style="border-color:#ef4444;color:#ef4444;font-size:12px;" onclick="removeActivityPage()">🗑️ Remove Activity Page</button>
+      </div>
+      </div><!-- end mcd-page-body -->
+      <div class="mcd-footer">
+        <span>Mechanical Maintenance Management · KAR Group · Static Equipment's</span>
+        <span class="mcd-pageno">Pag. 1B</span>
+      </div>
+    </div>`;
+  document.querySelectorAll('#mcPage1B .kar-logo-img').forEach(img=>img.src=KAR_LOGO);
+  const t=document.getElementById('mcTypeDisplay');
+  const t1B=document.getElementById('mcTypeDisplay1B');
+  if(t1B&&t)t1B.textContent=t.textContent;
+  syncDocPagination();
+}
+
+function removeActivityPage(){
+  extraActivityPageAdded=false;
+  document.getElementById('mcPage1B').style.display='none';
+  document.getElementById('mcPage1B').innerHTML='';
+  document.getElementById('addActivityPageBtn').style.display='';
+  syncDocPagination();
+}
+
+// ── CENTRAL PAGINATION — counts only visible .mc-doc-page nodes in document order ─────────
+function syncDocPagination(){
+  const pages=[...document.querySelectorAll('#mcDoc .mc-doc-page')].filter(p=>{
+    const parent=p.closest('[style*="display: none"], [style*="display:none"]');
+    return !parent || parent.id==='mcDoc';
+  });
+  const total=pages.length;
+  pages.forEach((p,idx)=>{
+    const pn=p.querySelector('.mcd-pageno');
+    if(pn)pn.textContent='Pag. '+(idx+1)+'/'+total;
+  });
 }
 
 function removePhoto(i){
@@ -2056,7 +2165,6 @@ function clearMCForm(){
   if(typeof extraActivityPageAdded!=='undefined'&&extraActivityPageAdded)removeActivityPage();
   if(typeof extraPhotoPageAdded!=='undefined'&&extraPhotoPageAdded)removePhotoPage();
   closeHistPanel();
-  if(extraPhotoPageAdded)removePhotoPage();
   ['mcWO','mcStart','mcEnd','mcTag','mcLoc','mcService','mcCode','mcBg','mcScope','mcActivity','mcComments'].forEach(id=>{
   const el=document.getElementById(id);
   if(el){el.removeAttribute('disabled');el.style.pointerEvents='';el.style.opacity='';}
@@ -2081,10 +2189,12 @@ document.querySelectorAll('.mcd-ck input,.mcd-att-table input').forEach(el=>el.d
     .forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
   document.querySelectorAll('input[name="prio"]').forEach(el=>el.checked=false);
   [0,1,2,3].forEach(i=>removePhoto(i));
+  const act1B=document.getElementById('mcActivity1B');if(act1B)act1B.innerHTML='';
   currentMCActivityShort='';
   currentMCCardName='';
   currentCloudMCId=null;
   updateTypeDisplay();
+  syncDocPagination();
 }
   
 // ── DRIVE MCs ──────────────────────────────────────────────────────────────
@@ -2136,6 +2246,7 @@ const folderId=currentDriveMCFileId?null:await createActivityFolder(actFolderNam
     location:mcVal('mcLoc'),service:mcVal('mcService'),equipment_type:mcVal('mcType'),
     applicable_code:mcVal('mcCode'),background:mcVal('mcBg'),
     scope:mcVal('mcScope'),activity:mcVal('mcActivity'),
+    activity1B:mcVal('mcActivity1B'),
     activity_short:currentMCActivityShort,comments:mcVal('mcComments'),
     priority:document.querySelector('input[name="prio"]:checked')?.value||'',
     classifications:{
@@ -2273,9 +2384,17 @@ function loadMCIntoForm(mc){
     mc.photos.forEach((p,i)=>{
       if(p.src){photos[i].src=p.src;photos[i].caption=p.caption;renderPhotoSlot(i);}
     });
+    const hasExtraPhotos=mc.photos.slice(4).some(p=>p&&p.src);
+    if(hasExtraPhotos&&!extraPhotoPageAdded)addPhotoPage();
+  }
+  if(mc.activity1B&&mc.activity1B.trim()){
+    if(typeof extraActivityPageAdded==='undefined'||!extraActivityPageAdded)addActivityPage();
+    const act1B=document.getElementById('mcActivity1B');
+    if(act1B)act1B.innerHTML=mc.activity1B;
   }
   updateTypeDisplay();
   switchView('card');
+  setTimeout(syncDocPagination,50);
   toast('MC loaded from Drive.','info');
 }
 
