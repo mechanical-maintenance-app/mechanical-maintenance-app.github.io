@@ -843,7 +843,7 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
     <button type="button" class="mcd-tb-btn" onclick="fmtText('mcBg','italic')" title="Italic"><i>I</i></button>
     <button type="button" class="mcd-tb-btn" onclick="fmtText('mcBg','underline')" title="Underline"><u>U</u></button>
     <div class="mcd-tb-sep"></div>
-    <input type="color" class="mcd-tb-color" title="Text color" onchange="fmtColor('mcBg',this.value)">
+    <button type="button" class="mcd-tb-color" style="background:#000" title="Toggle Black/Red" onclick="toggleColor('mcBg',this)"></button>
   </div>
   <div class="mcd-ta mcd-editor" id="mcBg" contenteditable="true" data-placeholder="Describe the situation that originated this maintenance activity..."></div>
 </div>
@@ -856,7 +856,7 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
     <button type="button" class="mcd-tb-btn" onclick="fmtText('mcScope','italic')" title="Italic"><i>I</i></button>
     <button type="button" class="mcd-tb-btn" onclick="fmtText('mcScope','underline')" title="Underline"><u>U</u></button>
     <div class="mcd-tb-sep"></div>
-    <input type="color" class="mcd-tb-color" title="Text color" onchange="fmtColor('mcScope',this.value)">
+    <button type="button" class="mcd-tb-color" style="background:#000" title="Toggle Black/Red" onclick="toggleColor('mcScope',this)"></button>
   </div>
   <div class="mcd-ta mcd-editor" id="mcScope" contenteditable="true" data-placeholder="Describe the scope and objective of the activity..."></div>
 </div>
@@ -869,7 +869,7 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
     <button type="button" class="mcd-tb-btn" onclick="fmtText('mcActivity','italic')" title="Italic"><i>I</i></button>
     <button type="button" class="mcd-tb-btn" onclick="fmtText('mcActivity','underline')" title="Underline"><u>U</u></button>
     <div class="mcd-tb-sep"></div>
-    <input type="color" class="mcd-tb-color" title="Text color" onchange="fmtColor('mcActivity',this.value)">
+    <button type="button" class="mcd-tb-color" style="background:#000" title="Toggle Black/Red" onclick="toggleColor('mcActivity',this)"></button>
   </div>
   <div class="mcd-ta mcd-editor" id="mcActivity" contenteditable="true" data-placeholder="Describe the maintenance activities performed in detail..."></div>
 </div>
@@ -893,7 +893,7 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
     <button type="button" class="mcd-tb-btn" onclick="fmtText('mcComments','italic')" title="Italic"><i>I</i></button>
     <button type="button" class="mcd-tb-btn" onclick="fmtText('mcComments','underline')" title="Underline"><u>U</u></button>
     <div class="mcd-tb-sep"></div>
-    <input type="color" class="mcd-tb-color" title="Text color" onchange="fmtColor('mcComments',this.value)">
+    <button type="button" class="mcd-tb-color" style="background:#000" title="Toggle Black/Red" onclick="toggleColor('mcComments',this)"></button>
   </div>
   <div class="mcd-ta mcd-editor" id="mcComments" contenteditable="true" data-placeholder="Additional comments..."></div>
 </div>
@@ -906,15 +906,15 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
               <div class="mcd-sig"><div class="mcd-sig-line"></div><div class="mcd-sig-lbl">MM Manager</div></div>
             </div>
 
-            <!-- Add Activity Page button -->
-            <div id="addActivityPageBtn" style="text-align:center;margin-top:12px;" class="no-print">
-              <button class="btn btn-ghost" style="border-color:#8b5cf6;color:#8b5cf6;font-size:12px;" onclick="addActivityPage()">➕ Add Activity Page (cont.)</button>
-            </div>
-            </div><!-- end mcd-page-body -->
+           </div><!-- end mcd-page-body -->
             <!-- Footer -->
             <div class="mcd-footer">
               <span>Mechanical Maintenance Management · KAR Group · Static Equipment's</span>
               <span class="mcd-pageno">Pag. 1/2</span>
+            </div>
+            <!-- Add Activity Page button — flota fuera de la hoja, en el margen -->
+            <div id="addActivityPageBtn" class="no-print" style="position:absolute;top:50%;right:-190px;transform:translateY(-50%);width:170px;text-align:center;">
+              <button class="btn btn-ghost" style="border-color:#8b5cf6;color:#8b5cf6;font-size:12px;white-space:normal;" onclick="addActivityPage()">➕ Add Activity Page (cont.)</button>
             </div>
           </div><!-- end page 1 -->
           <!-- Page 1B placeholder -->
@@ -2088,9 +2088,9 @@ function addActivityPage(){
           <button type="button" class="mcd-tb-btn" onclick="fmtText('mcActivity1B','italic')" title="Italic"><i>I</i></button>
           <button type="button" class="mcd-tb-btn" onclick="fmtText('mcActivity1B','underline')" title="Underline"><u>U</u></button>
           <div class="mcd-tb-sep"></div>
-          <input type="color" class="mcd-tb-color" title="Text color" onchange="fmtColor('mcActivity1B',this.value)">
+          <button type="button" class="mcd-tb-color" style="background:#000" title="Toggle Black/Red" onclick="toggleColor('mcActivity1B',this)"></button>
         </div>
-        <div class="mcd-ta mcd-editor" id="mcActivity1B" contenteditable="true" data-placeholder="Continue activity description here..." style="min-height:200mm;"></div>
+        <div class="mcd-ta mcd-editor" id="mcActivity1B" contenteditable="true" data-placeholder="Continue activity description here..." style="min-height:60mm;"></div>
       </div>
       <div style="text-align:center;margin-top:12px;" class="no-print">
         <button class="btn btn-ghost" style="border-color:#ef4444;color:#ef4444;font-size:12px;" onclick="removeActivityPage()">🗑️ Remove Activity Page</button>
@@ -2147,6 +2147,13 @@ function fmtColor(id,color){
   const el=document.getElementById(id);
   el.focus();
   document.execCommand('foreColor',false,color);
+}
+  function toggleColor(id,btn){
+  const isRed=btn.dataset.active==='red';
+  const color=isRed?'#000000':'#c0392b';
+  btn.dataset.active=isRed?'black':'red';
+  btn.style.background=color;
+  fmtColor(id,color);
 }
 
 function mcVal(id){return(document.getElementById(id)||{}).value||'';}function mcVal(id){
@@ -2275,7 +2282,7 @@ const folderId=currentDriveMCFileId?null:await createActivityFolder(actFolderNam
       const res=await fetch('https://www.googleapis.com/upload/drive/v3/files/'+currentDriveMCFileId+'?uploadType=multipart&fields=id',{
         method:'PATCH',headers:{Authorization:'Bearer '+googleAccessToken},body:form});
       const d=await res.json();
-      if(d.id){toast('MC updated in Drive ✅','success');if(saveBtn){saveBtn.textContent='💾 Save to Drive';saveBtn.disabled=false;}}
+      if(d.id){toast('MC updated in Drive ✅','success');if(saveBtn){saveBtn.textContent='💾 Save to Drive';saveBtn.disabled=false;}if(currentView==='cloudmc')loadCloudMCList();}
       else throw new Error(d.error?.message||'Update failed');
     }else{
       const metadata={name:fileName,mimeType:'application/json'};
@@ -2285,7 +2292,7 @@ const folderId=currentDriveMCFileId?null:await createActivityFolder(actFolderNam
       const res=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{
         method:'POST',headers:{Authorization:'Bearer '+googleAccessToken},body:form});
       const d=await res.json();
-   if(d.id){currentDriveMCFileId=d.id;toast('MC saved to Drive ✅','success');if(saveBtn){saveBtn.textContent='💾 Save to Drive';saveBtn.disabled=false;}}
+   if(d.id){currentDriveMCFileId=d.id;toast('MC saved to Drive ✅','success');if(saveBtn){saveBtn.textContent='💾 Save to Drive';saveBtn.disabled=false;}if(currentView==='cloudmc')loadCloudMCList();}
       else throw new Error(d.error?.message||'Save failed');
     }
     return true;
