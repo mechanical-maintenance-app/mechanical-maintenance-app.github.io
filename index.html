@@ -2082,6 +2082,41 @@ function addActivityPage(){
         </div>
         <div class="mcd-header-spacer"></div>
       </div>
+
+      <!-- Info Grid (read-only reference) -->
+      <table class="mcd-info-grid">
+        <tr>
+          <td style="width:50%">
+            <div class="mcd-cell-lbl">Start Date</div>
+            <div class="mcd-cell-inp">${mcVal('mcStart')||'—'}</div>
+          </td>
+          <td style="width:50%">
+            <div class="mcd-cell-lbl">End Date</div>
+            <div class="mcd-cell-inp">${mcVal('mcEnd')||'—'}</div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="mcd-cell-lbl">TAG</div>
+            <div class="mcd-cell-inp tag-inp">${mcVal('mcTag')||'—'}</div>
+          </td>
+          <td>
+            <div class="mcd-cell-lbl">Location</div>
+            <div class="mcd-cell-inp">${mcVal('mcLoc')||'—'}</div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="mcd-cell-lbl">Service</div>
+            <div class="mcd-cell-inp">${mcVal('mcService')||'—'}</div>
+          </td>
+          <td>
+            <div class="mcd-cell-lbl">Applicable Code</div>
+            <div class="mcd-cell-inp">${mcVal('mcCode')||'—'}</div>
+          </td>
+        </tr>
+      </table>
+
       <div class="mcd-section">
         <div class="mcd-sec-hd">Maintenance Activity Description (cont.)</div>
         <div class="mcd-toolbar">
@@ -2091,8 +2126,17 @@ function addActivityPage(){
           <div class="mcd-tb-sep"></div>
           <button type="button" class="mcd-tb-color" style="background:#000" title="Toggle Black/Red" onclick="toggleColor('mcActivity1B',this)"></button>
         </div>
-        <div class="mcd-ta mcd-editor" id="mcActivity1B" contenteditable="true" data-placeholder="Continue activity description here..." style="min-height:60mm;"></div>
+        <div class="mcd-ta mcd-editor" id="mcActivity1B" contenteditable="true" data-placeholder="Continue activity description here..."></div>
       </div>
+
+      <!-- Signatures -->
+      <div class="mcd-sig-title">Activity approved by</div>
+      <div class="mcd-sigs">
+        <div class="mcd-sig"><div class="mcd-sig-line"></div><div class="mcd-sig-lbl">MM Activity Responsible</div></div>
+        <div class="mcd-sig"><div class="mcd-sig-line"></div><div class="mcd-sig-lbl">MM Maintenance Eng.</div></div>
+        <div class="mcd-sig"><div class="mcd-sig-line"></div><div class="mcd-sig-lbl">MM Manager</div></div>
+      </div>
+
       <div style="text-align:center;margin-top:12px;" class="no-print">
         <button class="btn btn-ghost" style="border-color:#ef4444;color:#ef4444;font-size:12px;" onclick="removeActivityPage()">🗑️ Remove Activity Page</button>
       </div>
