@@ -1342,6 +1342,18 @@ async function createActivityFolder(cardName,tag,assetType,refinery){
     if(!mcFolder)return null;
     const karFolder=await driveSearchFolder(karName,mcFolder.id,true);
     if(!karFolder)return null;
+
+    // ── Sin TAG detectado → carpeta "11 OTHERS", una subcarpeta por actividad ──
+    if(!tag||!tag.trim()){
+      let othersFolder=await driveSearchFolder('11 OTHERS',karFolder.id,true);
+      if(!othersFolder)othersFolder=await driveCreateFolder('11 OTHERS',karFolder.id);
+      if(!othersFolder)return null;
+      const existingOther=await driveSearchFolder(cardName,othersFolder.id,true);
+      if(existingOther)return existingOther.id;
+      const newOtherFolder=await driveCreateFolder(cardName,othersFolder.id);
+      return newOtherFolder?newOtherFolder.id:null;
+    }
+
     const assetClean=(assetType||''  ).replace(/^\d+\.?\s*[-\u2013]\s*/,'').toUpperCase().trim();
     const assetPlural=assetClean.endsWith('S')?assetClean:assetClean+'S';
     const assetFolder=await driveSearchFolder(assetPlural,karFolder.id,false);
