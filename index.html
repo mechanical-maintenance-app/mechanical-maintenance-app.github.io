@@ -1086,7 +1086,7 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
         <div class="form-group"><label class="form-label">Refinery / Location</label>
 <select class="form-input" id="fRefinery" onchange="appendLocationToCard()">
   <option value="">— Select —</option>
-  <option value="KAR-1 UNIT-1">KAR-1 UNIT-1</option>
+  <option value="KAR-1 Unit-1">KAR-1 Unit-1</option>
   <option value="KAR-1 UNIT-2">KAR-1 UNIT-2</option>
   <option value="KAR-1 UNIT-3">KAR-1 UNIT-3</option>
   <option value="KAR-2 UNIT-4">KAR-2 UNIT-4</option>
@@ -1725,7 +1725,7 @@ async function openFile(filename,tag,rowIndex){
   if(!refinery)return;
   let card=document.getElementById('fCard').value.trim();
   if(!card)return;
-  const locations=['KAR-1 UNIT-1','KAR-1 UNIT-2','KAR-1 UNIT-3',
+  const locations=['KAR-1 Unit-1','KAR-1 UNIT-2','KAR-1 UNIT-3',
                    'KAR-2 UNIT-4','KAR-2 PLANT-B','KAR-2 PLANT-C','KAR-1','KAR-2'];
   locations.forEach(loc=>{
     if(card.endsWith(' '+loc))card=card.slice(0,-(loc.length+1)).trim();
