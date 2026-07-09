@@ -1086,7 +1086,21 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
         <div class="form-group"><label class="form-label">Maintenance Date <span class="req">*</span></label><input type="date" class="form-input" id="fDate"></div>
         <div class="form-group"><label class="form-label">Year (auto)</label><input type="text" class="form-input" id="fYear" disabled></div>
         <div class="form-group"><label class="form-label">TAG <span class="req">*</span></label><input type="text" class="form-input" id="fTag" oninput="lookupEquipment(this.value)" placeholder="e.g. B-E-106"></div>
-        <div class="form-group"><label class="form-label">Associated Asset (auto)</label><input type="text" class="form-input" id="fAsset" disabled></div>
+       <div class="form-group"><label class="form-label">Associated Asset</label><select class="form-input" id="fAsset">
+  <option value="">— Select —</option>
+  <option value="FAN COOLER">Fan Cooler</option>
+  <option value="HEAT EXCHANGER">Heat Exchanger</option>
+  <option value="BOILER">Boiler</option>
+  <option value="HEATER">Heater</option>
+  <option value="TANK">Tank</option>
+  <option value="VESSEL">Vessel</option>
+  <option value="TOWER">Tower</option>
+  <option value="COOLING TOWER">Cooling Tower</option>
+  <option value="REACTOR">Reactor</option>
+  <option value="VALVE">Valve</option>
+  <option value="PIPE">Pipe</option>
+  <option value="OTHER">Other</option>
+</select></div>
         <div class="form-group"><label class="form-label">Refinery / Location</label>
 <select class="form-input" id="fRefinery" onchange="appendLocationToCard()">
   <option value="">— Select —</option>
@@ -1209,6 +1223,18 @@ function zoomMC(delta){
 // ── TYPE DISPLAY ───────────────────────────────
 function cleanAssetType(val){
   return (val||'').replace(/^\d+\.?\s*[-\u2013]\s*/,'').toUpperCase().trim();
+}
+// ── ASSOCIATED ASSET dropdown (predefined categories) ──
+const ASSET_TYPE_OPTIONS=['FAN COOLER','HEAT EXCHANGER','BOILER','HEATER','TANK','VESSEL','TOWER','COOLING TOWER','REACTOR','VALVE','PIPE','OTHER'];
+function matchAssetTypeOption(raw){
+  if(!raw)return'';
+  let c=String(raw).replace(/^\d+\.?\s*[-\u2013]?\s*/,'').toUpperCase().trim();
+  if(ASSET_TYPE_OPTIONS.includes(c))return c;
+  if(c==='COOLING TOWERS')return'COOLING TOWER';
+  const singular=c.endsWith('S')?c.slice(0,-1):c;
+  if(ASSET_TYPE_OPTIONS.includes(singular))return singular;
+  const found=ASSET_TYPE_OPTIONS.find(o=>c.includes(o)||o.includes(c));
+  return found||'';
 }
 function updateTypeDisplay(){
   const raw=document.getElementById('mcType')?document.getElementById('mcType').value:'';
@@ -1737,8 +1763,8 @@ async function openFile(filename,tag,rowIndex){
   const typeKey=Object.keys(equipmentList[0]||{}).find(k=>k.toUpperCase().includes('TYPE'))||'TYPE';
   const eq=equipmentList.find(e=>String(e[tagKey]||'').toUpperCase()===t)||
             equipmentList.find(e=>String(e[tagKey]||'').toUpperCase().startsWith(t.split('-').slice(0,2).join('-')));
-  if(eq){
-    document.getElementById('fAsset').value=eq[typeKey]||'';
+ if(eq){
+    document.getElementById('fAsset').value=matchAssetTypeOption(eq[typeKey]||'');
   }
 }
   
@@ -1776,8 +1802,9 @@ document.getElementById('attachFile').disabled=true;
 document.getElementById('uploadBtn').style.display='none';
   editingIndex=record?record.rowIndex:null;
   document.getElementById('modalTitle').textContent=record?'Edit Record':'New Maintenance Record';
-  const map={fItemNo:'ITEM NO.',fDate:'MAINTENANCE DATE',fYear:'YEAR',fTag:'TAG',fAsset:'ASSOCIATED ASSET',fRefinery:'REFINERY',fActivity:'ACTIVITY DESCRIPTION',fRemark:'REMARK',fComments:'COMMENTS'};
+ const map={fItemNo:'ITEM NO.',fDate:'MAINTENANCE DATE',fYear:'YEAR',fTag:'TAG',fRefinery:'REFINERY',fActivity:'ACTIVITY DESCRIPTION',fRemark:'REMARK',fComments:'COMMENTS'};
 Object.entries(map).forEach(([id,key])=>{const el=document.getElementById(id);if(!el)return;const v=String(record?record[key]||'':'');el.value=record?(key==='MAINTENANCE DATE'?v.substring(0,10):v):'';});  document.getElementById('fCard').value=record?(record['MAINTENANCE CARD']||''):'';
+  document.getElementById('fAsset').value=record?matchAssetTypeOption(record['ASSOCIATED ASSET']):'';
   if(!record){const maxNo=allRecords.reduce((max,r)=>{const n=parseInt(r['ITEM NO.'])||0;return n>max?n:max;},0);document.getElementById('fItemNo').value=maxNo+1;}
   selectedFile=null;
   const fn=document.getElementById('attachFileName');const ub=document.getElementById('uploadBtn');const us=document.getElementById('uploadStatus');const af=document.getElementById('attachFile');
