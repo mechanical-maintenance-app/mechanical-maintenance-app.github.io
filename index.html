@@ -1222,18 +1222,27 @@ function zoomMC(delta){
 
 // ── TYPE DISPLAY ───────────────────────────────
 function cleanAssetType(val){
-  return (val||'').replace(/^\d+\.?\s*[-\u2013]\s*/,'').toUpperCase().trim();
+  return (val||'').replace(/^\d+\.?\s*[-\u2013]?\s*/,'').toUpperCase().trim();
 }
-// ── ASSOCIATED ASSET dropdown (predefined categories) ──
-const ASSET_TYPE_OPTIONS=['FAN COOLER','HEAT EXCHANGER','BOILER','HEATER','TANK','VESSEL','TOWER','COOLING TOWER','REACTOR','VALVE','PIPE','OTHER'];
+// ── ASSOCIATED ASSET dropdown (predefined categories, exactas a las carpetas de Drive) ──
+const ASSET_TYPE_OPTIONS=['01 FAN COOLERS','02 HEAT EXCHANGERS','03 BOILERS','04 HEATERS','05 TANKS','06 VESSELS','07 TOWERS','08 COOLING TOWER','09 REACTORS','10 VALVES','11 PIPES','12 OTHERS'];
 function matchAssetTypeOption(raw){
   if(!raw)return'';
-  let c=String(raw).replace(/^\d+\.?\s*[-\u2013]?\s*/,'').toUpperCase().trim();
-  if(ASSET_TYPE_OPTIONS.includes(c))return c;
-  if(c==='COOLING TOWERS')return'COOLING TOWER';
-  const singular=c.endsWith('S')?c.slice(0,-1):c;
-  if(ASSET_TYPE_OPTIONS.includes(singular))return singular;
-  const found=ASSET_TYPE_OPTIONS.find(o=>c.includes(o)||o.includes(c));
+  const c=String(raw).toUpperCase().trim();
+  let found=ASSET_TYPE_OPTIONS.find(o=>o===c);
+  if(found)return found;
+  const cNoNum=c.replace(/^\d+\.?\s*[-\u2013]?\s*/,'').trim();
+  const singular=cNoNum.endsWith('S')?cNoNum.slice(0,-1):cNoNum;
+  const plural=cNoNum.endsWith('S')?cNoNum:cNoNum+'S';
+  found=ASSET_TYPE_OPTIONS.find(o=>{
+    const name=o.replace(/^\d+\s+/,'');
+    return name===cNoNum||name===singular||name===plural;
+  });
+  if(found)return found;
+  found=ASSET_TYPE_OPTIONS.find(o=>{
+    const name=o.replace(/^\d+\s+/,'');
+    return name.includes(cNoNum)||cNoNum.includes(name)||name.includes(singular)||singular.includes(name);
+  });
   return found||'';
 }
 function updateTypeDisplay(){
@@ -1391,9 +1400,9 @@ async function createActivityFolder(cardName,tag,assetType,refinery){
       return newOtherFolder?newOtherFolder.id:null;
     }
 
-    const assetClean=(assetType||''  ).replace(/^\d+\.?\s*[-\u2013]\s*/,'').toUpperCase().trim();
-    const assetPlural=assetClean.endsWith('S')?assetClean:assetClean+'S';
-    const assetFolder=await driveSearchFolder(assetPlural,karFolder.id,false);
+   const assetClean=(assetType||'').toUpperCase().trim();
+    const assetFolder=await driveSearchFolder(assetClean,karFolder.id,false);
+    const assetParentId=assetFolder?assetFolder.id:karFolder.id;
     const assetParentId=assetFolder?assetFolder.id:karFolder.id;
     const baseTag=extractBaseTag(tag);
     let baseFolder=await driveSearchFolder(baseTag,assetParentId,true);
