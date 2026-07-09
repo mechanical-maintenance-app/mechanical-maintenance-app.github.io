@@ -1086,7 +1086,7 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
         <div class="form-group"><label class="form-label">Maintenance Date <span class="req">*</span></label><input type="date" class="form-input" id="fDate"></div>
         <div class="form-group"><label class="form-label">Year (auto)</label><input type="text" class="form-input" id="fYear" disabled></div>
         <div class="form-group"><label class="form-label">TAG <span class="req">*</span></label><input type="text" class="form-input" id="fTag" oninput="lookupEquipment(this.value)" placeholder="e.g. B-E-106"></div>
-<div class="form-group"><label class="form-label">Associated Asset</label><select class="form-input" id="fAsset">
+<div class="form-group"><label class="form-label">Associated Asset</label><select class="form-input" id="fAsset" onchange="fAssetManualOverride=true">
   <option value="">— Select —</option>
   <option value="01 FAN COOLERS">01 Fan Coolers</option>
   <option value="02 HEAT EXCHANGERS">02 Heat Exchangers</option>
@@ -1310,6 +1310,7 @@ function updateGoogleBtn(connected){
 function isTokenValid(){return googleAccessToken&&Date.now()<googleTokenExpiry;}
 // ── DRIVE FILE UPLOAD ──────────────────────────
 let selectedFile=null;
+let fAssetManualOverride=false; // true cuando el usuario elige manualmente el Associated Asset (ej. tags PK que no tienen un tipo fijo)
 function handleFileSelected(input){selectedFile=input.files[0];if(!selectedFile)return;document.getElementById('attachFileName').textContent=selectedFile.name;document.getElementById('uploadBtn').style.display='inline-block';}
 async function uploadFileToDrive(){
   if(!selectedFile){toast('No file selected.','error');return;}
@@ -1771,7 +1772,7 @@ async function openFile(filename,tag,rowIndex){
   const typeKey=Object.keys(equipmentList[0]||{}).find(k=>k.toUpperCase().includes('TYPE'))||'TYPE';
   const eq=equipmentList.find(e=>String(e[tagKey]||'').toUpperCase()===t)||
             equipmentList.find(e=>String(e[tagKey]||'').toUpperCase().startsWith(t.split('-').slice(0,2).join('-')));
- if(eq){
+if(eq&&!fAssetManualOverride){
     document.getElementById('fAsset').value=matchAssetTypeOption(eq[typeKey]||'');
   }
 }
@@ -1809,6 +1810,7 @@ document.getElementById('selectFileBtn').style.opacity='.6';
 document.getElementById('attachFile').disabled=true;
 document.getElementById('uploadBtn').style.display='none';
   editingIndex=record?record.rowIndex:null;
+  fAssetManualOverride=false;
   document.getElementById('modalTitle').textContent=record?'Edit Record':'New Maintenance Record';
  const map={fItemNo:'ITEM NO.',fDate:'MAINTENANCE DATE',fYear:'YEAR',fTag:'TAG',fRefinery:'REFINERY',fActivity:'ACTIVITY DESCRIPTION',fRemark:'REMARK',fComments:'COMMENTS'};
 Object.entries(map).forEach(([id,key])=>{const el=document.getElementById(id);if(!el)return;const v=String(record?record[key]||'':'');el.value=record?(key==='MAINTENANCE DATE'?v.substring(0,10):v):'';});  document.getElementById('fCard').value=record?(record['MAINTENANCE CARD']||''):'';
