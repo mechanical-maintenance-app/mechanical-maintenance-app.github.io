@@ -1726,11 +1726,9 @@ async function resolveFileInDrive(cardName, tag, refinery, assetType){
     if(!karFolder)return null;
     const karFolderId=karFolder.id;
 
-    const assetClean=(assetType||'').replace(/^\d+\.?\s*[-–]\s*/,'').toUpperCase().trim();
-    const assetPlural=assetClean.endsWith('S')?assetClean:assetClean+'S';
-    const assetFolder=await findFolder(assetPlural,karFolderId,false);
+const assetClean=(assetType||'').toUpperCase().trim();
+    const assetFolder=await findFolder(assetClean,karFolderId,false);
     const assetParentId=assetFolder?assetFolder.id:karFolderId;
-
     // Buscar TAG siempre dentro del KAR correcto
     let tagFolder=null;
     const tagVariants=[tag,tag.replace(/^[A-Z]-/,'')];
