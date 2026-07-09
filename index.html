@@ -1400,9 +1400,8 @@ async function createActivityFolder(cardName,tag,assetType,refinery){
       return newOtherFolder?newOtherFolder.id:null;
     }
 
-   const assetClean=(assetType||'').toUpperCase().trim();
+const assetClean=(assetType||'').toUpperCase().trim();
     const assetFolder=await driveSearchFolder(assetClean,karFolder.id,false);
-    const assetParentId=assetFolder?assetFolder.id:karFolder.id;
     const assetParentId=assetFolder?assetFolder.id:karFolder.id;
     const baseTag=extractBaseTag(tag);
     let baseFolder=await driveSearchFolder(baseTag,assetParentId,true);
