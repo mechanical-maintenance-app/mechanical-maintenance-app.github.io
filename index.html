@@ -1088,18 +1088,18 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
         <div class="form-group"><label class="form-label">TAG <span class="req">*</span></label><input type="text" class="form-input" id="fTag" oninput="lookupEquipment(this.value)" placeholder="e.g. B-E-106"></div>
 <div class="form-group"><label class="form-label">Associated Asset</label><select class="form-input" id="fAsset" onchange="fAssetManualOverride=true">
   <option value="">— Select —</option>
-  <option value="01 FAN COOLERS">01 Fan Coolers</option>
-  <option value="02 HEAT EXCHANGERS">02 Heat Exchangers</option>
-  <option value="03 BOILERS">03 Boilers</option>
-  <option value="04 HEATERS">04 Heaters</option>
-  <option value="05 TANKS">05 Tanks</option>
-  <option value="06 VESSELS">06 Vessels</option>
-  <option value="07 TOWERS">07 Towers</option>
-  <option value="08 COOLING TOWER">08 Cooling Tower</option>
-  <option value="09 REACTORS">09 Reactors</option>
-  <option value="10 VALVES">10 Valves</option>
-  <option value="11 PIPES">11 Pipes</option>
-  <option value="12 OTHERS">12 Others</option>
+  <option value="1.- FAN COOLER">1.- Fan Cooler</option>
+  <option value="2.- HEAT EXCHANGER">2.- Heat Exchanger</option>
+  <option value="3.- BOILER">3.- Boiler</option>
+  <option value="4.- HEATER">4.- Heater</option>
+  <option value="5.- TANK">5.- Tank</option>
+  <option value="6.- VESSEL">6.- Vessel</option>
+  <option value="7.- TOWER">7.- Tower</option>
+  <option value="8.- COOLING TOWER">8.- Cooling Tower</option>
+  <option value="9.- REACTOR">9.- Reactor</option>
+  <option value="10.- VALVE">10.- Valve</option>
+  <option value="11.- PIPE">11.- Pipe</option>
+  <option value="12.- OTHER">12.- Other</option>
 </select></div>
         <div class="form-group"><label class="form-label">Refinery / Location</label>
 <select class="form-input" id="fRefinery" onchange="appendLocationToCard()">
@@ -1401,7 +1401,7 @@ async function createActivityFolder(cardName,tag,assetType,refinery){
       return newOtherFolder?newOtherFolder.id:null;
     }
 
-const assetClean=(assetType||'').toUpperCase().trim();
+const assetClean=cleanAssetType(assetType);
     const assetFolder=await driveSearchFolder(assetClean,karFolder.id,false);
     const assetParentId=assetFolder?assetFolder.id:karFolder.id;
     const baseTag=extractBaseTag(tag);
@@ -1452,7 +1452,7 @@ function resetFilters(){
 }
 function buildFilters(){
   const add=(id,vals)=>{const s=document.getElementById(id);vals.forEach(v=>{const o=document.createElement('option');o.value=o.textContent=v;s.appendChild(o);});};
-  add('filterAsset',[...new Set(allRecords.map(r=>r['ASSOCIATED ASSET']).filter(Boolean))].sort());
+  add('filterAsset',[...new Set(allRecords.map(r=>matchAssetTypeOption(r['ASSOCIATED ASSET'])||r['ASSOCIATED ASSET']).filter(Boolean))].sort());
   add('filterRefinery',[...new Set(allRecords.map(r=>r['REFINERY']).filter(Boolean))].sort());
   add('filterYear',[...new Set(allRecords.map(r=>String(r['YEAR'])).filter(Boolean))].sort((a,b)=>b-a));
 }
@@ -1469,7 +1469,7 @@ function applyFilters(){
 filteredRecords=allRecords.filter(r=>{
     if(q&&![r['MAINTENANCE CARD'],r['ACTIVITY DESCRIPTION'],r['REFINERY'],r['REMARK']].join(' ').toLowerCase().includes(q))return false;
     if(tag&&String(r['TAG']||'').trim().toUpperCase()!==tag)return false;
-    if(fa&&r['ASSOCIATED ASSET']!==fa)return false;
+    if(fa&&(matchAssetTypeOption(r['ASSOCIATED ASSET'])||r['ASSOCIATED ASSET'])!==fa)return false;
     if(fr&&r['REFINERY']!==fr)return false;
     if(fy&&String(r['YEAR'])!==fy)return false;
     if(fd&&String(r['MAINTENANCE DATE']||'').substring(0,10)<fd)return false;
@@ -1726,7 +1726,7 @@ async function resolveFileInDrive(cardName, tag, refinery, assetType){
     if(!karFolder)return null;
     const karFolderId=karFolder.id;
 
-const assetClean=(assetType||'').toUpperCase().trim();
+const assetClean=cleanAssetType(assetType);
     const assetFolder=await findFolder(assetClean,karFolderId,false);
     const assetParentId=assetFolder?assetFolder.id:karFolderId;
     // Buscar TAG siempre dentro del KAR correcto
