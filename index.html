@@ -9,16 +9,18 @@
 :root{
   --red:#c0392b;--red-dark:#96281b;--red-light:#e74c3c;
   --navy:#1a2332;--navy-mid:#243044;--navy-light:#2e3f55;
+  --navy-grad-top:#242e3d;--navy-grad-bot:#141a24;
   --silver:#8898aa;--border:#dde3ec;--bg:#f0f3f8;
   --text:#1a2332;--text-light:#5a6a80;--green:#27ae60;--orange:#e67e22;
   --gold:#f0a500;--sidebar-w:230px;
   --shadow:0 2px 12px rgba(26,35,50,.10);--shadow-lg:0 8px 32px rgba(26,35,50,.16);
+  --shadow-badge:0 2px 5px rgba(26,35,50,.25),inset 0 1px 0 rgba(255,255,255,.12);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
 
 /* ══ SIDEBAR ══ */
-.sidebar{width:var(--sidebar-w);min-height:100vh;background:var(--navy);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100;box-shadow:4px 0 20px rgba(0,0,0,.2);}
+.sidebar{width:var(--sidebar-w);min-height:100vh;background:linear-gradient(160deg,var(--navy-grad-top) 0%,var(--navy-grad-bot) 100%);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100;box-shadow:4px 0 20px rgba(0,0,0,.2);}
 .sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.07);}
 .sb-logo{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
 .sb-logo-k{width:36px;height:36px;background:var(--red);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;color:white;flex-shrink:0;}
@@ -28,8 +30,8 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 .sb-disc-label{font-size:9px;font-weight:600;color:var(--silver);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;}
 .disc-btns{display:flex;gap:6px;}
 .disc-btn{flex:1;padding:7px 4px;border-radius:6px;border:1.5px solid rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.5);font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .18s;text-align:center;letter-spacing:.3px;}
-.disc-btn.active.static{background:#1a4a3a;border-color:#27ae60;color:#4cd98a;}
-.disc-btn.active.rotating{background:#4a2a1a;border-color:var(--orange);color:#f0a500;}
+.disc-btn.active.static{background:linear-gradient(160deg,#1e6b52,#123d2f);border-color:#27ae60;color:#4cd98a;box-shadow:var(--shadow-badge);}
+.disc-btn.active.rotating{background:linear-gradient(160deg,#6b3a1e,#3d2012);border-color:var(--orange);color:#f0a500;box-shadow:var(--shadow-badge);}
 .disc-btn:not(.active):hover{background:rgba(255,255,255,.06);color:white;}
 .sb-nav{flex:1;padding:10px 0;overflow-y:auto;}
 .sb-section-label{font-size:9px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1.5px;padding:12px 18px 4px;}
@@ -51,20 +53,20 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 
 /* ══ MAIN CONTENT ══ */
 .main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;display:flex;flex-direction:column;}
-.main-header{background:var(--navy-mid);padding:16px 28px;border-bottom:3px solid var(--red);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:90;}
+.main-header{background:linear-gradient(160deg,var(--navy-light) 0%,var(--navy-mid) 100%);padding:16px 28px;border-bottom:2px solid var(--red);box-shadow:0 2px 8px rgba(0,0,0,.15),0 2px 0 rgba(231,76,60,.4);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:90;}
 .main-header.rot{border-bottom-color:var(--orange);}
 .main-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:20px;color:white;letter-spacing:1.5px;text-transform:uppercase;}
 .main-title span{color:var(--red-light);}
 .main-title span.rot{color:var(--gold);}
 .main-header-right{display:flex;align-items:center;gap:14px;}
 .disc-indicator{font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;letter-spacing:.5px;}
-.disc-indicator.static{background:#1a4a3a;color:#4cd98a;}
-.disc-indicator.rotating{background:#4a2a1a;color:var(--gold);}
+.disc-indicator.static{background:linear-gradient(160deg,#1e6b52,#123d2f);color:#4cd98a;box-shadow:var(--shadow-badge);}
+.disc-indicator.rotating{background:linear-gradient(160deg,#6b3a1e,#3d2012);color:var(--gold);box-shadow:var(--shadow-badge);}
 
 /* ══ BUTTONS ══ */
 .btn{display:inline-flex;align-items:center;gap:7px;padding:8px 18px;border-radius:5px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .18s;}
-.btn-red{background:var(--red);color:white;}
-.btn-red:hover{background:var(--red-dark);transform:translateY(-1px);}
+.btn-red{background:linear-gradient(160deg,var(--red-light),var(--red));color:white;box-shadow:0 2px 6px rgba(192,57,43,.35),inset 0 1px 0 rgba(255,255,255,.15);}
+.btn-red:hover{background:linear-gradient(160deg,var(--red),var(--red-dark));transform:translateY(-1px);}
 .btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--text);}
 .btn-ghost:hover{background:var(--bg);}
 
@@ -94,7 +96,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 .table-wrapper{margin:0 20px 20px;background:white;border-radius:8px;box-shadow:var(--shadow);overflow:hidden;border:1px solid var(--border);}
 .table-scroll{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
-thead{background:var(--navy);}
+thead{background:linear-gradient(180deg,var(--navy-light) 0%,var(--navy) 100%);}
 thead th{padding:12px 14px;text-align:left;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:12px;color:#8898aa;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;cursor:pointer;user-select:none;border-right:1px solid rgba(255,255,255,.05);}
 thead th:hover{color:white;}
 tbody tr{border-bottom:1px solid var(--border);transition:background .12s;}
@@ -105,14 +107,20 @@ td.wrap{white-space:normal;min-width:220px;max-width:320px;}
 .td-no{font-weight:600;color:var(--silver);font-size:12px;}
 .td-date{font-size:12px;color:var(--text-light);}
 .td-year{font-family:'Rajdhani',sans-serif;font-weight:700;color:var(--navy-light);font-size:14px;}
-.tag-badge{display:inline-block;padding:3px 10px;border-radius:4px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;background:var(--navy);color:white;}
-.asset-badge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:500;background:#e8f0fe;color:#1a73e8;white-space:nowrap;}
+.tag-badge{display:inline-block;padding:3px 10px;border-radius:14px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;background:linear-gradient(160deg,var(--navy-light),var(--navy));color:white;box-shadow:var(--shadow-badge);}
+.asset-badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;background:linear-gradient(160deg,#eef4ff,#dbe8fd);color:#0c447c;white-space:nowrap;box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 1px 2px rgba(12,68,124,.15);}
 .refinery-badge{font-size:11px;font-weight:600;color:var(--text-light);background:var(--bg);padding:2px 8px;border-radius:3px;}
 .file-btn{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid;text-decoration:none;transition:all .15s;}
-.file-btn.type-file{background:#e3f2fd;color:#1565c0;border-color:#bbdefb;}
-.file-btn.type-file:hover{background:#1565c0;color:white;}
-.file-btn.type-folder{background:#fff3e0;color:var(--orange);border-color:#ffe0b2;}
-.file-btn.type-folder:hover{background:var(--orange);color:white;}
+.file-btn.type-file{background:linear-gradient(160deg,#eaf3ff,#d9e9fc);color:#1565c0;border-color:#bbdefb;box-shadow:inset 0 1px 0 rgba(255,255,255,.6);}
+.file-btn.type-file:hover{background:linear-gradient(160deg,#2f77c9,#1565c0);color:white;}
+.file-btn.type-folder{background:linear-gradient(160deg,#fff6e8,#ffe9c7);color:var(--orange);border-color:#ffe0b2;box-shadow:inset 0 1px 0 rgba(255,255,255,.6);}
+.file-btn.type-folder:hover{background:linear-gradient(160deg,#f0a545,var(--orange));color:white;}
+.ref-chip{display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:transform .12s;}
+.ref-chip:hover{transform:translateY(-1px);}
+.ref-chip.blue{background:linear-gradient(160deg,#eaf3ff,#d5e7fb);color:#0c447c;border-color:#a9d0f5;box-shadow:inset 0 1px 0 rgba(255,255,255,.7);}
+.ref-chip.green{background:linear-gradient(160deg,#e9f7ec,#d4f0da);color:#1e7d34;border-color:#a3ddb1;box-shadow:inset 0 1px 0 rgba(255,255,255,.7);}
+.ref-chip.all{background:#fff;color:var(--navy);border-color:var(--border);}
+.ref-chip.active{background:linear-gradient(160deg,var(--navy-light),var(--navy));color:#fff;border-color:var(--navy);box-shadow:var(--shadow-badge);}
 .file-btn.loading{opacity:.6;cursor:wait;pointer-events:none;}
 .td-actions{display:flex;gap:5px;}
 .action-btn{width:28px;height:28px;border-radius:4px;border:1.5px solid var(--border);background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .15s;}
@@ -594,17 +602,17 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
     </div>
 
    <div id="refChipsRow" style="padding:8px 28px 4px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:white;border-bottom:1px solid var(--border)">
-      <span id="refChipAll" onclick="setRefineryChip('')" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;background:var(--navy);color:white;border:1.5px solid var(--navy)">All</span>
+      <span id="refChipAll" onclick="setRefineryChip('')" class="ref-chip all active">All</span>
       <span style="width:1px;height:18px;background:var(--border);margin:0 4px"></span>
-      <span onclick="setRefineryChip('KAR-1')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9">KAR-1</span>
-      <span onclick="setRefineryChip('KAR-1 Unit-1')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;background:#e3f2fd;color:#1976d2;border:1.5px solid #bbdefb">Unit-1</span>
-      <span onclick="setRefineryChip('KAR-1 Unit-2')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;background:#e3f2fd;color:#1976d2;border:1.5px solid #bbdefb">Unit-2</span>
-      <span onclick="setRefineryChip('KAR-1 Unit-3')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;background:#e3f2fd;color:#1976d2;border:1.5px solid #bbdefb">Unit-3</span>
+      <span onclick="setRefineryChip('KAR-1')" class="ref-chip blue">KAR-1</span>
+      <span onclick="setRefineryChip('KAR-1 Unit-1')" class="ref-chip blue">Unit-1</span>
+      <span onclick="setRefineryChip('KAR-1 Unit-2')" class="ref-chip blue">Unit-2</span>
+      <span onclick="setRefineryChip('KAR-1 Unit-3')" class="ref-chip blue">Unit-3</span>
       <span style="width:1px;height:18px;background:var(--border);margin:0 4px"></span>
-      <span onclick="setRefineryChip('KAR-2')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7">KAR-2</span>
-      <span onclick="setRefineryChip('KAR-2 Unit-4')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;background:#e8f5e9;color:#388e3c;border:1.5px solid #c8e6c9">Unit-4</span>
-      <span onclick="setRefineryChip('KAR-2 Plant-B')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;background:#e8f5e9;color:#388e3c;border:1.5px solid #c8e6c9">Plant-B</span>
-      <span onclick="setRefineryChip('KAR-2 Plant-C')" class="ref-chip" style="display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;background:#e8f5e9;color:#388e3c;border:1.5px solid #c8e6c9">Plant-C</span>
+      <span onclick="setRefineryChip('KAR-2')" class="ref-chip green">KAR-2</span>
+      <span onclick="setRefineryChip('KAR-2 Unit-4')" class="ref-chip green">Unit-4</span>
+      <span onclick="setRefineryChip('KAR-2 Plant-B')" class="ref-chip green">Plant-B</span>
+      <span onclick="setRefineryChip('KAR-2 Plant-C')" class="ref-chip green">Plant-C</span>
     </div>
 
     <div class="stats-bar">
@@ -1225,8 +1233,8 @@ function zoomMC(delta){
 function cleanAssetType(val){
   return (val||'').replace(/^\d+\.?\s*[-\u2013]?\s*/,'').toUpperCase().trim();
 }
-// ── ASSOCIATED ASSET dropdown (predefined categories, exactas a las carpetas de Drive) ──
-const ASSET_TYPE_OPTIONS=['01 FAN COOLERS','02 HEAT EXCHANGERS','03 BOILERS','04 HEATERS','05 TANKS','06 VESSELS','07 TOWERS','08 COOLING TOWER','09 REACTORS','10 VALVES','11 PIPES','12 OTHERS'];
+// ── ASSOCIATED ASSET dropdown (patrón establecido: Equipment List y Sheet de Drive) ──
+const ASSET_TYPE_OPTIONS=['1.- FAN COOLER','2.- HEAT EXCHANGER','3.- BOILER','4.- HEATER','5.- TANK','6.- VESSEL','7.- TOWER','8.- COOLING TOWER','9.- REACTOR','10.- VALVE','11.- PIPE','12.- OTHER'];
 function matchAssetTypeOption(raw){
   if(!raw)return'';
   const c=String(raw).toUpperCase().trim();
@@ -1236,12 +1244,12 @@ function matchAssetTypeOption(raw){
   const singular=cNoNum.endsWith('S')?cNoNum.slice(0,-1):cNoNum;
   const plural=cNoNum.endsWith('S')?cNoNum:cNoNum+'S';
   found=ASSET_TYPE_OPTIONS.find(o=>{
-    const name=o.replace(/^\d+\s+/,'');
+    const name=o.replace(/^\d+\.?\s*[-\u2013]?\s*/,'');
     return name===cNoNum||name===singular||name===plural;
   });
   if(found)return found;
   found=ASSET_TYPE_OPTIONS.find(o=>{
-    const name=o.replace(/^\d+\s+/,'');
+    const name=o.replace(/^\d+\.?\s*[-\u2013]?\s*/,'');
     return name.includes(cNoNum)||cNoNum.includes(name)||name.includes(singular)||singular.includes(name);
   });
   return found||'';
@@ -1488,26 +1496,13 @@ filteredRecords=allRecords.filter(r=>{
   applyFilters();
 }
   function setRefineryChip(val){
-  // Reset todos los chips
-  document.querySelectorAll('.ref-chip').forEach(c=>{
-    c.style.background='white';
-    c.style.borderColor='var(--border)';
-    c.style.color=c.style.fontWeight==='600'?'var(--navy)':'var(--text-light)';
-  });
-  const allChip=document.getElementById('refChipAll');
+  document.querySelectorAll('.ref-chip').forEach(c=>c.classList.remove('active'));
   if(!val){
-    allChip.style.background='var(--navy)';
-    allChip.style.color='white';
+    document.getElementById('refChipAll').classList.add('active');
   }else{
-    allChip.style.background='white';
-    allChip.style.color='var(--navy)';
-    allChip.style.border='1.5px solid var(--border)';
-    // Highlight chip activo
     document.querySelectorAll('.ref-chip').forEach(c=>{
       if(c.getAttribute('onclick')===`setRefineryChip('${val}')`){
-        c.style.background='var(--navy)';
-        c.style.color='white';
-        c.style.borderColor='var(--navy)';
+        c.classList.add('active');
       }
     });
   }
