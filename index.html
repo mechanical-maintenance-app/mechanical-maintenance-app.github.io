@@ -506,7 +506,7 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
     <div class="sb-item active" id="nav-tracking" onclick="switchView('tracking')">
       <span class="sb-item-icon">📋</span> MC History
     </div>
-<div class="sb-item" id="nav-card" onclick="clearMCForm();currentDriveMCFileId=null;switchView('card')">
+<div class="sb-item" id="nav-card" onclick="clearMCForm();currentDriveMCFileId=null;mcViewReturnTarget='tracking';switchView('card')">
       <span class="sb-item-icon">📄</span> New Maintenance Card
     </div>
     <div class="sb-item" id="nav-equipment" onclick="switchView('equipment')">
@@ -1003,7 +1003,7 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
   <div class="mc-bottom-bar hidden" id="mcBottomBar">
     <div class="mc-bottom-info">Fill in the form then print / save as PDF</div>
     <div style="display:flex;gap:10px">
-      <button class="btn btn-ghost" style="border-color:#8898aa;color:rgba(255,255,255,.8);" onclick="switchView('cloudmc')">← Back</button>
+      <button class="btn btn-ghost" style="border-color:#8898aa;color:rgba(255,255,255,.8);" onclick="switchView(mcViewReturnTarget)">← Back</button>
 <button class="btn btn-ghost" style="border-color:#e67e22;color:#e67e22;" onclick="clearMCForm()">🗑️ Clear</button><button class="btn btn-red" style="background:#1565c0;border-color:#1565c0;" onclick="saveMCToDrive()">💾 Save to Drive</button>
       <button class="btn btn-red" onclick="printMC()">🖨️ Print / Save as PDF</button>
     </div>
@@ -1155,7 +1155,8 @@ let mcZoom=100;
   let currentMCActivityShort='';
   let currentMCCardName='';
   let activeRefineryChip='';
-  let currentDriveMCFileId=null;
+let currentDriveMCFileId=null;
+let mcViewReturnTarget='cloudmc'; // a dónde vuelve el botón "← Back" del documento MC (tracking o cloudmc)
 
 // ── LOGO INJECT ─────────────────────────────────
 document.querySelectorAll('.kar-logo-img').forEach(img=>img.src=KAR_LOGO);
@@ -2284,7 +2285,7 @@ document.querySelectorAll('.mcd-ck input,.mcd-att-table input').forEach(el=>el.d
   document.getElementById('mcBottomBar').innerHTML=`
     <div class="mc-bottom-info">Fill in the form then print / save as PDF</div>
     <div style="display:flex;gap:10px">
-      <button class="btn btn-ghost" style="border-color:#8898aa;color:rgba(255,255,255,.8);" onclick="switchView('cloudmc')">← Back</button>
+      <button class="btn btn-ghost" style="border-color:#8898aa;color:rgba(255,255,255,.8);" onclick="switchView(mcViewReturnTarget)">← Back</button>
       <button class="btn btn-ghost" style="border-color:#e67e22;color:#e67e22;" onclick="clearMCForm()">🗑️ Clear</button>
       <button class="btn btn-red" style="background:#1565c0;border-color:#1565c0;" onclick="saveMCToDrive()">💾 Save to Drive</button>
       <button class="btn btn-red" onclick="printMC()">🖨️ Print / Save as PDF</button>
@@ -2441,7 +2442,7 @@ function viewMCFromCloud(mc){
   document.getElementById('mcBottomBar').innerHTML=`
     <div class="mc-bottom-info">View mode — read only</div>
     <div style="display:flex;gap:10px">
-      <button class="btn btn-ghost" style="border-color:#8898aa;color:rgba(255,255,255,.8);" onclick="switchView('cloudmc')">← Back</button>
+      <button class="btn btn-ghost" style="border-color:#8898aa;color:rgba(255,255,255,.8);" onclick="switchView(mcViewReturnTarget)">← Back</button>
       <button class="btn btn-red" onclick="printMC()">🖨️ Print / Save as PDF</button>
     </div>`;
 }
@@ -2456,7 +2457,7 @@ function loadMCIntoForm(mc){
   document.getElementById('mcBottomBar').innerHTML=`
     <div class="mc-bottom-info">Fill in the form then print / save as PDF</div>
     <div style="display:flex;gap:10px">
-      <button class="btn btn-ghost" style="border-color:#8898aa;color:rgba(255,255,255,.8);" onclick="switchView('cloudmc')">← Back</button>
+      <button class="btn btn-ghost" style="border-color:#8898aa;color:rgba(255,255,255,.8);" onclick="switchView(mcViewReturnTarget)">← Back</button>
       <button class="btn btn-ghost" style="border-color:#e67e22;color:#e67e22;" onclick="clearMCForm()">🗑️ Clear</button>
       <button class="btn btn-red" style="background:#1565c0;border-color:#1565c0;" onclick="saveMCToDrive()">💾 Save to Drive</button>
       <button class="btn btn-red" onclick="printMC()">🖨️ Print / Save as PDF</button>
@@ -2510,6 +2511,7 @@ function loadMCIntoForm(mc){
 
 async function openCloudMCFromHistory(tag,date){
   if(!isTokenValid()){toast('Connect Drive to search MCs.','warning');return;}
+  mcViewReturnTarget='tracking';
   toast('Searching Drive MC...','info');
   try{
     const rec=allRecords.find(x=>String(x['MAINTENANCE DATE']||'').substring(0,10)===date&&String(x['TAG']||'')===tag);
@@ -2560,8 +2562,8 @@ async function loadCloudMCList(){
       <div style="font-size:12px;color:var(--text-light);margin-bottom:4px">${mc.location||'—'}</div>
       <div style="font-size:12px;color:var(--text-light);margin-bottom:12px">${mc.equipment_type||'—'}</div>
       <div style="display:flex;gap:8px">
-        <button class="btn btn-ghost" style="flex:1;padding:6px;font-size:12px;border-color:#1565c0;color:#1565c0;" onclick="viewMCFromCloud(${JSON.stringify(mc).replace(/"/g,'&quot;')})">👁️ View</button>
-        <button class="btn btn-red" style="flex:1;padding:6px;font-size:12px;" onclick="loadMCIntoForm(${JSON.stringify(mc).replace(/"/g,'&quot;')})">✏️ Edit</button>
+        <button class="btn btn-ghost" style="flex:1;padding:6px;font-size:12px;border-color:#1565c0;color:#1565c0;" onclick="mcViewReturnTarget='cloudmc';viewMCFromCloud(${JSON.stringify(mc).replace(/"/g,'&quot;')})">👁️ View</button>
+<button class="btn btn-red" style="flex:1;padding:6px;font-size:12px;" onclick="mcViewReturnTarget='cloudmc';loadMCIntoForm(${JSON.stringify(mc).replace(/"/g,'&quot;')})">✏️ Edit</button>
         <button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="deleteMCFromDrive('${mc.id}').then(loadCloudMCList)">🗑️</button>
       </div>
     </div>
@@ -3146,7 +3148,7 @@ function histShowMCPreview(mc,fallback){
     <div style="padding:8px;margin-top:4px;">
       <button id="histOpenEditBtn" style="width:100%;padding:5px;font-size:10px;background:#1565c0;color:white;border:none;border-radius:3px;cursor:pointer;font-weight:600;">✏️ Open for editing</button>
     </div>`;
-  document.getElementById('histOpenEditBtn').onclick=()=>loadMCIntoForm(mc);
+  document.getElementById('histOpenEditBtn').onclick=()=>{mcViewReturnTarget='tracking';loadMCIntoForm(mc);};
 }
 
 // ── HISTORY PANEL ──────────────────────────────
