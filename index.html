@@ -1722,7 +1722,7 @@ async function resolveFileInDrive(cardName, tag, refinery, assetType){
     if(!karFolder)return null;
     const karFolderId=karFolder.id;
 
-const assetClean=cleanAssetType(assetType);
+    const assetClean=cleanAssetType(assetType);
     const assetFolder=await findFolder(assetClean,karFolderId,false);
     const assetParentId=assetFolder?assetFolder.id:karFolderId;
     // Buscar TAG siempre dentro del KAR correcto
@@ -1736,12 +1736,53 @@ const assetClean=cleanAssetType(assetType);
         if(tagFolder)break;
       }
     }
+    // ── Fallback 1: estructura anidada tipo E-107 → B-E-107A/B ──
+    // Algunos tags comparten una carpeta "familia" sin prefijo de planta NI sufijo de letra
+    // (ej. "E-107"), y dentro viven las variantes completas (B-E-107A/B, C-E-107A/B, C-E-107C/D).
+    const noPrefix=tag.replace(/^([BC])-/i,'');
+    const familyRoot=noPrefix.replace(/[A-Z](\/[A-Z])?$/i,'');
+    if(!tagFolder&&familyRoot&&familyRoot!==noPrefix){
+      const familyFolder=await findFolder(familyRoot,assetParentId,true)||await findFolder(familyRoot,karFolderId,true);
+      if(familyFolder){
+        for(const v of tagVariants){
+          tagFolder=await findFolder(v,familyFolder.id,true);
+          if(tagFolder)break;
+        }
+      }
+    }
+    // ── Fallback 2: familia con Unidad en el nombre, tipo "PK-251 Kar-1 Unit-1" → PK-251B ──
+    // Para KAR-1 sin prefijo de planta, la carpeta familia a veces incluye la unidad de
+    // refinería en su nombre para no mezclar Unit-1 con Unit-2 del mismo tag base.
+    if(!tagFolder&&familyRoot){
+      const unitMatch=(refinery||'').match(/UNIT[\s-]?(\d+)/i);
+      if(unitMatch){
+        let q=`name contains '${familyRoot}' and name contains 'Unit-${unitMatch[1]}' and mimeType='application/vnd.google-apps.folder' and trashed=false`;
+        if(assetParentId)q+=` and '${assetParentId}' in parents`;
+        const r2=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,webViewLink)',{headers});
+        const d2=await r2.json();
+        const familyFolder2=(d2.files&&d2.files.length)?d2.files[0]:null;
+        if(familyFolder2){
+          for(const v of tagVariants){
+            tagFolder=await findFolder(v,familyFolder2.id,true);
+            if(tagFolder)break;
+          }
+        }
+      }
+    }
     if(!tagFolder)return null;
+    // ── Paso 3: ya con la carpeta correcta, miramos adentro por el archivo real ──
+    // Esto evita depender de que el nombre del archivo calce exacto con el de la MC
+    // (espacios, mayúsculas, etc.) — si hay un PDF/Excel/Word ahí, lo devolvemos directo.
+    const inner=await driveSearch(`'${tagFolder.id}' in parents and trashed=false and mimeType!='application/vnd.google-apps.folder'`);
+    const pick=inner.find(f=>f.mimeType===PDF)||inner.find(f=>EXCEL.includes(f.mimeType))||inner.find(f=>WORD.includes(f.mimeType));
+    if(pick){
+      const type=pick.mimeType===PDF?'pdf':EXCEL.includes(pick.mimeType)?'excel':'word';
+      return{type,url:pick.webViewLink};
+    }
     return{type:'folder',url:tagFolder.webViewLink};
 
   }catch(e){console.error('resolveFileInDrive:',e);return null;}
 }
-  
 // ── OPEN FILE ──────────────────────────────────
 async function openFile(filename,tag,rowIndex){
   const btn=document.getElementById('fb_'+rowIndex);
