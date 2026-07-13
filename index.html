@@ -116,7 +116,13 @@ td.wrap{white-space:normal;min-width:220px;max-width:420px;}
 .file-btn.type-file{background:linear-gradient(160deg,#eaf3ff,#d9e9fc);color:#1565c0;border-color:#bbdefb;box-shadow:inset 0 1px 0 rgba(255,255,255,.6);}
 .file-btn.type-file:hover{background:linear-gradient(160deg,#2f77c9,#1565c0);color:white;}
 .file-btn.type-folder{background:linear-gradient(160deg,#fff6e8,#ffe9c7);color:var(--orange);border-color:#ffe0b2;box-shadow:inset 0 1px 0 rgba(255,255,255,.6);}
-.file-btn.type-folder:hover{background:linear-gradient(160deg,#f0a545,var(--orange));color:white;}
+..file-btn.type-folder:hover{background:linear-gradient(160deg,#f0a545,var(--orange));color:white;}
+.folder-icon{position:relative;display:inline-block;width:14px;height:14px;vertical-align:-2px;}
+.folder-icon span{position:absolute;left:0;top:0;transition:opacity .2s ease,transform .2s cubic-bezier(.34,1.56,.64,1);}
+.folder-icon .fi-open{opacity:0;transform:scale(.7) rotate(-8deg);}
+.folder-icon .fi-closed{opacity:1;transform:scale(1) rotate(0);}
+.file-btn.type-folder:hover .fi-closed{opacity:0;transform:scale(.7) rotate(8deg);}
+.file-btn.type-folder:hover .fi-open{opacity:1;transform:scale(1.15) rotate(0);}
 .ref-chip{display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:transform .12s;}
 .ref-chip:hover{transform:translateY(-1px);}
 .ref-chip.blue{background:linear-gradient(160deg,#eaf3ff,#d5e7fb);color:#0c447c;border-color:#a9d0f5;box-shadow:inset 0 1px 0 rgba(255,255,255,.7);}
@@ -1202,6 +1208,13 @@ function switchView(view){
   document.getElementById('mcView').style.display=view==='card'?'flex':'none';
  document.getElementById('dashView').style.display=view==='dashboard'?'block':'none';
 document.getElementById('cloudmcView').style.display=view==='cloudmc'?'block':'none';
+  const viewIds={tracking:'trackingView',card:'mcView',equipment:'eqView',dashboard:'dashView',cloudmc:'cloudmcView'};
+  const activeEl=document.getElementById(viewIds[view]);
+  if(activeEl){
+    activeEl.classList.remove('view-fade-in');
+    void activeEl.offsetWidth;
+    activeEl.classList.add('view-fade-in');
+  }
   document.getElementById('mcBottomBar').classList.toggle('hidden',view!=='card');
 ['tracking','card','equipment','dashboard','cloudmc'].forEach(v=>{
     const el=document.getElementById('nav-'+v);
@@ -1619,7 +1632,7 @@ function applyFileBadge(btn,cached){
   if(type==='pdf'){btn.className='file-btn type-file';btn.innerHTML='📄 PDF';}
   else if(type==='excel'){btn.className='file-btn type-file';btn.style.background='#e8f5e9';btn.style.color='#2e7d32';btn.style.borderColor='#a5d6a7';btn.innerHTML='📊 Excel';}
   else if(type==='word'){btn.className='file-btn type-file';btn.style.background='#e3f2fd';btn.style.color='#1565c0';btn.style.borderColor='#90caf9';btn.innerHTML='📝 Word';}
-  else if(type==='folder'){btn.className='file-btn type-folder';btn.innerHTML='📁 Folder';}
+else if(type==='folder'){btn.className='file-btn type-folder';btn.innerHTML='<span class="folder-icon"><span class="fi-closed">📁</span><span class="fi-open">📂</span></span> Folder';}
   else{btn.className='file-btn';btn.style.opacity='.4';btn.innerHTML='— None';}
 }
 
