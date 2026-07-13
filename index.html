@@ -72,7 +72,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 
 /* ══ SEARCH PANEL ══ */
 .filters-card{margin:10px 20px 0;background:white;border-radius:10px;box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;}
-.search-panel{background:white;padding:16px 28px;border-bottom:1px solid var(--border);}
+.search-panel{background:white;padding:16px 28px 6px;border-bottom:1px solid var(--border);}
 .search-row{display:grid;gap:12px;align-items:end;}
 .search-row-1{grid-template-columns:1fr 240px;margin-bottom:12px;}
 .search-row-2{grid-template-columns:1fr 1fr 1fr 1fr 1fr auto;}
@@ -88,13 +88,13 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 .tag-search-input::placeholder{color:#e0a09a;}
 
 /* ══ STATS ══ */
-.stats-bar{padding:10px 28px;display:flex;align-items:center;justify-content:space-between;}
+.stats-bar{padding:6px 28px;display:flex;align-items:center;justify-content:space-between;}
 .stat-chip{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-light);}
 .stat-chip strong{color:var(--text);}
 .stat-dot{width:8px;height:8px;border-radius:50%;}
 
 /* ══ TABLE ══ */
-.table-wrapper{margin:14px 20px 20px;background:white;border-radius:8px;box-shadow:var(--shadow);overflow:hidden;border:1px solid var(--border);}
+.stats-bar{pad.table-wrapper{margin:4px 20px 20px;background:white;border-radius:8px;box-shadow:var(--shadow);overflow:hidden;border:1px solid var(--border);}ding:6px 28px;display:flex;align-items:center;justify-content:space-between;}
 .table-scroll{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
 thead{background:linear-gradient(180deg,var(--navy-light) 0%,var(--navy) 100%);}
@@ -603,7 +603,7 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
       </div>
     </div>
 
-   <div id="refChipsRow" style="padding:8px 28px 12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:white">
+   <div id="refChipsRow" style="padding:4px 28px 12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:white">
       <span id="refChipAll" onclick="setRefineryChip('')" class="ref-chip all active">All</span>
       <span style="width:1px;height:18px;background:var(--border);margin:0 4px"></span>
       <span onclick="setRefineryChip('KAR-1')" class="ref-chip blue">KAR-1</span>
