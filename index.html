@@ -95,11 +95,10 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 
 /* ══ TABLE ══ */
 .table-wrapper{margin:14px 20px 20px;background:white;border-radius:8px;box-shadow:var(--shadow);overflow:hidden;border:1px solid var(--border);}
-.table-scroll{overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 320px);}
-thead th{position:sticky;top:0;z-index:5;}
+.table-scroll{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
 thead{background:linear-gradient(180deg,var(--navy-light) 0%,var(--navy) 100%);}
-thead th{padding:12px 14px;text-align:left;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:12px;color:#8898aa;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;cursor:pointer;user-select:none;border-right:1px solid rgba(255,255,255,.05);background:linear-gradient(180deg,var(--navy-light) 0%,var(--navy) 100%);}
+thead th{padding:12px 14px;text-align:left;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:12px;color:#8898aa;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;cursor:pointer;user-select:none;border-right:1px solid rgba(255,255,255,.05);}
 thead th:hover{color:white;}
 tbody tr{border-bottom:1px solid var(--border);transition:background .12s;}
 tbody tr:hover{background:#f5f8ff;}
@@ -614,9 +613,12 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
       <span style="width:1px;height:18px;background:var(--border);margin:0 4px"></span>
       <span onclick="setRefineryChip('KAR-2')" class="ref-chip green">KAR-2</span>
       <span onclick="setRefineryChip('KAR-2 Unit-4')" class="ref-chip green">Unit-4</span>
-      <span onclick="setRefineryChip('KAR-2 Plant-B')" class="ref-chip green">Plant-B</span>
-           <span onclick="setRefineryChip('KAR-2 Plant-C')" class="ref-chip green">Plant-C</span>
+       <span onclick="setRefineryChip('KAR-2 Plant-B')" class="ref-chip green">Plant-B</span>
+      <span onclick="setRefineryChip('KAR-2 Plant-C')" class="ref-chip green">Plant-C</span>
+    </div>
+    </div>
 
+    <div class="stats-bar">
       <div class="stat-chip"><div class="stat-dot" style="background:var(--red)"></div>Showing <strong id="showingCount">0</strong> of <strong id="totalRecords">0</strong> records</div>
       <div style="font-size:11px;color:var(--silver)">Page <strong id="pageIndicator">1</strong></div>
     </div>
