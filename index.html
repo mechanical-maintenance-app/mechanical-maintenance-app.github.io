@@ -95,10 +95,11 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 
 /* ══ TABLE ══ */
 .table-wrapper{margin:14px 20px 20px;background:white;border-radius:8px;box-shadow:var(--shadow);overflow:hidden;border:1px solid var(--border);}
-.table-scroll{overflow-x:auto;}
+.table-scroll{overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 320px);}
+thead th{position:sticky;top:0;z-index:5;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
 thead{background:linear-gradient(180deg,var(--navy-light) 0%,var(--navy) 100%);}
-thead th{padding:12px 14px;text-align:left;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:12px;color:#8898aa;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;cursor:pointer;user-select:none;border-right:1px solid rgba(255,255,255,.05);}
+thead th{padding:12px 14px;text-align:left;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:12px;color:#8898aa;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;cursor:pointer;user-select:none;border-right:1px solid rgba(255,255,255,.05);background:linear-gradient(180deg,var(--navy-light) 0%,var(--navy) 100%);}
 thead th:hover{color:white;}
 tbody tr{border-bottom:1px solid var(--border);transition:background .12s;}
 tbody tr:hover{background:#f5f8ff;}
