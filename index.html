@@ -253,7 +253,7 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
 
 /* Classification */
 .mcd-class-table{width:100%;border-collapse:collapse;border:1px solid #D1D5DB;margin-bottom:11px;}
-.mcd-class-table th{background:#1a1f2e;color:white;padding:5px 9px;font-size:9px;text-transform:uppercase;letter-spacing:.06em;text-align:left;font-weight:600;}
+.mcd-class-table th{background:#4b5563;color:white;padding:5px 9px;font-size:9px;text-transform:uppercase;letter-spacing:.06em;text-align:left;font-weight:600;}
 .mcd-class-table td{padding:7px 9px;border:1px solid #D1D5DB;font-size:12px;vertical-align:middle;}
 .mcd-check-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
 .mcd-radio-col{display:flex;flex-direction:column;gap:4px;}
@@ -270,7 +270,7 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
   
 /* Sections */
 .mcd-section{margin-bottom:3px;}
-.mcd-sec-hd{font-size:9px;font-weight:700;color:white;background:#1a1f2e;padding:4px 9px;text-transform:uppercase;letter-spacing:.06em;}
+.mcd-sec-hd{font-size:9px;font-weight:700;color:white;background:#4b5563;padding:4px 9px;text-transform:uppercase;letter-spacing:.06em;}
 .mcd-ta{width:100%;border:1px solid #D1D5DB;border-top:none;padding:8px 10px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#374151;line-height:1.65;resize:vertical;min-height:24px;outline:none;box-sizing:border-box;background:white;}
 .mcd-ta:focus{background:#fafbff;}
 .mcd-ta::placeholder{color:#D1D5DB;font-style:italic;}
@@ -398,6 +398,10 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
 .hist-empty{padding:20px 12px;text-align:center;font-size:11px;color:var(--silver);line-height:1.6;}
 
 @media print {
+.mcd-ck input,.mcd-att-table input[type="checkbox"]{
+  -webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;
+  transform:scale(1.35);accent-color:#CC2222!important;
+}
 .sidebar, .main-header, .search-panel, .stats-bar, .pagination, .td-actions,
   .modal-overlay, .toast-container, .mc-bottom-bar, .mc-zoom-bar, 
   #mcView .mc-section-card, #mcView .photo-slot, #eqView, #refChipsRow, #histPanel, #addPhotoPageBtn, #addActivityPageBtn, .mcd-photo-slot:not(.has-photo), .mcd-photo-slot:not(.has-photo) + .mcd-cap-inp, .mcd-photo-remove { 
