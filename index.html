@@ -236,6 +236,7 @@ td.wrap{white-space:normal;min-width:220px;max-width:420px;}
 .mcd-type-inp:focus{background:#fbe4e4;}
 @media print{.mcd-type-inp{background:transparent!important;}}
 .mcd-wo-area{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:5px;}
+.mcd-wo-area:has(#mcWO:placeholder-shown){display:none;}
 .mcd-wo-lbl{font-size:9px;color:#9CA3AF;font-family:Consolas,monospace;}
 .mcd-wo-inp{font-family:Consolas,monospace;font-size:10px;color:#6B7280;background:#F3F4F6;border:none;border-radius:3px;padding:2px 7px;width:130px;outline:none;text-align:center;}
 .mcd-wo-inp:focus{background:#e8f0fe;}
@@ -258,20 +259,22 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
 .mcd-check-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
 .mcd-radio-col{display:flex;flex-direction:column;gap:4px;}
 .mcd-ck{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;white-space:nowrap;}
-.mcd-ck input{width:13px;height:13px;accent-color:#CC2222;cursor:pointer;flex-shrink:0;}
+.mcd-ck input{appearance:none;-webkit-appearance:none;width:13px;height:13px;border:1.5px solid #374151;border-radius:2px;background:#fff;cursor:pointer;flex-shrink:0;position:relative;margin:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.mcd-ck input:checked{background:#111827;border-color:#111827;}
+.mcd-ck input:checked::after{content:'';position:absolute;left:3px;top:0px;width:4px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);}
   
 .mcd-toolbar{display:flex;align-items:center;gap:4px;padding:4px 8px;background:#f3f4f6;border:1px solid #D1D5DB;border-bottom:none;}
 .mcd-tb-btn{width:26px;height:24px;border:1px solid #D1D5DB;border-radius:3px;background:white;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;}
 .mcd-tb-btn:hover{background:#e8f0fe;}
 .mcd-tb-sep{width:1px;height:18px;background:#D1D5DB;margin:0 2px;}
 .mcd-tb-color{width:26px;height:24px;padding:0;border:1px solid #D1D5DB;border-radius:3px;cursor:pointer;}
-.mcd-editor{min-height:24px;outline:none;font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#374151;line-height:1.65;}
+.mcd-editor{min-height:24px;outline:none;font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#111827;line-height:1.65;}
 .mcd-editor:empty:before{content:attr(data-placeholder);color:#D1D5DB;font-style:italic;}
   
 /* Sections */
 .mcd-section{margin-bottom:3px;}
 .mcd-sec-hd{font-size:9px;font-weight:700;color:white;background:#4b5563;padding:4px 9px;text-transform:uppercase;letter-spacing:.06em;}
-.mcd-ta{width:100%;border:1px solid #D1D5DB;border-top:none;padding:8px 10px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#374151;line-height:1.65;resize:vertical;min-height:24px;outline:none;box-sizing:border-box;background:white;}
+.mcd-ta{width:100%;border:1px solid #D1D5DB;border-top:none;padding:8px 10px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#111827;line-height:1.65;resize:vertical;min-height:24px;outline:none;box-sizing:border-box;background:white;}
 .mcd-ta:focus{background:#fafbff;}
 .mcd-ta::placeholder{color:#D1D5DB;font-style:italic;}
 
@@ -280,7 +283,9 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
 .mcd-att-table td{padding:3px 10px;border:1px solid #D1D5DB;text-align:center;vertical-align:middle;}
 .mcd-att-lbl-cell{text-align:left!important;font-weight:700;background:#F9FAFB;font-size:11px;width:110px;}
 .mcd-att-label{font-size:8.5px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;}
-.mcd-att-table input[type="checkbox"]{width:14px;height:14px;accent-color:#CC2222;cursor:pointer;}
+.mcd-att-table input[type="checkbox"]{appearance:none;-webkit-appearance:none;width:14px;height:14px;border:1.5px solid #374151;border-radius:2px;background:#fff;cursor:pointer;position:relative;margin:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.mcd-att-table input[type="checkbox"]:checked{background:#111827;border-color:#111827;}
+.mcd-att-table input[type="checkbox"]:checked::after{content:'';position:absolute;left:3px;top:0px;width:4.5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);}
 
 /* Signatures */
 .mcd-sig-title{font-size:9px;font-weight:700;color:#1a1f2e;text-align:center;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em;}
@@ -398,10 +403,6 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
 .hist-empty{padding:20px 12px;text-align:center;font-size:11px;color:var(--silver);line-height:1.6;}
 
 @media print {
-.mcd-ck input,.mcd-att-table input[type="checkbox"]{
-  -webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;
-  transform:scale(1.35);accent-color:#CC2222!important;
-}
 .sidebar, .main-header, .search-panel, .stats-bar, .pagination, .td-actions,
   .modal-overlay, .toast-container, .mc-bottom-bar, .mc-zoom-bar, 
   #mcView .mc-section-card, #mcView .photo-slot, #eqView, #refChipsRow, #histPanel, #addPhotoPageBtn, #addActivityPageBtn, .mcd-photo-slot:not(.has-photo), .mcd-photo-slot:not(.has-photo) + .mcd-cap-inp, .mcd-photo-remove { 
@@ -426,8 +427,8 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
   }
   #mcDoc > .mc-doc-page:last-of-type,
   #mcDoc > div:last-child .mc-doc-page{ page-break-after:auto; }
-  #mcPage3[style*="display: none"] .mc-doc-page,
-  #mcPage1B[style*="display: none"] .mc-doc-page{ display:none !important; }
+  #mcPage3[style*="display:none"] .mc-doc-page,
+  #mcPage1B[style*="display:none"] .mc-doc-page{ display:none !important; }
   .mcd-page-body{ overflow:visible !important; }
 
   body{background:white;font-family:'Segoe UI',Tahoma,sans-serif;font-size:12px;}
@@ -2287,6 +2288,11 @@ function syncDocPagination(){
   pages.forEach((p,idx)=>{
     const pn=p.querySelector('.mcd-pageno');
     if(pn)pn.textContent='Pag. '+(idx+1)+'/'+total;
+    // Fuerza el salto de página vía JS (con !important) para que la última página
+    // visible NUNCA fuerce una página en blanco extra al imprimir, sin depender
+    // de selectores CSS frágiles que pueden fallar según qué páginas extra existan.
+    p.style.setProperty('page-break-after', idx===total-1?'auto':'always', 'important');
+    p.style.setProperty('break-after', idx===total-1?'auto':'always', 'important');
   });
 }
 
@@ -2323,6 +2329,7 @@ function mcVal(id){return(document.getElementById(id)||{}).value||'';}function m
   return el.contentEditable==='true'?el.innerHTML:el.value||'';
 }
 function printMC(){
+  syncDocPagination();
   const cardName = mcVal('mcWO') || mcVal('mcTag') || 'KAR - Mechanical Maintenance';
   const prevTitle = document.title;
   document.title = cardName;
