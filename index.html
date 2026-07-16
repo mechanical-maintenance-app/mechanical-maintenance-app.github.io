@@ -2144,13 +2144,30 @@ function renderPhotoSlot(i){
 let peIndex=null,peTool='pencil',peColor='#FF3B30',peDrawing=false,peStartX=0,peStartY=0;
 let peShapes=[],peImg=null,peCanvas=null,peCtx=null,peCurrentStroke=null;
 
-function openPhotoEditor(i){
+async function openPhotoEditor(i){
   if(!photos[i].src)return;
   peIndex=i;peShapes=[];peTool='pencil';peColor='#FF3B30';
   document.querySelectorAll('.pe-tool').forEach(b=>b.classList.remove('active'));
   document.getElementById('peToolPencil').classList.add('active');
   document.querySelectorAll('.pe-color').forEach(b=>b.classList.remove('active'));
   document.querySelector('.pe-color[data-color="#FF3B30"]').classList.add('active');
+  let imgSrc=photos[i].src;
+  if(!imgSrc.startsWith('data:')&&!imgSrc.startsWith('blob:')){
+    // Foto ya subida a Drive (URL externa) — la traemos autenticada y la
+    // convertimos a un blob local para que el canvas no quede "contaminado".
+    const m=imgSrc.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    const fileId=m?m[1]:null;
+    if(fileId&&isTokenValid()){
+      try{
+        const r=await fetch('https://www.googleapis.com/drive/v3/files/'+fileId+'?alt=media',{headers:{Authorization:'Bearer '+googleAccessToken}});
+        if(!r.ok)throw new Error('fetch failed');
+        const blob=await r.blob();
+        imgSrc=URL.createObjectURL(blob);
+      }catch(e){toast('Could not load photo for editing.','error');return;}
+    }else{
+      toast('Connect Google Drive to annotate this photo.','warning');return;
+    }
+  }
   peImg=new Image();
   peImg.onload=()=>{
     const maxDim=1200;
@@ -2162,8 +2179,9 @@ function openPhotoEditor(i){
     peRedraw();
     peBindCanvasEvents();
   };
-  peImg.src=photos[i].src;
+  peImg.src=imgSrc;
   document.getElementById('peOverlay').classList.add('open');
+}
 }
 function closePhotoEditor(){
   document.getElementById('peOverlay').classList.remove('open');
