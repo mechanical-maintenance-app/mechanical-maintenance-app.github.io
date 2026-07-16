@@ -2736,11 +2736,12 @@ function loadMCIntoForm(mc){
     document.getElementById('attTorque').checked=mc.attachments.torque||false;
   }
   if(mc.photos){
+    const hasExtraPhotos=mc.photos.slice(4).some(p=>p&&p.src);
+    if(hasExtraPhotos&&!extraPhotoPageAdded)addPhotoPage();
     mc.photos.forEach((p,i)=>{
       if(p.src){photos[i].src=p.src;photos[i].caption=p.caption;renderPhotoSlot(i);}
     });
-    const hasExtraPhotos=mc.photos.slice(4).some(p=>p&&p.src);
-    if(hasExtraPhotos&&!extraPhotoPageAdded)addPhotoPage();
+  
   }
   if(mc.activity1B&&mc.activity1B.trim()){
     if(typeof extraActivityPageAdded==='undefined'||!extraActivityPageAdded)addActivityPage();
