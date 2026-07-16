@@ -2179,9 +2179,8 @@ async function openPhotoEditor(i){
     peRedraw();
     peBindCanvasEvents();
   };
-  peImg.src=imgSrc;
+peImg.src=imgSrc;
   document.getElementById('peOverlay').classList.add('open');
-}
 }
 function closePhotoEditor(){
   document.getElementById('peOverlay').classList.remove('open');
