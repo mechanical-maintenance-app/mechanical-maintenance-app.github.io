@@ -112,6 +112,10 @@ td.wrap{white-space:normal;min-width:220px;max-width:420px;}
 @keyframes badgePop{0%{opacity:0;transform:scale(.75);}100%{opacity:1;transform:scale(1);}}@keyframes viewFadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}.view-fade-in{animation:viewFadeIn .28s ease-out;}.tag-badge{display:inline-block;padding:3px 10px;border-radius:14px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;background:linear-gradient(160deg,var(--navy-light),var(--navy));color:white;box-shadow:var(--shadow-badge);animation:badgePop .22s cubic-bezier(.34,1.56,.64,1);}
 .asset-badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;background:linear-gradient(160deg,#eef4ff,#dbe8fd);color:#0c447c;white-space:nowrap;box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 1px 2px rgba(12,68,124,.15);animation:badgePop .22s cubic-bezier(.34,1.56,.64,1);}
 .refinery-badge{font-size:11px;font-weight:600;color:var(--text-light);background:var(--bg);padding:2px 8px;border-radius:3px;}
+.insp-link{color:var(--text-light);text-decoration:none;border-bottom:1px dashed var(--silver);}
+.insp-link.found{color:#1565c0;border-bottom:1px solid #1565c0;cursor:pointer;font-weight:500;}
+.insp-link.found:hover{color:var(--red);border-color:var(--red);}
+.insp-link.notfound{color:var(--text-light);border-bottom:1px dashed #e0a09a;cursor:default;}
 .file-btn{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid;text-decoration:none;transition:all .15s;animation:badgePop .22s cubic-bezier(.34,1.56,.64,1);}
 .file-btn.type-file{background:linear-gradient(160deg,#eaf3ff,#d9e9fc);color:#1565c0;border-color:#bbdefb;box-shadow:inset 0 1px 0 rgba(255,255,255,.6);}
 .file-btn.type-file:hover{background:linear-gradient(160deg,#2f77c9,#1565c0);color:white;}
@@ -1619,6 +1623,8 @@ function renderTable(){
   tbody.innerHTML=page.map((r,i)=>{
     const card=r['MAINTENANCE CARD']||'',tag=r['TAG']||'';
     const date=fmtDateDisplay(r['MAINTENANCE DATE']);
+    const insp=r['REMARK']||'';
+    const inspLink=insp?`<a href="#" class="insp-link" id="insp_${r.rowIndex}" onclick="return false;" title="Buscando PDF en Drive...">${insp}</a>`:'';
     const sc=card.replace(/\\/g,'\\\\').replace(/'/g,"\\'"),st=tag.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
     const fb=card?`<a href="#" class="file-btn type-file" id="fb_${r.rowIndex}" onclick="openFile('${sc}','${st}',${r.rowIndex});return false;">📄 ?</a>`:'–';
 return`<tr>
@@ -1629,7 +1635,7 @@ return`<tr>
       <td><span class="tag-badge" style="cursor:pointer" onclick="filterByTag('${tag}')">${tag||'–'}</span></td>
       <td class="wrap" style="font-size:12px;color:var(--text-light)">${card}</td>
 <td class="wrap td-expand" onclick="toggleExpand(${r.rowIndex})" style="font-size:12px;color:var(--text-light)">${r['ACTIVITY DESCRIPTION']||'–'} <span style="font-size:10px;color:var(--silver)">▾</span></td>      <td><span class="refinery-badge">${r['REFINERY']||'–'}</span></td>
-      <td style="font-size:12px;color:var(--text-light);max-width:130px;white-space:normal">${r['REMARK']||''}</td>
+      <td style="font-size:12px;color:var(--text-light);max-width:130px;white-space:normal">${inspLink}</td>
       <td>${fb}</td>
 <td><div class="td-actions">
         <button class="action-btn edit" title="Edit" onclick="editRecord(${r.rowIndex})">✏️</button>
@@ -1654,6 +1660,32 @@ return`<tr>
 
 // ── LAZY FILE BADGES ───────────────────────────
 const fileCache={};
+const inspCache={};
+async function resolveInspFileInDrive(code){
+  if(!isTokenValid()||!code)return null;
+  try{
+    const headers={Authorization:'Bearer '+googleAccessToken};
+    async function search(q){
+      const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,webViewLink)',{headers});
+      const d=await r.json();
+      return(d.files&&d.files.length)?d.files[0].webViewLink:null;
+    }
+    // 1) nombre del archivo contiene el código (ej. "CHF26-63.pdf")
+    let url=await search(`name contains '${code}' and mimeType='application/pdf' and trashed=false`);
+    if(url)return url;
+    // 2) fallback: el código aparece dentro del contenido del PDF (texto indexado por Drive)
+    url=await search(`fullText contains '${code}' and mimeType='application/pdf' and trashed=false`);
+    return url;
+  }catch(e){console.error('resolveInspFileInDrive:',e);return null;}
+}
+function applyInspLink(el,url){
+  if(url){
+    el.href=url;el.target='_blank';el.rel='noopener';el.onclick=null;
+    el.title='Open inspection PDF';el.classList.add('found');
+  }else{
+    el.title='PDF not found in Drive';el.classList.add('notfound');
+  }
+}
 async function resolveFIleBadges(page){
   const BATCH=3;
   for(let i=0;i<page.length;i+=BATCH){
@@ -1661,22 +1693,36 @@ async function resolveFIleBadges(page){
     await Promise.all(batch.map(async r=>{
       const card=r['MAINTENANCE CARD']||'';
       const tag=r['TAG']||'';
-      if(!card)return;
-      const btn=document.getElementById('fb_'+r.rowIndex);
-      if(!btn)return;
-      if(fileCache[r.rowIndex]!==undefined){applyFileBadge(btn,fileCache[r.rowIndex]);return;}
-      if(isTokenValid()){
-        const result=await resolveFileInDrive(card,tag,r['REFINERY']||'',r['ASSOCIATED ASSET']||'');
-        const cached=result||{type:'none',url:null};
-        fileCache[r.rowIndex]=cached;
-        applyFileBadge(btn,cached);
-      }else{
-        try{
-          const res=await jsonp({action:'getFileUrl',filename:card,tag});
-          const cached={type:res.success?res.type:'none',url:res.url||null};
-          fileCache[r.rowIndex]=cached;
-          applyFileBadge(btn,cached);
-        }catch(e){btn.innerHTML='📄 ?';}
+      if(card){
+        const btn=document.getElementById('fb_'+r.rowIndex);
+        if(btn){
+          if(fileCache[r.rowIndex]!==undefined){applyFileBadge(btn,fileCache[r.rowIndex]);}
+          else if(isTokenValid()){
+            const result=await resolveFileInDrive(card,tag,r['REFINERY']||'',r['ASSOCIATED ASSET']||'');
+            const cached=result||{type:'none',url:null};
+            fileCache[r.rowIndex]=cached;
+            applyFileBadge(btn,cached);
+          }else{
+            try{
+              const res=await jsonp({action:'getFileUrl',filename:card,tag});
+              const cached={type:res.success?res.type:'none',url:res.url||null};
+              fileCache[r.rowIndex]=cached;
+              applyFileBadge(btn,cached);
+            }catch(e){btn.innerHTML='📄 ?';}
+          }
+        }
+      }
+      const code=r['REMARK']||'';
+      if(code){
+        const ilink=document.getElementById('insp_'+r.rowIndex);
+        if(ilink){
+          if(inspCache[r.rowIndex]!==undefined){applyInspLink(ilink,inspCache[r.rowIndex]);}
+          else if(isTokenValid()){
+            const url=await resolveInspFileInDrive(code);
+            inspCache[r.rowIndex]=url;
+            applyInspLink(ilink,url);
+          }
+        }
       }
     }));
     await new Promise(res=>setTimeout(res,400));
@@ -2179,7 +2225,7 @@ async function openPhotoEditor(i){
     peRedraw();
     peBindCanvasEvents();
   };
-peImg.src=imgSrc;
+  peImg.src=imgSrc;
   document.getElementById('peOverlay').classList.add('open');
 }
 function closePhotoEditor(){
