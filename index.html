@@ -2572,7 +2572,7 @@ function mcVal(id){return(document.getElementById(id)||{}).value||'';}function m
 }
 function printMC(){
   syncDocPagination();
-  const cardName = mcVal('mcWO') || mcVal('mcTag') || 'KAR - Mechanical Maintenance';
+  const cardName = currentMCCardName || mcVal('mcWO') || mcVal('mcTag') || 'KAR - Mechanical Maintenance';
   const prevTitle = document.title;
   document.title = cardName;
   window.print();
