@@ -312,7 +312,7 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
 .mcd-ph-empty{text-align:center;font-size:12px;color:#9CA3AF;line-height:2;}
 .mcd-ph-empty-icon{font-size:26px;display:block;margin-bottom:2px;}
 .mcd-photo-remove{position:absolute;top:6px;right:6px;width:22px;height:22px;background:#CC2222;color:white;border:none;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;z-index:5;}
-.mcd-cap-inp{width:100%;padding:5px 9px;background:#1a1f2e;color:rgba(255,255,255,.85);border:none;border-radius:4px;font-family:'IBM Plex Sans',sans-serif;font-size:11px;outline:none;}
+.mcd-cap-inp{width:100%;padding:5px 9px;background:#ffffff;color:#111827;border:1px solid #D1D5DB;border-radius:4px;font-family:'IBM Plex Sans',sans-serif;font-size:11px;outline:none;}
 .mcd-cap-inp:focus{background:#243044;}
 .mcd-cap-inp::placeholder{color:rgba(255,255,255,.3);}
 
@@ -819,7 +819,7 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
                   <input class="mcd-wo-inp" id="mcWO" placeholder="WO-2026-0001">
                 </div>
               </div>
-              <div class="mcd-header-spacer"></div>
+              <div class="mcd-header-spacer"><div class="mcd-mc-number-val" style="text-align:right;font-size:11px;color:#9CA3AF;font-family:Consolas,monospace;"></div></div>
             </div>
 
             <!-- Info Grid -->
@@ -991,7 +991,7 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
                 <div class="mcd-sub-title" id="mcTypeDisplay2">—</div>
                 <div class="mcd-wo-area" style="margin-top:5px;font-size:10px;color:#9CA3AF;font-family:Consolas,monospace;justify-content:center" id="mcWODisplay2"></div>
               </div>
-              <div class="mcd-header-spacer"></div>
+              <div class="mcd-header-spacer"><div class="mcd-mc-number-val" style="text-align:right;font-size:11px;color:#9CA3AF;font-family:Consolas,monospace;"></div></div>
             </div>
 
             <!-- Photo annex -->
@@ -1028,7 +1028,7 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
             </div>
             <!-- Add Photo Page button -->
             <div id="addPhotoPageBtn" style="text-align:center;margin-top:12px;" class="no-print">
-              <button class="btn btn-ghost" style="border-color:#3b82f6;color:#3b82f6;font-size:12px;" onclick="addPhotoPage()">➕ Add Photo Page (Photos 5–8)</button>
+              <button class="btn btn-ghost" style="border-color:#3b82f6;color:#3b82f6;font-size:12px;" onclick="addPhotoPage()">➕ Add Photo Page (0/5)</button>
             </div>
             </div><!-- end mcd-page-body -->
             <!-- Footer -->
@@ -1037,8 +1037,8 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
               <span class="mcd-pageno">Pag. 2/2</span>
             </div>
           </div><!-- end page 2 -->
-          <!-- Page 3 placeholder -->
-          <div id="mcPage3" style="display:none;"></div>
+          <!-- Páginas extra de fotos (hasta 5, generadas dinámicamente) -->
+          <div id="extraPhotoPagesContainer"></div>
         </div><!-- end #mcDoc -->
       </div><!-- end #mcDocScaler -->
     </div><!-- end .mc-doc-outer -->
@@ -1339,7 +1339,7 @@ function updateTypeDisplay(){
   if(document.getElementById('mcTypeDisplay'))document.getElementById('mcTypeDisplay').value=clean;
   if(document.getElementById('mcTypeDisplay2'))document.getElementById('mcTypeDisplay2').textContent=clean;
   if(document.getElementById('mcTypeDisplay1B'))document.getElementById('mcTypeDisplay1B').textContent=clean;
-  if(extraPhotoPageAdded)syncPage3Header();
+  syncAllPhotoPageHeaders();
   if(document.getElementById('mcWODisplay2'))document.getElementById('mcWODisplay2').textContent=wo?'WO: '+wo:'';
 }
 function onTypeDisplayEdit(val){
@@ -1348,7 +1348,7 @@ function onTypeDisplayEdit(val){
   if(hidden)hidden.value=clean;
   if(document.getElementById('mcTypeDisplay2'))document.getElementById('mcTypeDisplay2').textContent=clean||'—';
   if(document.getElementById('mcTypeDisplay1B'))document.getElementById('mcTypeDisplay1B').textContent=clean||'—';
-  if(typeof extraPhotoPageAdded!=='undefined'&&extraPhotoPageAdded)syncPage3Header();
+  syncAllPhotoPageHeaders();
 }
 // ── JSONP ──────────────────────────────────────
 function jsonp(params){
@@ -2073,6 +2073,8 @@ function generateMC(rowIndex){
   currentMCActivityShort=r['ACTIVITY DESCRIPTION']||'';
   currentDriveMCFileId=null;
   currentMCCardName=r['MAINTENANCE CARD']||'';
+  currentMCItemNo=r['ITEM NO.']||'';
+  syncMCNumberDisplay();
   document.getElementById('mcType').value=r['ASSOCIATED ASSET']||'';
   if(tag){
     const t=tag.trim().toUpperCase();
@@ -2169,7 +2171,8 @@ function toast(msg,type='info'){const t=document.createElement('div');t.classNam
 document.getElementById('modalOverlay').addEventListener('click',e=>{e.stopPropagation();});
 
 // ══ MC FORM ════════════════════════════════════
-const photos=[{src:null,caption:'Photo 1'},{src:null,caption:'Photo 2'},{src:null,caption:'Photo 3'},{src:null,caption:'Photo 4'},{src:null,caption:'Photo 5'},{src:null,caption:'Photo 6'},{src:null,caption:'Photo 7'},{src:null,caption:'Photo 8'}]; let extraPhotoPageAdded=false; let extraActivityPageAdded=false;
+const photos=Array.from({length:24},(_,i)=>({src:null,caption:'Photo '+(i+1)})); let extraPhotoPagesCount=0; const MAX_EXTRA_PHOTO_PAGES=5; let extraActivityPageAdded=false;
+let currentMCItemNo='';
 
 function triggerPhoto(i){if(!photos[i].src)document.getElementById('pi'+i).click();}
 function loadPhoto(i,input){
@@ -2331,17 +2334,26 @@ function savePhotoEditor(){
   toast('Annotations saved ✅','success');
 }
 
-function addPhotoPage(){
-  if(extraPhotoPageAdded)return;
-  extraPhotoPageAdded=true;
-  document.getElementById('addPhotoPageBtn').style.display='none';
-  document.getElementById('mcPage3').style.display='';
-  document.getElementById('mcPage3').innerHTML=`
-    <div class="mc-doc-page">
+function buildPhotoPageHTML(pageNum){
+  // pageNum: 1..5 (página extra número N) → índices de foto 4+(pageNum-1)*4 .. +3
+  const base=4+(pageNum-1)*4;
+  const slots=[0,1,2,3].map(k=>{
+    const idx=base+k;
+    return `
+        <div class="mcd-photo-wrap">
+          <div class="mcd-photo-slot" id="ps${idx}" onclick="triggerPhoto(${idx})">
+            <input type="file" id="pi${idx}" accept="image/*" onchange="loadPhoto(${idx},this)" style="display:none">
+            <div class="mcd-ph-empty"><span class="mcd-ph-empty-icon">📷</span>Photo ${idx+1}</div>
+          </div>
+          <input class="mcd-cap-inp" id="pc${idx}" placeholder="Caption for Photo ${idx+1}..." oninput="photos[${idx}].caption=this.value">
+        </div>`;
+  }).join('');
+  return `
+    <div class="mc-doc-page" id="mcExtraPhotoPage${pageNum}">
       <div class="mcd-page-body">
       <div class="mcd-header">
         <div class="mcd-logo-area">
-          <img class="kar-logo-img mcd-logo-img" src="" alt="KAR">
+          <img class="kar-logo-img mcd-logo-img" src="${KAR_LOGO}" alt="KAR">
           <div>
             <div class="mcd-logo-name">KAR Group</div>
             <div class="mcd-logo-sub">Mechanical Maintenance Management</div>
@@ -2350,41 +2362,13 @@ function addPhotoPage(){
         </div>
         <div class="mcd-title-center">
           <div class="mcd-main-title">MAINTENANCE CARD</div>
-          <div class="mcd-sub-title" id="mcTypeDisplay3">—</div>
-          <div class="mcd-wo-area" style="margin-top:5px;font-size:10px;color:#9CA3AF;font-family:Consolas,monospace;justify-content:center" id="mcWODisplay3"></div>
+          <div class="mcd-sub-title mcd-type-mirror">—</div>
+          <div class="mcd-wo-area" style="margin-top:5px;font-size:10px;color:#9CA3AF;font-family:Consolas,monospace;justify-content:center"><span class="mcd-wo-mirror"></span></div>
         </div>
-        <div class="mcd-header-spacer"></div>
+        <div class="mcd-header-spacer"><div class="mcd-mc-number-val" style="text-align:right;font-size:11px;color:#9CA3AF;font-family:Consolas,monospace;"></div></div>
       </div>
       <div class="mcd-photo-annex-title">Photographic Annex — Field Documentation (cont.)</div>
-      <div class="mcd-photo-grid">
-        <div class="mcd-photo-wrap">
-          <div class="mcd-photo-slot" id="ps4" onclick="triggerPhoto(4)">
-            <input type="file" id="pi4" accept="image/*" onchange="loadPhoto(4,this)" style="display:none">
-            <div class="mcd-ph-empty"><span class="mcd-ph-empty-icon">📷</span>Photo 5</div>
-          </div>
-          <input class="mcd-cap-inp" id="pc4" placeholder="Caption for Photo 5..." oninput="photos[4].caption=this.value">
-        </div>
-        <div class="mcd-photo-wrap">
-          <div class="mcd-photo-slot" id="ps5" onclick="triggerPhoto(5)">
-            <input type="file" id="pi5" accept="image/*" onchange="loadPhoto(5,this)" style="display:none">
-            <div class="mcd-ph-empty"><span class="mcd-ph-empty-icon">📷</span>Photo 6</div>
-          </div>
-          <input class="mcd-cap-inp" id="pc5" placeholder="Caption for Photo 6..." oninput="photos[5].caption=this.value">
-        </div>
-        <div class="mcd-photo-wrap">
-          <div class="mcd-photo-slot" id="ps6" onclick="triggerPhoto(6)">
-            <input type="file" id="pi6" accept="image/*" onchange="loadPhoto(6,this)" style="display:none">
-            <div class="mcd-ph-empty"><span class="mcd-ph-empty-icon">📷</span>Photo 7</div>
-          </div>
-          <input class="mcd-cap-inp" id="pc6" placeholder="Caption for Photo 7..." oninput="photos[6].caption=this.value">
-        </div>
-        <div class="mcd-photo-wrap">
-          <div class="mcd-photo-slot" id="ps7" onclick="triggerPhoto(7)">
-            <input type="file" id="pi7" accept="image/*" onchange="loadPhoto(7,this)" style="display:none">
-            <div class="mcd-ph-empty"><span class="mcd-ph-empty-icon">📷</span>Photo 8</div>
-          </div>
-          <input class="mcd-cap-inp" id="pc7" placeholder="Caption for Photo 8..." oninput="photos[7].caption=this.value">
-        </div>
+      <div class="mcd-photo-grid">${slots}
       </div>
       <div style="text-align:center;margin-top:12px;" class="no-print">
         <button class="btn btn-ghost" style="border-color:#ef4444;color:#ef4444;font-size:12px;" onclick="removePhotoPage()">🗑️ Remove Photo Page</button>
@@ -2392,30 +2376,45 @@ function addPhotoPage(){
       </div><!-- end mcd-page-body -->
       <div class="mcd-footer">
         <span>Mechanical Maintenance Management · KAR Group · Static Equipment's</span>
-        <span class="mcd-pageno">Pag. 3</span>
+        <span class="mcd-pageno">Pag. ${2+pageNum}</span>
       </div>
     </div>`;
-  document.querySelectorAll('#mcPage3 .kar-logo-img').forEach(img=>img.src=KAR_LOGO);
-  syncPage3Header();
+}
+function updateAddPhotoPageBtn(){
+  const wrap=document.getElementById('addPhotoPageBtn');
+  if(!wrap)return;
+  wrap.style.display=extraPhotoPagesCount>=MAX_EXTRA_PHOTO_PAGES?'none':'';
+  const btn=wrap.querySelector('button');
+  if(btn)btn.textContent=`➕ Add Photo Page (${extraPhotoPagesCount}/${MAX_EXTRA_PHOTO_PAGES})`;
+}
+function addPhotoPage(){
+  if(extraPhotoPagesCount>=MAX_EXTRA_PHOTO_PAGES)return;
+  extraPhotoPagesCount++;
+  document.getElementById('extraPhotoPagesContainer').insertAdjacentHTML('beforeend',buildPhotoPageHTML(extraPhotoPagesCount));
+  updateAddPhotoPageBtn();
+  syncAllPhotoPageHeaders();
   syncDocPagination();
 }
-
 function removePhotoPage(){
-  extraPhotoPageAdded=false;
-  for(let i=4;i<8;i++){photos[i].src=null;photos[i].caption='Photo '+(i+1);}
-  document.getElementById('mcPage3').style.display='none';
-  document.getElementById('mcPage3').innerHTML='';
-  document.getElementById('addPhotoPageBtn').style.display='';
+  if(extraPhotoPagesCount<=0)return;
+  const pageNum=extraPhotoPagesCount;
+  const base=4+(pageNum-1)*4;
+  for(let i=base;i<base+4;i++){photos[i].src=null;photos[i].caption='Photo '+(i+1);}
+  const pageEl=document.getElementById('mcExtraPhotoPage'+pageNum);
+  if(pageEl)pageEl.remove();
+  extraPhotoPagesCount--;
+  updateAddPhotoPageBtn();
   syncDocPagination();
 }
-
-function syncPage3Header(){
-  const t=document.getElementById('mcTypeDisplay2');
-  const w=document.getElementById('mcWODisplay2');
-  const t3=document.getElementById('mcTypeDisplay3');
-  const w3=document.getElementById('mcWODisplay3');
-  if(t3)t3.textContent=t?t.textContent:'—';
-  if(w3)w3.textContent=w?w.textContent:'';
+function syncAllPhotoPageHeaders(){
+  const type=document.getElementById('mcTypeDisplay')?document.getElementById('mcTypeDisplay').value:'—';
+  const wo=document.getElementById('mcWO')?document.getElementById('mcWO').value:'';
+  document.querySelectorAll('#extraPhotoPagesContainer .mcd-type-mirror').forEach(el=>el.textContent=type||'—');
+  document.querySelectorAll('#extraPhotoPagesContainer .mcd-wo-mirror').forEach(el=>el.textContent=wo?'WO: '+wo:'');
+}
+function syncMCNumberDisplay(){
+  const text=currentMCItemNo?('MC #'+currentMCItemNo):'';
+  document.querySelectorAll('.mcd-mc-number-val').forEach(el=>el.textContent=text);
 }
 
 // ── PAGE 1B — Activity Description continuation ─────────
@@ -2440,7 +2439,7 @@ function addActivityPage(){
           <div class="mcd-main-title">MAINTENANCE CARD</div>
           <div class="mcd-sub-title" id="mcTypeDisplay1B">—</div>
         </div>
-        <div class="mcd-header-spacer"></div>
+        <div class="mcd-header-spacer"><div class="mcd-mc-number-val" style="text-align:right;font-size:11px;color:#9CA3AF;font-family:Consolas,monospace;"></div></div>
       </div>
 
       <!-- Info Grid (read-only reference) -->
@@ -2581,7 +2580,7 @@ function printMC(){
 }
 function clearMCForm(){
   if(typeof extraActivityPageAdded!=='undefined'&&extraActivityPageAdded)removeActivityPage();
-  if(typeof extraPhotoPageAdded!=='undefined'&&extraPhotoPageAdded)removePhotoPage();
+  while(extraPhotoPagesCount>0)removePhotoPage();
   closeHistPanel();
   ['mcWO','mcStart','mcEnd','mcTag','mcLoc','mcService','mcCode','mcBg','mcScope','mcActivity','mcComments'].forEach(id=>{
   const el=document.getElementById(id);
@@ -2611,6 +2610,8 @@ document.querySelectorAll('.mcd-ck input,.mcd-att-table input').forEach(el=>el.d
   currentMCActivityShort='';
   currentMCCardName='';
   currentCloudMCId=null;
+  currentMCItemNo='';
+  syncMCNumberDisplay();
   updateTypeDisplay();
   syncDocPagination();
 }
@@ -2660,6 +2661,7 @@ const folderId=currentDriveMCFileId?null:await createActivityFolder(actFolderNam
   }catch(e){toast('Warning: photo upload failed.','warning');}
   const data={
     id:currentDriveMCFileId||null,
+    item_no:currentMCItemNo||'',
     wo:mcVal('mcWO'),tag,start_date:start,end_date:mcVal('mcEnd'),
     location:mcVal('mcLoc'),service:mcVal('mcService'),equipment_type:mcVal('mcType'),
     applicable_code:mcVal('mcCode'),background:mcVal('mcBg'),
@@ -2799,13 +2801,18 @@ function loadMCIntoForm(mc){
     document.getElementById('attTorque').checked=mc.attachments.torque||false;
   }
   if(mc.photos){
-    const hasExtraPhotos=mc.photos.slice(4).some(p=>p&&p.src);
-    if(hasExtraPhotos&&!extraPhotoPageAdded)addPhotoPage();
+    let neededPages=0;
+    for(let p=1;p<=MAX_EXTRA_PHOTO_PAGES;p++){
+      const base=4+(p-1)*4;
+      if(mc.photos.slice(base,base+4).some(ph=>ph&&ph.src))neededPages=p;
+    }
+    while(extraPhotoPagesCount<neededPages)addPhotoPage();
     mc.photos.forEach((p,i)=>{
-      if(p.src){photos[i].src=p.src;photos[i].caption=p.caption;renderPhotoSlot(i);}
+      if(p&&p.src){photos[i].src=p.src;photos[i].caption=p.caption;renderPhotoSlot(i);}
     });
-  
   }
+  currentMCItemNo=mc.item_no||'';
+  syncMCNumberDisplay();
   if(mc.activity1B&&mc.activity1B.trim()){
     if(typeof extraActivityPageAdded==='undefined'||!extraActivityPageAdded)addActivityPage();
     const act1B=document.getElementById('mcActivity1B');
