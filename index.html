@@ -548,11 +548,15 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
   </div>
   <div class="sb-nav">
     <div class="sb-section-label">Main</div>
-    <div class="sb-item active" id="nav-tracking" onclick="switchView('tracking')">
+<div class="sb-item active" id="nav-tracking" onclick="switchView('tracking')">
       <span class="sb-item-icon">📋</span> MC History
+    </div>
+    <div class="sb-item" id="nav-new-activity" onclick="openModal()">
+      <span class="sb-item-icon">＋</span> New Activity
     </div>
 <div class="sb-item" id="nav-card" onclick="clearMCForm();currentDriveMCFileId=null;mcViewReturnTarget='tracking';switchView('card')">
       <span class="sb-item-icon">📄</span> New Maintenance Card
+    </div>
     </div>
     <div class="sb-item" id="nav-equipment" onclick="switchView('equipment')">
       <span class="sb-item-icon">🏷️</span> Equipment List
@@ -568,10 +572,7 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
 </div>
 
     <div class="sb-divider"></div>
-    <div class="sb-section-label">Actions</div>
-    <div class="sb-action" onclick="openModal()">
-      <span class="sb-action-icon">＋</span> New Activity
-    </div>
+ <div class="sb-section-label">Actions</div>
     <div class="sb-action" onclick="window.print()">
       <span class="sb-action-icon">🖨️</span> Print
     </div>
