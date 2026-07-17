@@ -2649,7 +2649,16 @@ async function saveMCToDrive(){
   const saveBtn=document.querySelector('[onclick="saveMCToDrive()"]');
 if(saveBtn){saveBtn.textContent='⏳ Saving...';saveBtn.disabled=true;}
   const actFolderName=currentMCCardName||(tag+' · '+start);
-const folderId=currentDriveMCFileId?null:await createActivityFolder(actFolderName,tag,mcVal('mcType'),mcVal('mcLoc'));
+  let folderId=null;
+  if(currentDriveMCFileId){
+    // La MC ya existe en Drive: buscamos su carpeta contenedora real en vez de dejarla en null
+    try{
+      const r=await fetch('https://www.googleapis.com/drive/v3/files/'+currentDriveMCFileId+'?fields=parents',{headers:{Authorization:'Bearer '+googleAccessToken}});
+      const d=await r.json();
+      folderId=(d.parents&&d.parents.length)?d.parents[0]:null;
+    }catch(e){folderId=null;}
+  }
+  if(!folderId)folderId=await createActivityFolder(actFolderName,tag,mcVal('mcType'),mcVal('mcLoc'));
   try{
     for(let i=0;i<photos.length;i++){
       if(photos[i].src&&photos[i].src.startsWith('data:')){
