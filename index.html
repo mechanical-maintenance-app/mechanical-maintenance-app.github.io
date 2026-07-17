@@ -706,7 +706,7 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
         <div style="font-size:11px;font-weight:600;color:var(--silver);text-transform:uppercase;letter-spacing:1px">Saved Maintenance Cards</div>
         <button class="btn btn-red" onclick="loadCloudMCList()">🔄 Refresh</button>
       </div>
-      <div id="cloudMCGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px"></div>
+      <div id="cloudMCGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px"></div>
     </div>
   </div>
   
@@ -2852,6 +2852,7 @@ const fileName=(rec&&rec['MAINTENANCE CARD']?rec['MAINTENANCE CARD']:tag+' · '+
   }catch(e){toast('Error searching Drive MC: '+e.message,'error');}
 }
 
+let allCloudMCs=[];
 async function loadCloudMCList(){
   if(!isTokenValid()){
     document.getElementById('cloudMCGrid').innerHTML='<div style="color:var(--silver);font-size:13px;padding:20px">🔑 Connect Google Drive to view saved MCs.</div>';
@@ -2860,38 +2861,50 @@ async function loadCloudMCList(){
   const grid=document.getElementById('cloudMCGrid');
   grid.innerHTML='<div style="color:var(--silver);font-size:13px">Loading from Drive...</div>';
   const mcs=await loadMCsFromDrive();
-  if(!mcs||!mcs.length){grid.innerHTML='<div style="color:var(--silver);font-size:13px">No MCs saved yet.</div>';return;}
-  const existing=document.getElementById('cloudMCGrid').parentElement.querySelector('.cloud-mc-toolbar');
+  allCloudMCs=mcs||[];
+  const existing=grid.parentElement.querySelector('.cloud-mc-toolbar');
   if(existing)existing.remove();
+  if(!allCloudMCs.length){grid.innerHTML='<div style="color:var(--silver);font-size:13px">No MCs saved yet.</div>';return;}
   const toolbar=document.createElement('div');
   toolbar.className='cloud-mc-toolbar';
-  toolbar.style.cssText='display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:10px 14px;background:white;border:1px solid var(--border);border-radius:6px;';
+  toolbar.style.cssText='display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap';
   toolbar.innerHTML=`
-    <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;font-weight:500">
-      <input type="checkbox" id="selectAllMCs" onchange="toggleSelectAllMCs(this)"> Select All
-    </label>
-    <button class="btn btn-ghost" style="font-size:12px;padding:5px 14px;border-color:#c0392b;color:#c0392b;" onclick="deleteSelectedMCs()">🗑️ Delete Selected</button>
-    <span id="selectedMCCount" style="font-size:11px;color:var(--silver)"></span>`;
-  document.getElementById('cloudMCGrid').before(toolbar);
-  grid.innerHTML=mcs.map((mc,i)=>`
-    <div style="background:white;border:1px solid var(--border);border-radius:8px;padding:16px;box-shadow:var(--shadow);position:relative">
-      <input type="checkbox" class="mc-select-cb" data-id="${mc.id}" onchange="updateSelectedCount()"
-        style="position:absolute;top:12px;right:12px;width:15px;height:15px;accent-color:var(--red);cursor:pointer">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-right:24px">
-        <span class="tag-badge" style="cursor:pointer" onclick="filterByTag('${mc.tag||''}')">${mc.tag||'—'}</span>
-        <span style="font-size:11px;color:var(--silver)">${mc.start_date||'—'}</span>
+    <input type="text" id="cloudMcSearch" placeholder="🔍 Search tag, description, location..." oninput="filterCloudMCList(this.value)" style="flex:1;min-width:220px;padding:9px 14px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;outline:none">
+    <button class="btn btn-ghost" style="font-size:12px;padding:8px 14px;border-color:#c0392b;color:#c0392b;white-space:nowrap" onclick="deleteSelectedMCs()">🗑️ Delete Selected</button>
+    <span id="selectedMCCount" style="font-size:11px;color:var(--silver);white-space:nowrap"></span>`;
+  grid.before(toolbar);
+  renderCloudMCCards(allCloudMCs);
+}
+function filterCloudMCList(q){
+  q=(q||'').trim().toLowerCase();
+  const list=!q?allCloudMCs:allCloudMCs.filter(mc=>{
+    const hay=[mc.tag,mc.activity_short,mc.wo,mc.location,mc.equipment_type,mc.start_date].filter(Boolean).join(' ').toLowerCase();
+    return hay.includes(q);
+  });
+  renderCloudMCCards(list);
+}
+function renderCloudMCCards(mcs){
+  const grid=document.getElementById('cloudMCGrid');
+  if(!mcs.length){grid.innerHTML='<div style="color:var(--silver);font-size:13px;padding:20px">No matching MCs.</div>';return;}
+  grid.innerHTML=mcs.map(mc=>`
+    <div style="background:white;border:1px solid var(--border);border-radius:10px;padding:14px 16px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px">
+      <input type="checkbox" class="mc-select-cb" data-id="${mc.id}" onchange="updateSelectedCount()" style="flex-shrink:0;width:15px;height:15px;accent-color:var(--red);cursor:pointer">
+      <span class="tag-badge" style="cursor:pointer;white-space:nowrap" onclick="filterByTag('${mc.tag||''}')">${mc.tag||'—'}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${mc.activity_short||mc.wo||'No description'}</div>
+        <div style="display:flex;gap:8px;margin-top:4px;align-items:center">
+          <span class="asset-badge" style="white-space:nowrap">${mc.equipment_type||'—'}</span>
+          <span style="font-size:11px;color:var(--silver);white-space:nowrap">${mc.location||'—'} · ${mc.start_date||'—'}</span>
+        </div>
       </div>
-      <div style="font-size:10px;color:var(--silver);margin-bottom:4px">ITEM #${i+1}</div>
-      <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px">${mc.activity_short||mc.wo||'No description'}</div>
-      <div style="font-size:12px;color:var(--text-light);margin-bottom:4px">${mc.location||'—'}</div>
-      <div style="font-size:12px;color:var(--text-light);margin-bottom:12px">${mc.equipment_type||'—'}</div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-ghost" style="flex:1;padding:6px;font-size:12px;border-color:#1565c0;color:#1565c0;" onclick="mcViewReturnTarget='cloudmc';viewMCFromCloud(${JSON.stringify(mc).replace(/"/g,'&quot;')})">👁️ View</button>
-<button class="btn btn-red" style="flex:1;padding:6px;font-size:12px;" onclick="mcViewReturnTarget='cloudmc';loadMCIntoForm(${JSON.stringify(mc).replace(/"/g,'&quot;')})">✏️ Edit</button>
-        <button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="deleteMCFromDrive('${mc.id}').then(loadCloudMCList)">🗑️</button>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="btn btn-ghost" style="padding:6px 9px;font-size:12px;border-color:#1565c0;color:#1565c0;" onclick="mcViewReturnTarget='cloudmc';viewMCFromCloud(${JSON.stringify(mc).replace(/"/g,'&quot;')})">👁️</button>
+        <button class="btn btn-red" style="padding:6px 9px;font-size:12px;" onclick="mcViewReturnTarget='cloudmc';loadMCIntoForm(${JSON.stringify(mc).replace(/"/g,'&quot;')})">✏️</button>
+        <button class="btn btn-ghost" style="padding:6px 9px;font-size:12px" onclick="deleteMCFromDrive('${mc.id}').then(loadCloudMCList)">🗑️</button>
       </div>
     </div>
   `).join('');
+  updateSelectedCount();
 }
 
 function toggleSelectAllMCs(cb){
