@@ -137,7 +137,7 @@ td.wrap{white-space:normal;min-width:220px;max-width:420px;}
 .td-actions{display:flex;gap:7px;}
 .action-btn{width:34px;height:34px;border-radius:6px;border:1.5px solid var(--border);background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .15s;box-shadow:0 1px 3px rgba(26,35,50,.08);}
 .action-btn:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(26,35,50,.15);}
-  .action-btn:hover{border-color:var(--red);background:#fff5f5;}
+.action-btn:hover{border-color:var(--red);background:#fff5f5;}
 .action-btn.edit:hover{border-color:#1565c0;background:#e3f2fd;}
 .action-btn.prnt:hover{border-color:var(--green);background:#e8f5e9;}
 .action-btn.mc:hover{border-color:#8e24aa;background:#f3e5f5;}
@@ -564,6 +564,9 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
     <div class="sb-item" id="nav-cloudmc" onclick="switchView('cloudmc')">
   <span class="sb-item-icon">📁</span> Drive MCs
 </div>
+    <div class="sb-item" id="nav-otherdocs" onclick="switchView('otherdocs')">
+  <span class="sb-item-icon">📑</span> Other Documents
+</div>
 
     <div class="sb-divider"></div>
     <div class="sb-section-label">Analytics</div>
@@ -707,7 +710,74 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
         <div style="font-size:11px;font-weight:600;color:var(--silver);text-transform:uppercase;letter-spacing:1px">Saved Maintenance Cards</div>
         <button class="btn btn-red" onclick="loadCloudMCList()">🔄 Refresh</button>
       </div>
-      <div id="cloudMCGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px"></div>
+      <div id="cloudMCGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;align-items:start"></div>
+    </div>
+  </div>
+
+  <!-- ── OTHER DOCUMENTS VIEW ── -->
+  <div id="otherDocsView" style="display:none">
+    <div style="padding:20px 28px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <div style="font-size:11px;font-weight:600;color:var(--silver);text-transform:uppercase;letter-spacing:1px">Memos · Repair Reports · MOC</div>
+        <button class="btn btn-red" onclick="openNewDocModal()">＋ New Document</button>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
+        <input type="text" id="otherDocsSearch" placeholder="🔍 Search description, tag..." oninput="filterOtherDocsList()" style="flex:1;min-width:220px;padding:9px 14px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;outline:none">
+        <select id="otherDocsTypeFilter" onchange="filterOtherDocsList()" style="padding:9px 14px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;min-width:160px">
+          <option value="">Type: All</option>
+        </select>
+      </div>
+      <div class="table-wrapper" style="margin:0">
+        <div class="table-scroll">
+        <table>
+          <thead><tr>
+            <th>Date</th><th>Type</th><th>Description</th><th>Tag</th><th>File(s)</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="otherDocsTbody"></tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── NEW/EDIT DOCUMENT MODAL ── -->
+  <div class="modal-overlay" id="otherDocModalOverlay">
+    <div class="modal" style="max-width:520px">
+      <div class="modal-header">
+        <div class="modal-title" id="otherDocModalTitle">New Document</div>
+        <button class="modal-close" onclick="closeOtherDocModal()">×</button>
+      </div>
+      <div class="modal-body" style="padding:20px 24px;display:flex;flex-direction:column;gap:14px">
+        <div class="form-group">
+          <label class="form-label">Type</label>
+          <div style="display:flex;gap:8px">
+            <select id="odType" class="form-input" style="flex:1" onchange="if(this.value==='__new__')addNewDocType();"></select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input type="date" id="odDate" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea id="odDescription" class="form-input" rows="3" style="resize:vertical"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Associated Tag</label>
+          <input type="text" id="odTag" class="form-input" list="odTagList" placeholder="e.g. B-PK-2401C" oninput="odTagValid=false" onblur="validateOdTag()">
+          <datalist id="odTagList"></datalist>
+          <div id="odTagWarning" style="display:none;color:var(--red);font-size:11px;margin-top:4px">⚠️ This tag doesn't match any tag in your Equipment List.</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">File(s)</label>
+          <input type="file" id="odFiles" multiple style="width:100%">
+          <div style="font-size:11px;color:var(--silver);margin-top:4px">You can attach more than one file.</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeOtherDocModal()">Cancel</button>
+        <button class="btn btn-red" id="odSaveBtn" onclick="saveOtherDoc()">💾 Save Document</button>
+      </div>
     </div>
   </div>
   
@@ -1270,7 +1340,8 @@ function switchView(view){
   document.getElementById('mcView').style.display=view==='card'?'flex':'none';
  document.getElementById('dashView').style.display=view==='dashboard'?'block':'none';
 document.getElementById('cloudmcView').style.display=view==='cloudmc'?'block':'none';
-  const viewIds={tracking:'trackingView',card:'mcView',equipment:'eqView',dashboard:'dashView',cloudmc:'cloudmcView'};
+document.getElementById('otherDocsView').style.display=view==='otherdocs'?'block':'none';
+  const viewIds={tracking:'trackingView',card:'mcView',equipment:'eqView',dashboard:'dashView',cloudmc:'cloudmcView',otherdocs:'otherDocsView'};
   const activeEl=document.getElementById(viewIds[view]);
   if(activeEl){
     activeEl.classList.remove('view-fade-in');
@@ -1278,12 +1349,13 @@ document.getElementById('cloudmcView').style.display=view==='cloudmc'?'block':'n
     activeEl.classList.add('view-fade-in');
   }
   document.getElementById('mcBottomBar').classList.toggle('hidden',view!=='card');
-['tracking','card','equipment','dashboard','cloudmc'].forEach(v=>{
+['tracking','card','equipment','dashboard','cloudmc','otherdocs'].forEach(v=>{
     const el=document.getElementById('nav-'+v);
     if(el){el.className='sb-item'+(v===view?' active'+(currentDiscipline==='rotating'?' rot':''):'');}
   });
-const titles={tracking:'MC <span>History</span>',card:'Maintenance <span>Card</span>',equipment:'Equipment <span>List</span>',dashboard:'<span>Dashboard</span>',cloudmc:'Cloud <span>MCs</span>'};  document.getElementById('mainTitle').innerHTML=titles[view]||'';
+const titles={tracking:'MC <span>History</span>',card:'Maintenance <span>Card</span>',equipment:'Equipment <span>List</span>',dashboard:'<span>Dashboard</span>',cloudmc:'Cloud <span>MCs</span>',otherdocs:'Other <span>Documents</span>'};  document.getElementById('mainTitle').innerHTML=titles[view]||'';
   if(view==='equipment'&&equipmentList.length)renderEquipment(equipmentList);
+  if(view==='otherdocs')loadOtherDocsList();
   if(view==='card'){
     setTimeout(()=>{
       const doc=document.getElementById('mcDoc');
@@ -1639,7 +1711,7 @@ return`<tr>
       <td style="font-size:12px;color:var(--text-light);max-width:130px;white-space:normal">${inspLink}</td>
       <td>${fb}</td>
 <td><div class="td-actions">
-       <button class="action-btn edit" title="Edit" onclick="editRecord(${r.rowIndex})">✏️</button>
+        <button class="action-btn edit" title="Edit" onclick="editRecord(${r.rowIndex})">✏️</button>
         <button class="action-btn mc" title="Generate MC" onclick="generateMC(${r.rowIndex})">📄</button>
         <button class="action-btn" title="Delete" onclick="deleteRecord(${r.rowIndex})">🗑️</button>
 </div></td>
@@ -2889,7 +2961,7 @@ function renderCloudMCCards(mcs){
   grid.innerHTML=mcs.map(mc=>`
     <div style="background:white;border:1px solid var(--border);border-radius:10px;padding:14px 16px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px">
       <input type="checkbox" class="mc-select-cb" data-id="${mc.id}" onchange="updateSelectedCount()" style="flex-shrink:0;width:15px;height:15px;accent-color:var(--red);cursor:pointer">
-    <span class="tag-badge" style="cursor:pointer;white-space:nowrap" onclick="filterByTag('${mc.tag||''}')">${mc.tag||'—'}</span>
+      <span class="tag-badge" style="cursor:pointer;white-space:nowrap" onclick="filterByTag('${mc.tag||''}')">${mc.tag||'—'}</span>
       ${mc.item_no?`<span style="font-size:11px;color:var(--silver);font-family:Consolas,monospace;white-space:nowrap;flex-shrink:0">MC #${mc.item_no}</span>`:''}
       <div style="flex:1;min-width:0">
         <div style="font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${mc.activity_short||mc.wo||'No description'}</div>
@@ -2926,6 +2998,195 @@ async function deleteSelectedMCs(){
   if(!confirm('Delete '+selected.length+' MC(s) from Drive?'))return;
   for(const id of selected)await deleteMCFromDrive(id);
   loadCloudMCList();
+}
+
+  // ── OTHER DOCUMENTS (Memos · Repair Reports · MOC) ──────────────────────
+let knownDocTypes=['Memo','Reporte de Reparación','MOC'];
+let allOtherDocs=[];
+let odEditingId=null; // id del JSON que se está editando (null = nuevo)
+let odTagValid=false;
+
+async function driveQuery(q,fields){
+  const headers={Authorization:'Bearer '+googleAccessToken};
+  const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files('+fields+')',{headers});
+  const d=await r.json();
+  return d.files||[];
+}
+async function uploadGenericFileToFolder(file,folderId){
+  const metadata={name:file.name};
+  if(folderId)metadata.parents=[folderId];
+  const form=new FormData();
+  form.append('metadata',new Blob([JSON.stringify(metadata)],{type:'application/json'}));
+  form.append('file',file);
+  const res=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink,mimeType,name',{
+    method:'POST',headers:{Authorization:'Bearer '+googleAccessToken},body:form});
+  const data=await res.json();
+  if(!data.id)throw new Error('File upload failed');
+  return {url:data.webViewLink,name:data.name,mimeType:data.mimeType};
+}
+
+function populateOdTypeSelect(){
+  const sel=document.getElementById('odType');
+  if(!sel)return;
+  const current=sel.value;
+  sel.innerHTML=knownDocTypes.map(t=>`<option value="${t}">${t}</option>`).join('')+`<option value="__new__">＋ Add new type...</option>`;
+  if(current&&knownDocTypes.includes(current))sel.value=current;
+}
+function addNewDocType(){
+  const name=prompt('New document type name:');
+  const sel=document.getElementById('odType');
+  if(!name||!name.trim()){if(sel)sel.value=knownDocTypes[0];return;}
+  const clean=name.trim();
+  if(!knownDocTypes.includes(clean))knownDocTypes.push(clean);
+  populateOdTypeSelect();
+  if(sel)sel.value=clean;
+}
+function populateOdTypeFilter(){
+  const sel=document.getElementById('otherDocsTypeFilter');
+  if(!sel)return;
+  const current=sel.value;
+  sel.innerHTML='<option value="">Type: All</option>'+knownDocTypes.map(t=>`<option value="${t}">${t}</option>`).join('');
+  sel.value=current;
+}
+function populateOdTagList(){
+  const dl=document.getElementById('odTagList');
+  if(!dl||!equipmentList.length)return;
+  const tagKey=Object.keys(equipmentList[0]||{}).find(k=>k.toUpperCase().includes('TAG'))||'TAG';
+  const tags=[...new Set(equipmentList.map(e=>e[tagKey]).filter(Boolean))];
+  dl.innerHTML=tags.map(t=>`<option value="${t}">`).join('');
+}
+function validateOdTag(){
+  const val=document.getElementById('odTag').value.trim().toUpperCase();
+  const warn=document.getElementById('odTagWarning');
+  if(!val){odTagValid=false;if(warn)warn.style.display='none';return;}
+  const tagKey=Object.keys(equipmentList[0]||{}).find(k=>k.toUpperCase().includes('TAG'))||'TAG';
+  const match=equipmentList.some(e=>String(e[tagKey]||'').toUpperCase()===val);
+  odTagValid=match;
+  if(warn)warn.style.display=match?'none':'block';
+}
+
+function openNewDocModal(doc){
+  odEditingId=doc?doc.id:null;
+  document.getElementById('otherDocModalTitle').textContent=doc?'Edit Document':'New Document';
+  populateOdTypeSelect();
+  populateOdTagList();
+  document.getElementById('odType').value=doc?doc.type:(knownDocTypes[0]||'');
+  document.getElementById('odDate').value=doc?(doc.date||''):new Date().toISOString().substring(0,10);
+  document.getElementById('odDescription').value=doc?(doc.description||''):'';
+  document.getElementById('odTag').value=doc?(doc.tag||''):'';
+  document.getElementById('odFiles').value='';
+  odTagValid=!!doc;
+  document.getElementById('odTagWarning').style.display='none';
+  document.getElementById('otherDocModalOverlay').classList.add('open');
+}
+function closeOtherDocModal(){
+  document.getElementById('otherDocModalOverlay').classList.remove('open');
+  odEditingId=null;
+}
+
+async function saveOtherDoc(){
+  if(!isTokenValid()){toast('Connect Google Drive first.','warning');return;}
+  const type=document.getElementById('odType').value;
+  const date=document.getElementById('odDate').value;
+  const description=document.getElementById('odDescription').value.trim();
+  const tag=document.getElementById('odTag').value.trim().toUpperCase();
+  const filesInput=document.getElementById('odFiles');
+  if(!type||!date||!description||!tag){toast('Fill type, date, description and tag.','error');return;}
+  validateOdTag();
+  if(!odTagValid){toast('That tag does not match your Equipment List.','error');return;}
+  const btn=document.getElementById('odSaveBtn');
+  btn.textContent='⏳ Saving...';btn.disabled=true;
+  try{
+    let folder=await driveSearchFolder(type,null,true);
+    if(!folder)folder=await driveCreateFolder(type,null);
+    const existing=odEditingId?allOtherDocs.find(d=>d.id===odEditingId):null;
+    const uploadedFiles=existing?existing.files||[]:[];
+    for(const f of filesInput.files){
+      const up=await uploadGenericFileToFolder(f,folder.id);
+      uploadedFiles.push(up);
+    }
+    const entry={type,date,description,tag,files:uploadedFiles};
+    const jsonBlob=new Blob([JSON.stringify(entry)],{type:'application/json'});
+    if(odEditingId){
+      await fetch('https://www.googleapis.com/upload/drive/v3/files/'+odEditingId+'?uploadType=media',{
+        method:'PATCH',headers:{Authorization:'Bearer '+googleAccessToken,'Content-Type':'application/json'},body:jsonBlob});
+    }else{
+      const metadata={name:'doc_'+Date.now()+'.json',parents:[folder.id]};
+      const form=new FormData();
+      form.append('metadata',new Blob([JSON.stringify(metadata)],{type:'application/json'}));
+      form.append('file',jsonBlob);
+      await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{
+        method:'POST',headers:{Authorization:'Bearer '+googleAccessToken},body:form});
+    }
+    toast('Document saved ✅','success');
+    closeOtherDocModal();
+    loadOtherDocsList();
+  }catch(e){console.error(e);toast('Error saving document.','error');}
+  btn.textContent='💾 Save Document';btn.disabled=false;
+}
+
+async function loadOtherDocsList(){
+  if(!isTokenValid()){
+    document.getElementById('otherDocsTbody').innerHTML='<tr><td colspan="6" style="padding:20px;color:var(--silver)">🔑 Connect Google Drive to view documents.</td></tr>';
+    return;
+  }
+  document.getElementById('otherDocsTbody').innerHTML='<tr><td colspan="6" style="padding:20px;color:var(--silver)">Loading...</td></tr>';
+  let all=[];
+  for(const type of knownDocTypes){
+    const folder=await driveSearchFolder(type,null,true);
+    if(!folder)continue;
+    const files=await driveQuery(`'${folder.id}' in parents and mimeType='application/json' and trashed=false`,'id,name');
+    for(const f of files){
+      try{
+        const r=await fetch('https://www.googleapis.com/drive/v3/files/'+f.id+'?alt=media',{headers:{Authorization:'Bearer '+googleAccessToken}});
+        const doc=await r.json();
+        doc.id=f.id;doc.type=doc.type||type;
+        all.push(doc);
+      }catch(e){}
+    }
+  }
+  const foundTypes=[...new Set(all.map(d=>d.type).filter(Boolean))];
+  foundTypes.forEach(t=>{if(!knownDocTypes.includes(t))knownDocTypes.push(t);});
+  populateOdTypeFilter();
+  allOtherDocs=all.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  renderOtherDocsList(allOtherDocs);
+}
+function filterOtherDocsList(){
+  const q=(document.getElementById('otherDocsSearch').value||'').trim().toLowerCase();
+  const type=document.getElementById('otherDocsTypeFilter').value;
+  let list=allOtherDocs;
+  if(type)list=list.filter(d=>d.type===type);
+  if(q)list=list.filter(d=>[d.description,d.tag].filter(Boolean).join(' ').toLowerCase().includes(q));
+  renderOtherDocsList(list);
+}
+function renderOtherDocsList(docs){
+  const tbody=document.getElementById('otherDocsTbody');
+  if(!docs.length){tbody.innerHTML='<tr><td colspan="6" style="padding:20px;color:var(--silver)">No documents found.</td></tr>';return;}
+  tbody.innerHTML=docs.map(d=>{
+    const filesHtml=(d.files||[]).map(f=>`<a href="${f.url}" target="_blank" rel="noopener" class="file-btn type-file" style="margin-right:4px">📄 ${f.name.length>14?f.name.substring(0,12)+'…':f.name}</a>`).join('')||'<span style="color:var(--silver);font-size:12px">—</span>';
+    return `
+    <tr>
+      <td style="font-size:12px;color:var(--text-light);white-space:nowrap">${d.date||'—'}</td>
+      <td><span class="asset-badge">${d.type||'—'}</span></td>
+      <td style="font-size:12px;color:var(--text-light);max-width:280px;white-space:normal">${d.description||''}</td>
+      <td><span class="tag-badge" style="cursor:pointer" onclick="filterByTag('${d.tag||''}')">${d.tag||'—'}</span></td>
+      <td>${filesHtml}</td>
+      <td><div class="td-actions">
+        <button class="action-btn edit" title="Edit" onclick='openNewDocModal(${JSON.stringify(d).replace(/"/g,'&quot;')})'>✏️</button>
+        <button class="action-btn" title="Delete" onclick="deleteOtherDoc('${d.id}')">🗑️</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+async function deleteOtherDoc(id){
+  if(!confirm('Delete this document record? (attached files stay in Drive, only the record is removed)'))return;
+  try{
+    await fetch('https://www.googleapis.com/drive/v3/files/'+id,{
+      method:'PATCH',headers:{Authorization:'Bearer '+googleAccessToken,'Content-Type':'application/json'},
+      body:JSON.stringify({trashed:true})});
+    toast('Document removed.','info');
+    loadOtherDocsList();
+  }catch(e){toast('Error deleting document.','error');}
 }
 
   // ── DASHBOARD ──────────────────────────────────
