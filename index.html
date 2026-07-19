@@ -2861,7 +2861,7 @@ async function loadCloudMCList(){
   const grid=document.getElementById('cloudMCGrid');
   grid.innerHTML='<div style="color:var(--silver);font-size:13px">Loading from Drive...</div>';
   const mcs=await loadMCsFromDrive();
-  allCloudMCs=mcs||[];
+  allCloudMCs=(mcs||[]).slice().sort((a,b)=>(parseInt(b.item_no)||0)-(parseInt(a.item_no)||0));
   const existing=grid.parentElement.querySelector('.cloud-mc-toolbar');
   if(existing)existing.remove();
   if(!allCloudMCs.length){grid.innerHTML='<div style="color:var(--silver);font-size:13px">No MCs saved yet.</div>';return;}
@@ -2878,7 +2878,7 @@ async function loadCloudMCList(){
 function filterCloudMCList(q){
   q=(q||'').trim().toLowerCase();
   const list=!q?allCloudMCs:allCloudMCs.filter(mc=>{
-    const hay=[mc.tag,mc.activity_short,mc.wo,mc.location,mc.equipment_type,mc.start_date].filter(Boolean).join(' ').toLowerCase();
+    const hay=[mc.tag,mc.activity_short,mc.wo,mc.location,mc.equipment_type,mc.start_date,mc.item_no].filter(Boolean).join(' ').toLowerCase();
     return hay.includes(q);
   });
   renderCloudMCCards(list);
@@ -2889,7 +2889,8 @@ function renderCloudMCCards(mcs){
   grid.innerHTML=mcs.map(mc=>`
     <div style="background:white;border:1px solid var(--border);border-radius:10px;padding:14px 16px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px">
       <input type="checkbox" class="mc-select-cb" data-id="${mc.id}" onchange="updateSelectedCount()" style="flex-shrink:0;width:15px;height:15px;accent-color:var(--red);cursor:pointer">
-      <span class="tag-badge" style="cursor:pointer;white-space:nowrap" onclick="filterByTag('${mc.tag||''}')">${mc.tag||'—'}</span>
+    <span class="tag-badge" style="cursor:pointer;white-space:nowrap" onclick="filterByTag('${mc.tag||''}')">${mc.tag||'—'}</span>
+      ${mc.item_no?`<span style="font-size:11px;color:var(--silver);font-family:Consolas,monospace;white-space:nowrap;flex-shrink:0">MC #${mc.item_no}</span>`:''}
       <div style="flex:1;min-width:0">
         <div style="font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${mc.activity_short||mc.wo||'No description'}</div>
         <div style="display:flex;gap:8px;margin-top:4px;align-items:center">
