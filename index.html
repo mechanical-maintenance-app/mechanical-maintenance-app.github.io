@@ -1438,8 +1438,57 @@ function jsonp(params){
 
 // ── GOOGLE OAUTH ──────────────────────────────
 function signInGoogle(){
+  saveDraftBeforeReauth();
   const params=new URLSearchParams({client_id:GOOGLE_CLIENT_ID,redirect_uri:window.location.origin+window.location.pathname,response_type:'token',scope:DRIVE_SCOPE,prompt:'select_account'});
   window.location.href='https://accounts.google.com/o/oauth2/v2/auth?'+params.toString();
+}
+// Antes de mandar al usuario a la pantalla de login de Google (que recarga toda la página
+// y borra cualquier cosa sin guardar), respaldamos el texto de la MC que esté editando.
+// Las fotos NO se incluyen (podrían exceder el límite de localStorage) — solo el texto.
+function saveDraftBeforeReauth(){
+  try{
+    if(currentView!=='card')return;
+    const draft={
+      tag:mcVal('mcTag'),wo:mcVal('mcWO'),start:mcVal('mcStart'),end:mcVal('mcEnd'),
+      location:mcVal('mcLoc'),service:mcVal('mcService'),type:mcVal('mcType'),code:mcVal('mcCode'),
+      bg:mcVal('mcBg'),scope:mcVal('mcScope'),activity:mcVal('mcActivity'),
+      activity1B:document.getElementById('mcActivity1B')?document.getElementById('mcActivity1B').innerHTML:'',
+      comments:mcVal('mcComments'),
+      currentMCCardName,currentMCActivityShort,currentMCItemNo,currentDriveMCFileId,
+      savedAt:Date.now()
+    };
+    localStorage.setItem('mcDraftBackup',JSON.stringify(draft));
+  }catch(e){console.error('saveDraftBeforeReauth:',e);}
+}
+function restoreDraftIfAny(){
+  try{
+    const raw=localStorage.getItem('mcDraftBackup');
+    if(!raw)return;
+    const draft=JSON.parse(raw);
+    localStorage.removeItem('mcDraftBackup');
+    if(Date.now()-draft.savedAt>1000*60*60*6)return; // descarta respaldos de más de 6 horas
+    if(!confirm('We found an unsaved Maintenance Card from before you reconnected to Drive. Restore it now?'))return;
+    switchView('card');
+    setTimeout(()=>{
+      const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val||'';};
+      const setHtml=(id,val)=>{const el=document.getElementById(id);if(el)el.innerHTML=val||'';};
+      set('mcTag',draft.tag);set('mcWO',draft.wo);set('mcStart',draft.start);set('mcEnd',draft.end);
+      set('mcLoc',draft.location);set('mcService',draft.service);set('mcType',draft.type);set('mcCode',draft.code);
+      setHtml('mcBg',draft.bg);setHtml('mcScope',draft.scope);setHtml('mcActivity',draft.activity);
+      setHtml('mcComments',draft.comments);
+      if(draft.activity1B&&draft.activity1B.trim()){
+        if(typeof extraActivityPageAdded==='undefined'||!extraActivityPageAdded)addActivityPage();
+        setHtml('mcActivity1B',draft.activity1B);
+      }
+      currentMCCardName=draft.currentMCCardName||'';
+      currentMCActivityShort=draft.currentMCActivityShort||'';
+      currentMCItemNo=draft.currentMCItemNo||'';
+      currentDriveMCFileId=draft.currentDriveMCFileId||null;
+      updateTypeDisplay();
+      syncMCNumberDisplay();
+      toast('Previous progress restored ✅ (photos were not backed up — please re-attach them)','success');
+    },200);
+  }catch(e){console.error('restoreDraftIfAny:',e);}
 }
 function checkGoogleToken(){
   const hash=window.location.hash;
@@ -1453,6 +1502,7 @@ function checkGoogleToken(){
     history.replaceState(null,'',window.location.pathname);
     updateGoogleBtn(true);
     toast('Google Drive connected!','success');
+    restoreDraftIfAny();
   }else{
     const saved=localStorage.getItem('gat');
     const exp=parseInt(localStorage.getItem('gatExp'))||0;
@@ -1465,8 +1515,29 @@ function checkGoogleToken(){
 }
 function updateGoogleBtn(connected){
   const btn=document.getElementById('googleSignInBtn');if(!btn)return;
-  if(connected){btn.innerHTML='<span>✅</span> Drive Connected';btn.style.color='#4cd98a';btn.style.borderColor='#4cd98a';btn.onclick=null;btn.style.cursor='default';}
+  if(connected){
+    btn.innerHTML='<span>✅</span> Drive Connected';btn.style.color='#4cd98a';btn.style.borderColor='#4cd98a';btn.onclick=null;btn.style.cursor='default';
+  }else{
+    btn.innerHTML='🔑 Connect Drive';btn.style.color='rgba(255,255,255,.8)';btn.style.borderColor='rgba(255,255,255,.25)';btn.onclick=signInGoogle;btn.style.cursor='pointer';
+  }
 }
+// Revisa periódicamente si el token sigue realmente vigente y corrige el botón si no.
+// Antes esto solo se pintaba una vez y se quedaba verde para siempre aunque el token expirara.
+let _mcTokenWarned=false;
+function refreshGoogleBtnState(){
+  if(!googleAccessToken)return; // nunca se conectó, no hay nada que corregir
+  if(isTokenValid()){
+    const msLeft=googleTokenExpiry-Date.now();
+    if(msLeft<5*60*1000&&!_mcTokenWarned){
+      _mcTokenWarned=true;
+      toast('Your Google Drive session expires in a few minutes. Save your progress soon.','warning');
+    }
+  }else{
+    _mcTokenWarned=false;
+    updateGoogleBtn(false);
+  }
+}
+setInterval(refreshGoogleBtnState,60000);
 function isTokenValid(){return googleAccessToken&&Date.now()<googleTokenExpiry;}
 // ── DRIVE FILE UPLOAD ──────────────────────────
 let selectedFile=null;
