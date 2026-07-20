@@ -2287,7 +2287,7 @@ try{
       {headers:{Authorization:'Bearer '+googleAccessToken}});
     const d=await res.json();
     if(d.files&&d.files.length){
-      mcEl.innerHTML='<span class="expand-mc-badge found">\u2705 MC saved in Drive</span> <button style="margin-left:8px;padding:2px 8px;font-size:11px;border:1px solid #1565c0;color:#1565c0;border-radius:4px;background:white;cursor:pointer" onclick="openCloudMCFromHistory(\''+tag+'\',\''+date+'\')">👁️ View</button>';
+      mcEl.innerHTML='<span class="expand-mc-badge found">\u2705 MC saved in Drive</span> <button style="margin-left:8px;padding:2px 8px;font-size:11px;border:1px solid #1565c0;color:#1565c0;border-radius:4px;background:white;cursor:pointer" onclick="openCloudMCFromHistory(\''+tag+'\',\''+date+'\')">👁️ View</button> <button style="margin-left:6px;padding:2px 8px;font-size:11px;border:1px solid #c0392b;color:#c0392b;border-radius:4px;background:white;cursor:pointer;font-weight:600" onclick="openCloudMCFromHistory(\''+tag+'\',\''+date+'\',\'edit\')">✏️ EDIT MC</button>';
     }else{
       mcEl.innerHTML='<span class="expand-mc-badge notfound">\uD83D\uDCC4 No MC in Drive yet</span>';
     }
@@ -2976,7 +2976,7 @@ function loadMCIntoForm(mc){
   toast('MC loaded from Drive.','info');
 }
 
-async function openCloudMCFromHistory(tag,date){
+async function openCloudMCFromHistory(tag,date,mode){
   if(!isTokenValid()){toast('Connect Drive to search MCs.','warning');return;}
   mcViewReturnTarget='tracking';
   toast('Searching Drive MC...','info');
@@ -2991,7 +2991,7 @@ const fileName=(rec&&rec['MAINTENANCE CARD']?rec['MAINTENANCE CARD']:tag+' · '+
     const cr=await fetch('https://www.googleapis.com/drive/v3/files/'+d.files[0].id+'?alt=media',
       {headers:{Authorization:'Bearer '+googleAccessToken}});
     const mc=await cr.json();mc.id=d.files[0].id;
-    viewMCFromCloud(mc);
+    if(mode==='edit')loadMCIntoForm(mc);else viewMCFromCloud(mc);
   }catch(e){toast('Error searching Drive MC: '+e.message,'error');}
 }
 
