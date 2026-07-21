@@ -111,7 +111,14 @@ td.wrap{white-space:normal;min-width:220px;max-width:420px;}
 .td-year{font-family:'Rajdhani',sans-serif;font-weight:700;color:var(--navy-light);font-size:14px;}
 @keyframes badgePop{0%{opacity:0;transform:scale(.75);}100%{opacity:1;transform:scale(1);}}@keyframes viewFadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}.view-fade-in{animation:viewFadeIn .28s ease-out;}.tag-badge{display:inline-block;padding:3px 10px;border-radius:14px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;background:linear-gradient(160deg,var(--navy-light),var(--navy));color:white;box-shadow:var(--shadow-badge);animation:badgePop .22s cubic-bezier(.34,1.56,.64,1);}
 .asset-badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;background:linear-gradient(160deg,#eef4ff,#dbe8fd);color:#0c447c;white-space:nowrap;box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 1px 2px rgba(12,68,124,.15);animation:badgePop .22s cubic-bezier(.34,1.56,.64,1);}
-.refinery-badge{font-size:11px;font-weight:600;color:var(--text-light);background:var(--bg);padding:2px 8px;border-radius:3px;}
+.fm-badge{display:inline-block;padding:2px 9px;border-radius:6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;animation:badgePop .22s cubic-bezier(.34,1.56,.64,1);}
+.fm-badge.leak{background:linear-gradient(160deg,#fdecea,#fbd8d3);color:#a13a2f;}
+.fm-badge.low-efficiency{background:linear-gradient(160deg,#fff6e0,#ffe0a3);color:#8a5a00;}
+.fm-badge.internal-passing{background:linear-gradient(160deg,#f3e5f5,#e6cbea);color:#6a1b7a;}
+.fm-badge.other{background:linear-gradient(160deg,#eef1f5,#dde3ec);color:#5a6a80;}
+.exp-mc-btn{transition:all .15s;box-shadow:0 1px 2px rgba(26,35,50,.08);}
+.exp-mc-btn:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(26,35,50,.18);}
+  .refinery-badge{font-size:11px;font-weight:600;color:var(--text-light);background:var(--bg);padding:2px 8px;border-radius:3px;}
 .insp-link{color:var(--text-light);text-decoration:none;border-bottom:1px dashed var(--silver);}
 .insp-link.found{color:#1565c0;border-bottom:1px solid #1565c0;cursor:pointer;font-weight:500;}
 .insp-link.found:hover{color:var(--red);border-color:var(--red);}
@@ -1795,8 +1802,11 @@ return`<tr>
     </tr>
     <tr class="expand-row" id="exp_${r.rowIndex}">
       <td class="expand-cell" colspan="11">
-        <div class="expand-comment">
-          <strong style="font-size:10px;color:var(--silver);text-transform:uppercase;letter-spacing:1px">Comments</strong><br>
+     <div class="expand-comment">
+          <span style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+            <strong style="font-size:10px;color:var(--silver);text-transform:uppercase;letter-spacing:1px">Comments</strong>
+            ${r['FAILURE MODE']?`<span class="fm-badge ${fmClass(r['FAILURE MODE'])}">${String(r['FAILURE MODE']).toUpperCase()}</span>`:''}
+          </span>
           ${r['COMMENTS']||'<em style="color:var(--silver)">No comments</em>'}
         </div>
         <div id="exp_mc_${r.rowIndex}"><span class="expand-mc-badge notfound">⏳ Checking Drive MC...</span></div>
@@ -2294,7 +2304,7 @@ try{
       {headers:{Authorization:'Bearer '+googleAccessToken}});
     const d=await res.json();
     if(d.files&&d.files.length){
-      mcEl.innerHTML='<span class="expand-mc-badge found">\u2705 MC saved in Drive</span> <button style="margin-left:8px;padding:2px 8px;font-size:11px;border:1px solid #1565c0;color:#1565c0;border-radius:4px;background:white;cursor:pointer" onclick="openCloudMCFromHistory(\''+tag+'\',\''+date+'\')">👁️ View</button> <button style="margin-left:6px;padding:2px 8px;font-size:11px;border:1px solid #c0392b;color:#c0392b;border-radius:4px;background:white;cursor:pointer;font-weight:600" onclick="openCloudMCFromHistory(\''+tag+'\',\''+date+'\',\'edit\')">✏️ EDIT MC</button>';
+      mcEl.innerHTML='<span class="expand-mc-badge found">\u2705 MC saved in Drive</span> <button class="exp-mc-btn" style="margin-left:8px;padding:2px 8px;font-size:11px;border:1px solid #1565c0;color:#1565c0;border-radius:4px;background:white;cursor:pointer;font-weight:600" onclick="openCloudMCFromHistory(\''+tag+'\',\''+date+'\')">👁️ VIEW</button> <button class="exp-mc-btn" style="margin-left:6px;padding:2px 8px;font-size:11px;border:1px solid #c0392b;color:#c0392b;border-radius:4px;background:white;cursor:pointer;font-weight:600" onclick="openCloudMCFromHistory(\''+tag+'\',\''+date+'\',\'edit\')">✏️ EDIT MC</button>';
     }else{
       mcEl.innerHTML='<span class="expand-mc-badge notfound">\uD83D\uDCC4 No MC in Drive yet</span>';
     }
@@ -2317,6 +2327,14 @@ function clearTooltip(el){
   el.classList.remove('active');
 }
 // ── TOAST ──────────────────────────────────────
+  function fmClass(val){
+  const v=(val||'').toUpperCase();
+  if(v==='LEAK')return'leak';
+  if(v==='LOW EFFICIENCY')return'low-efficiency';
+  if(v==='INTERNAL PASSING')return'internal-passing';
+  if(v)return'other';
+  return'';
+}
 function toast(msg,type='info'){const t=document.createElement('div');t.className=`toast ${type}`;t.innerHTML=`<span>${type==='success'?'✅':type==='error'?'❌':type==='warning'?'⚠️':'ℹ️'}</span> ${msg}`;document.getElementById('toastContainer').appendChild(t);setTimeout(()=>t.remove(),5000);}
 document.getElementById('modalOverlay').addEventListener('click',e=>{e.stopPropagation();});
 
