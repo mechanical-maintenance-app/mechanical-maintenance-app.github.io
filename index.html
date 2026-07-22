@@ -118,7 +118,7 @@ td.wrap{white-space:normal;min-width:220px;max-width:420px;}
 .fm-badge.other{background:linear-gradient(160deg,#eef1f5,#dde3ec);color:#5a6a80;}
 .exp-mc-btn{transition:all .15s;box-shadow:0 1px 2px rgba(26,35,50,.08);}
 .exp-mc-btn:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(26,35,50,.18);}
-  .refinery-badge{font-size:11px;font-weight:600;color:var(--text-light);background:var(--bg);padding:2px 8px;border-radius:3px;}
+.refinery-badge{font-size:11px;font-weight:600;color:var(--text-light);background:var(--bg);padding:2px 8px;border-radius:3px;}
 .insp-link{color:var(--text-light);text-decoration:none;border-bottom:1px dashed var(--silver);}
 .insp-link.found{color:#1565c0;border-bottom:1px solid #1565c0;cursor:pointer;font-weight:500;}
 .insp-link.found:hover{color:var(--red);border-color:var(--red);}
@@ -738,7 +738,7 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
         <div class="table-scroll">
         <table>
           <thead><tr>
-            <th>Date</th><th>Type</th><th>Description</th><th>Tag</th><th>File(s)</th><th>Actions</th>
+            <th>Date</th><th>Type</th><th>Description</th><th>Equip. Type</th><th>Area</th><th>Tag</th><th>File(s)</th><th>Actions</th>
           </tr></thead>
           <tbody id="otherDocsTbody"></tbody>
         </table>
@@ -769,11 +769,43 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
           <label class="form-label">Description</label>
           <textarea id="odDescription" class="form-input" rows="3" style="resize:vertical"></textarea>
         </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group">
+            <label class="form-label">Equipment Type</label>
+            <select id="odEquipType" class="form-input">
+              <option value="">— Select —</option>
+              <option value="1.- FAN COOLER">1.- Fan Cooler</option>
+              <option value="2.- HEAT EXCHANGER">2.- Heat Exchanger</option>
+              <option value="3.- BOILER">3.- Boiler</option>
+              <option value="4.- HEATER">4.- Heater</option>
+              <option value="5.- TANK">5.- Tank</option>
+              <option value="6.- VESSEL">6.- Vessel</option>
+              <option value="7.- TOWER">7.- Tower</option>
+              <option value="8.- COOLING TOWER">8.- Cooling Tower</option>
+              <option value="9.- REACTOR">9.- Reactor</option>
+              <option value="10.- VALVE">10.- Valve</option>
+              <option value="11.- PIPE">11.- Pipe</option>
+              <option value="12.- OTHER">12.- Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Area</label>
+            <select id="odArea" class="form-input">
+              <option value="">— Select —</option>
+              <option value="KAR-1">KAR-1</option>
+              <option value="KAR-1 Unit-1">KAR-1 Unit-1</option>
+              <option value="KAR-1 Unit-2">KAR-1 Unit-2</option>
+              <option value="KAR-1 Unit-3">KAR-1 Unit-3</option>
+              <option value="KAR-2">KAR-2</option>
+              <option value="KAR-2 Unit-4">KAR-2 Unit-4</option>
+              <option value="KAR-2 Plant-B">KAR-2 Plant-B</option>
+              <option value="KAR-2 Plant-C">KAR-2 Plant-C</option>
+            </select>
+          </div>
+        </div>
         <div class="form-group">
-          <label class="form-label">Associated Tag</label>
-          <input type="text" id="odTag" class="form-input" list="odTagList" placeholder="e.g. B-PK-2401C" oninput="odTagValid=false" onblur="validateOdTag()">
-          <datalist id="odTagList"></datalist>
-          <div id="odTagWarning" style="display:none;color:var(--red);font-size:11px;margin-top:4px">⚠️ This tag doesn't match any tag in your Equipment List.</div>
+          <label class="form-label">Tag <span style="font-size:10px;color:var(--silver);font-weight:400">(free text)</span></label>
+          <input type="text" id="odTag" class="form-input" placeholder="e.g. B-PK-2401C">
         </div>
         <div class="form-group">
           <label class="form-label">File(s)</label>
@@ -1269,14 +1301,15 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
   <option value="KAR-2 Plant-C">KAR-2 Plant-C</option>
 </select></div>
         <div class="form-group"><label class="form-label">Item No.</label><input type="text" class="form-input" id="fItemNo" placeholder="Auto"></div>
-<div class="form-group full"><label class="form-label">Activity Description <span class="req">*</span></label><input type="text" class="form-input" id="fActivity" placeholder="e.g. BUNDLE REPLACEMENT"></div>
-<div class="form-group full"><label class="form-label">Failure Mode</label><select class="form-input" id="fFailureMode">
-  <option value="">— Select —</option>
-  <option value="LEAK">Leak</option>
-  <option value="LOW EFFICIENCY">Low Efficiency</option>
-  <option value="INTERNAL PASSING">Internal Passing</option>
-  <option value="OTHER">Other</option>
-</select></div>        <div class="form-group full"><label class="form-label">Insp. Notes</label><textarea class="form-textarea" id="fRemark" placeholder="Inspection notes..."></textarea></div> <div class="form-group full"><label class="form-label">Additional Comments</label><textarea class="form-textarea" id="fComments" placeholder="Additional comments..."></textarea></div>
+        <div class="form-group full"><label class="form-label">Activity Description <span class="req">*</span></label><input type="text" class="form-input" id="fActivity" placeholder="e.g. BUNDLE REPLACEMENT"></div>
+        <div class="form-group full"><label class="form-label">Failure Mode</label><select class="form-input" id="fFailureMode">
+          <option value="">— Select —</option>
+          <option value="LEAK">Leak</option>
+          <option value="LOW EFFICIENCY">Low Efficiency</option>
+          <option value="INTERNAL PASSING">Internal Passing</option>
+          <option value="OTHER">Other</option>
+        </select></div>
+        <div class="form-group full"><label class="form-label">Insp. Notes</label><textarea class="form-textarea" id="fRemark" placeholder="Inspection notes..."></textarea></div> <div class="form-group full"><label class="form-label">Additional Comments</label><textarea class="form-textarea" id="fComments" placeholder="Additional comments..."></textarea></div>
       </div>
       <div style="margin-top:12px;padding:10px 14px;background:#f1f8e9;border-radius:5px;border:1px solid #c8e6c9;font-size:11px;color:#388e3c;">💡 Write the Maintenance Card name first — date, year, tag and refinery will auto-fill.</div>
       <div style="margin-top:12px;padding:12px 14px;background:#e3f2fd;border-radius:5px;border:1px solid #bbdefb;">
@@ -1802,7 +1835,7 @@ return`<tr>
     </tr>
     <tr class="expand-row" id="exp_${r.rowIndex}">
       <td class="expand-cell" colspan="11">
-     <div class="expand-comment">
+        <div class="expand-comment">
           <span style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
             <strong style="font-size:10px;color:var(--silver);text-transform:uppercase;letter-spacing:1px">Comments</strong>
             ${r['FAILURE MODE']?`<span class="fm-badge ${fmClass(r['FAILURE MODE'])}">${String(r['FAILURE MODE']).toUpperCase()}</span>`:''}
@@ -2151,7 +2184,7 @@ async function saveRecord(){
   params['ITEM NO.']=document.getElementById('fItemNo').value||'';
   params['MAINTENANCE DATE']=date;params['YEAR']=document.getElementById('fYear').value||'';
   params['ASSOCIATED ASSET']=document.getElementById('fAsset').value||'';params['TAG']=document.getElementById('fTag').value||'';
-params['MAINTENANCE CARD']=card;params['FILE']='2';params['ACTIVITY DESCRIPTION']=act;
+  params['MAINTENANCE CARD']=card;params['FILE']='2';params['ACTIVITY DESCRIPTION']=act;
   params['FAILURE MODE']=document.getElementById('fFailureMode').value||'';
   params['REFINERY']=document.getElementById('fRefinery').value||'';params['REMARK']=document.getElementById('fRemark').value||'';
   params['COMMENTS']=document.getElementById('fComments').value||'';
@@ -2327,7 +2360,7 @@ function clearTooltip(el){
   el.classList.remove('active');
 }
 // ── TOAST ──────────────────────────────────────
-  function fmClass(val){
+function fmClass(val){
   const v=(val||'').toUpperCase();
   if(v==='LEAK')return'leak';
   if(v==='LOW EFFICIENCY')return'low-efficiency';
@@ -3099,8 +3132,8 @@ async function deleteSelectedMCs(){
   // ── OTHER DOCUMENTS (Memos · Repair Reports · MOC) ──────────────────────
 let knownDocTypes=['Memo','Reporte de Reparación','MOC'];
 let allOtherDocs=[];
-let odEditingId=null; // id del JSON que se está editando (null = nuevo)
-let odTagValid=false;
+let odEditingId=null;
+let odTagValid=true; // siempre válido ahora (texto libre)
 
 async function driveQuery(q,fields){
   const headers={Authorization:'Bearer '+googleAccessToken};
@@ -3144,35 +3177,17 @@ function populateOdTypeFilter(){
   sel.innerHTML='<option value="">Type: All</option>'+knownDocTypes.map(t=>`<option value="${t}">${t}</option>`).join('');
   sel.value=current;
 }
-function populateOdTagList(){
-  const dl=document.getElementById('odTagList');
-  if(!dl||!equipmentList.length)return;
-  const tagKey=Object.keys(equipmentList[0]||{}).find(k=>k.toUpperCase().includes('TAG'))||'TAG';
-  const tags=[...new Set(equipmentList.map(e=>e[tagKey]).filter(Boolean))];
-  dl.innerHTML=tags.map(t=>`<option value="${t}">`).join('');
-}
-function validateOdTag(){
-  const val=document.getElementById('odTag').value.trim().toUpperCase();
-  const warn=document.getElementById('odTagWarning');
-  if(!val){odTagValid=false;if(warn)warn.style.display='none';return;}
-  const tagKey=Object.keys(equipmentList[0]||{}).find(k=>k.toUpperCase().includes('TAG'))||'TAG';
-  const match=equipmentList.some(e=>String(e[tagKey]||'').toUpperCase()===val);
-  odTagValid=match;
-  if(warn)warn.style.display=match?'none':'block';
-}
-
 function openNewDocModal(doc){
   odEditingId=doc?doc.id:null;
   document.getElementById('otherDocModalTitle').textContent=doc?'Edit Document':'New Document';
   populateOdTypeSelect();
-  populateOdTagList();
   document.getElementById('odType').value=doc?doc.type:(knownDocTypes[0]||'');
   document.getElementById('odDate').value=doc?(doc.date||''):new Date().toISOString().substring(0,10);
   document.getElementById('odDescription').value=doc?(doc.description||''):'';
+  document.getElementById('odEquipType').value=doc?(doc.equip_type||''):'';
+  document.getElementById('odArea').value=doc?(doc.area||''):'';
   document.getElementById('odTag').value=doc?(doc.tag||''):'';
   document.getElementById('odFiles').value='';
-  odTagValid=!!doc;
-  document.getElementById('odTagWarning').style.display='none';
   document.getElementById('otherDocModalOverlay').classList.add('open');
 }
 function closeOtherDocModal(){
@@ -3185,11 +3200,11 @@ async function saveOtherDoc(){
   const type=document.getElementById('odType').value;
   const date=document.getElementById('odDate').value;
   const description=document.getElementById('odDescription').value.trim();
-  const tag=document.getElementById('odTag').value.trim().toUpperCase();
+  const equip_type=document.getElementById('odEquipType').value;
+  const area=document.getElementById('odArea').value;
+  const tag=document.getElementById('odTag').value.trim();
   const filesInput=document.getElementById('odFiles');
-  if(!type||!date||!description||!tag){toast('Fill type, date, description and tag.','error');return;}
-  validateOdTag();
-  if(!odTagValid){toast('That tag does not match your Equipment List.','error');return;}
+  if(!type||!date||!description){toast('Fill type, date and description.','error');return;}
   const btn=document.getElementById('odSaveBtn');
   btn.textContent='⏳ Saving...';btn.disabled=true;
   try{
@@ -3201,7 +3216,7 @@ async function saveOtherDoc(){
       const up=await uploadGenericFileToFolder(f,folder.id);
       uploadedFiles.push(up);
     }
-    const entry={type,date,description,tag,files:uploadedFiles};
+    const entry={type,date,description,equip_type,area,tag,files:uploadedFiles};
     const jsonBlob=new Blob([JSON.stringify(entry)],{type:'application/json'});
     if(odEditingId){
       await fetch('https://www.googleapis.com/upload/drive/v3/files/'+odEditingId+'?uploadType=media',{
@@ -3252,20 +3267,22 @@ function filterOtherDocsList(){
   const type=document.getElementById('otherDocsTypeFilter').value;
   let list=allOtherDocs;
   if(type)list=list.filter(d=>d.type===type);
-  if(q)list=list.filter(d=>[d.description,d.tag].filter(Boolean).join(' ').toLowerCase().includes(q));
+  if(q)list=list.filter(d=>[d.description,d.tag,d.equip_type,d.area].filter(Boolean).join(' ').toLowerCase().includes(q));
   renderOtherDocsList(list);
 }
 function renderOtherDocsList(docs){
   const tbody=document.getElementById('otherDocsTbody');
-  if(!docs.length){tbody.innerHTML='<tr><td colspan="6" style="padding:20px;color:var(--silver)">No documents found.</td></tr>';return;}
+  if(!docs.length){tbody.innerHTML='<tr><td colspan="8" style="padding:20px;color:var(--silver)">No documents found.</td></tr>';return;}
   tbody.innerHTML=docs.map(d=>{
     const filesHtml=(d.files||[]).map(f=>`<a href="${f.url}" target="_blank" rel="noopener" class="file-btn type-file" style="margin-right:4px">📄 ${f.name.length>14?f.name.substring(0,12)+'…':f.name}</a>`).join('')||'<span style="color:var(--silver);font-size:12px">—</span>';
     return `
     <tr>
       <td style="font-size:12px;color:var(--text-light);white-space:nowrap">${d.date||'—'}</td>
       <td><span class="asset-badge">${d.type||'—'}</span></td>
-      <td style="font-size:12px;color:var(--text-light);max-width:280px;white-space:normal">${d.description||''}</td>
-      <td><span class="tag-badge" style="cursor:pointer" onclick="filterByTag('${d.tag||''}')">${d.tag||'—'}</span></td>
+      <td style="font-size:12px;color:var(--text-light);max-width:220px;white-space:normal">${d.description||''}</td>
+      <td><span class="asset-badge">${d.equip_type?cleanAssetType(d.equip_type):'—'}</span></td>
+      <td style="font-size:12px;color:var(--text-light);white-space:nowrap">${d.area||'—'}</td>
+      <td><span class="tag-badge">${d.tag||'—'}</span></td>
       <td>${filesHtml}</td>
       <td><div class="td-actions">
         <button class="action-btn edit" title="Edit" onclick='openNewDocModal(${JSON.stringify(d).replace(/"/g,'&quot;')})'>✏️</button>
