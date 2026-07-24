@@ -2191,15 +2191,41 @@ async function saveRecord(){
   try{const res=await jsonp(params);if(res.success){
   toast(editingIndex?'Record updated!':'Record added!','success');
     if(editingIndex){
-  const updatedRecord=allRecords.find(r=>r.rowIndex===editingIndex);
-  if(updatedRecord){
-    updatedRecord['COMMENTS']=document.getElementById('fComments').value||'';
-    updatedRecord['ACTIVITY DESCRIPTION']=document.getElementById('fActivity').value||'';
-    updatedRecord['REMARK']=document.getElementById('fRemark').value||'';
-    updatedRecord['MAINTENANCE CARD']=document.getElementById('fCard').value||'';
-  }
-}
-    document.getElementById('doneBtn').style.display='';
+      const updatedRecord=allRecords.find(r=>r.rowIndex===editingIndex);
+      if(updatedRecord){
+        updatedRecord['COMMENTS']=document.getElementById('fComments').value||'';
+        updatedRecord['ACTIVITY DESCRIPTION']=document.getElementById('fActivity').value||'';
+        updatedRecord['REMARK']=document.getElementById('fRemark').value||'';
+        updatedRecord['MAINTENANCE CARD']=document.getElementById('fCard').value||'';
+        updatedRecord['TAG']=document.getElementById('fTag').value||'';
+        updatedRecord['ASSOCIATED ASSET']=document.getElementById('fAsset').value||'';
+        updatedRecord['REFINERY']=document.getElementById('fRefinery').value||'';
+        updatedRecord['FAILURE MODE']=document.getElementById('fFailureMode').value||'';
+        updatedRecord['MAINTENANCE DATE']=date;
+        updatedRecord['YEAR']=document.getElementById('fYear').value||'';
+      }
+    }else{
+      // Nuevo registro — lo agregamos localmente al principio de la lista
+      // sin recargar toda la tabla desde el servidor.
+      const newRowIndex=res.rowIndex||(allRecords.length?Math.max(...allRecords.map(r=>r.rowIndex||0))+1:1);
+      const newRecord={
+        rowIndex:newRowIndex,
+        'ITEM NO.':document.getElementById('fItemNo').value||'',
+        'MAINTENANCE DATE':date,
+        'YEAR':document.getElementById('fYear').value||'',
+        'TAG':document.getElementById('fTag').value||'',
+        'ASSOCIATED ASSET':document.getElementById('fAsset').value||'',
+        'MAINTENANCE CARD':card,
+        'ACTIVITY DESCRIPTION':act,
+        'FAILURE MODE':document.getElementById('fFailureMode').value||'',
+        'REFINERY':document.getElementById('fRefinery').value||'',
+        'REMARK':document.getElementById('fRemark').value||'',
+        'COMMENTS':document.getElementById('fComments').value||'',
+      };
+      allRecords.unshift(newRecord);
+    }
+    applyFilters();
+document.getElementById('doneBtn').style.display='';
 document.getElementById('closeBtn').style.display='none';
 document.getElementById('saveBtn').style.display='none';
 document.getElementById('selectFileBtn').disabled=false;
@@ -2219,7 +2245,7 @@ document.getElementById('gs3').classList.add('done');
       });
     }
   }
-  await reload();}else toast('Error: '+(res.message||'unknown'),'error');}
+  }else toast('Error: '+(res.message||'unknown'),'error');}
   catch(e){toast('Network error.','error');}finally{btn.textContent='Save Record';btn.disabled=false;}
 }
 async function deleteRecord(ri){
