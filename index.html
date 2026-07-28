@@ -2091,16 +2091,19 @@ async function resolveFileInDrive(cardName, tag, refinery, assetType){
       }
     }
     if(!tagFolder)return null;
-    // ── Paso 3: ya con la carpeta correcta, miramos adentro por el archivo real ──
-    // Esto evita depender de que el nombre del archivo calce exacto con el de la MC
-    // (espacios, mayúsculas, etc.) — si hay un PDF/Excel/Word ahí, lo devolvemos directo.
-    const inner=await driveSearch(`'${tagFolder.id}' in parents and trashed=false and mimeType!='application/vnd.google-apps.folder'`);
+    // ── Paso 3: buscar subcarpeta de actividad por Card Name, luego archivos dentro ──
+    const activityFolder=await findFolder(cardName,tagFolder.id,true);
+    const searchId=activityFolder?activityFolder.id:tagFolder.id;
+    const inner=await driveSearch(`'${searchId}' in parents and trashed=false and mimeType!='application/vnd.google-apps.folder'`);
     const pick=inner.find(f=>f.mimeType===PDF)||inner.find(f=>EXCEL.includes(f.mimeType))||inner.find(f=>WORD.includes(f.mimeType));
     if(pick){
       const type=pick.mimeType===PDF?'pdf':EXCEL.includes(pick.mimeType)?'excel':'word';
       return{type,url:pick.webViewLink};
     }
-    return{type:'folder',url:tagFolder.webViewLink};
+    // Si no hay archivo, devolver la carpeta de actividad o la del tag
+    const folderUrl=(activityFolder||tagFolder).webViewLink;
+    const folderLink=(activityFolder||tagFolder).webViewLink||`https://drive.google.com/drive/folders/${(activityFolder||tagFolder).id}`;
+    return{type:'folder',url:folderLink};
 
   }catch(e){console.error('resolveFileInDrive:',e);return null;}
 }
