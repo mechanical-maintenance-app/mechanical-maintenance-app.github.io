@@ -1634,7 +1634,7 @@ async function driveSearchFolder(name,parentId,exact=true){
   let q=exact?`name='${name}'`:`name contains '${name}'`;
   q+=` and mimeType='application/vnd.google-apps.folder' and trashed=false`;
   if(parentId)q+=` and '${parentId}' in parents`;
-  const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,webViewLink)',
+  const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,webViewLink)&supportsAllDrives=true&includeItemsFromAllDrives=true',
     {headers:{Authorization:'Bearer '+googleAccessToken}});
   const d=await r.json();
   return(d.files&&d.files.length)?d.files[0]:null;
@@ -1858,7 +1858,7 @@ async function resolveInspFileInDrive(code){
   try{
     const headers={Authorization:'Bearer '+googleAccessToken};
     async function search(q){
-      const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,webViewLink)',{headers});
+      const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,webViewLink)&supportsAllDrives=true&includeItemsFromAllDrives=true',{headers});
       const d=await r.json();
       return(d.files&&d.files.length)?d.files[0].webViewLink:null;
     }
@@ -1948,13 +1948,13 @@ async function openGADrawing(tag){
   try{
     const headers={Authorization:'Bearer '+googleAccessToken};
     // Buscar carpeta "Equipment Dwg"
-    const folderRes=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(`name='Equipment Dwg' and mimeType='application/vnd.google-apps.folder' and trashed=false`)+'&fields=files(id)',{headers});
+    const folderRes=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(`name='Equipment Dwg' and mimeType='application/vnd.google-apps.folder' and trashed=false`)+'&fields=files(id)&supportsAllDrives=true&includeItemsFromAllDrives=true',{headers});
     const folderData=await folderRes.json();
     const folderId=folderData.files&&folderData.files.length?folderData.files[0].id:null;
     // Buscar archivo dentro de la carpeta
     let q=`name='${tag} GA Dwg.pdf' and trashed=false`;
     if(folderId)q+=` and '${folderId}' in parents`;
-    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,webViewLink)',{headers});
+    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,webViewLink)&supportsAllDrives=true&includeItemsFromAllDrives=true',{headers});
     const d=await r.json();
     if(d.files&&d.files.length){
       window.open(d.files[0].webViewLink,'_blank');
@@ -1998,14 +1998,14 @@ async function resolveFileInDrive(cardName, tag, refinery, assetType){
   if(!isTokenValid())return null;
   const headers={Authorization:'Bearer '+googleAccessToken};
   async function driveSearch(q){
-    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,mimeType,webViewLink)',{headers});
+    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,mimeType,webViewLink)&supportsAllDrives=true&includeItemsFromAllDrives=true',{headers});
     const d=await r.json();return d.files||[];
   }
   async function findFolder(name,parentId,exact=true){
     let q=exact?`name='${name}'`:`name contains '${name}'`;
     q+=` and mimeType='application/vnd.google-apps.folder' and trashed=false`;
     if(parentId)q+=` and '${parentId}' in parents`;
-    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,webViewLink)',{headers});
+    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,webViewLink)&supportsAllDrives=true&includeItemsFromAllDrives=true',{headers});
     const d=await r.json();return(d.files&&d.files.length)?d.files[0]:null;
   }
   const PDF='application/pdf';
@@ -2039,10 +2039,7 @@ async function resolveFileInDrive(cardName, tag, refinery, assetType){
     const assetParentId=assetFolder?assetFolder.id:karFolderId;
     // Buscar TAG siempre dentro del KAR correcto
     let tagFolder=null;
-    // tagVariants: tag completo, tag sin prefijo de planta B-/C-, tag sin letra final (ej. PK-251B→PK-251)
-    const tagNoPlantPrefix=tag.replace(/^([BC])-/i,'');
-    const tagNoSuffix=tagNoPlantPrefix.replace(/[A-Z](\/[A-Z])?$/i,'');
-    const tagVariants=[...new Set([tag,tagNoPlantPrefix,tagNoSuffix])].filter(Boolean);
+    const tagVariants=[tag,tag.replace(/^[A-Z]-/,'')];
     for(const v of tagVariants){
       tagFolder=await findFolder(v,assetParentId,true);
       if(tagFolder)break;
@@ -2073,7 +2070,7 @@ async function resolveFileInDrive(cardName, tag, refinery, assetType){
       if(unitMatch){
         let q=`name contains '${familyRoot}' and name contains 'Unit-${unitMatch[1]}' and mimeType='application/vnd.google-apps.folder' and trashed=false`;
         if(assetParentId)q+=` and '${assetParentId}' in parents`;
-        const r2=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,webViewLink)',{headers});
+        const r2=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,webViewLink)&supportsAllDrives=true&includeItemsFromAllDrives=true',{headers});
         const d2=await r2.json();
         const familyFolder2=(d2.files&&d2.files.length)?d2.files[0]:null;
         if(familyFolder2){
@@ -2362,7 +2359,7 @@ try{
   const tag=r['TAG']||'';
   const date=String(r['MAINTENANCE DATE']||'').substring(0,10);
   const fileName=(r['MAINTENANCE CARD']?r['MAINTENANCE CARD']:tag+' · '+date)+'.json';
-  const q="name='"+fileName+"' and mimeType='application/json' and trashed=false";const res=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name)&pageSize=1',
+  const q="name='"+fileName+"' and mimeType='application/json' and trashed=false";const res=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name)&pageSize=1&supportsAllDrives=true&includeItemsFromAllDrives=true',
       {headers:{Authorization:'Bearer '+googleAccessToken}});
     const d=await res.json();
     if(d.files&&d.files.length){
@@ -2955,7 +2952,7 @@ async function loadMCsFromDrive(){
   if(!isTokenValid())return[];
   try{
     const q="name contains '.json' and mimeType='application/json' and trashed=false";
-    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,modifiedTime)&orderBy=modifiedTime+desc&pageSize=100',
+    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,modifiedTime)&orderBy=modifiedTime+desc&pageSize=100&supportsAllDrives=true&includeItemsFromAllDrives=true',
       {headers:{Authorization:'Bearer '+googleAccessToken}});
     const d=await r.json();
     if(!d.files||!d.files.length)return[];
@@ -3071,7 +3068,7 @@ async function openCloudMCFromHistory(tag,date,mode){
     const rec=allRecords.find(x=>String(x['MAINTENANCE DATE']||'').substring(0,10)===date&&String(x['TAG']||'')===tag);
 const fileName=(rec&&rec['MAINTENANCE CARD']?rec['MAINTENANCE CARD']:tag+' · '+date)+'.json';
     const q="name='"+fileName+"' and mimeType='application/json' and trashed=false";
-    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name)&pageSize=1',
+    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name)&pageSize=1&supportsAllDrives=true&includeItemsFromAllDrives=true',
       {headers:{Authorization:'Bearer '+googleAccessToken}});
     const d=await r.json();
     if(!d.files||!d.files.length){toast('No Drive MC found for this record.','warning');return;}
@@ -3166,7 +3163,7 @@ let odTagValid=true; // siempre válido ahora (texto libre)
 
 async function driveQuery(q,fields){
   const headers={Authorization:'Bearer '+googleAccessToken};
-  const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files('+fields+')',{headers});
+  const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files('+fields+')&supportsAllDrives=true&includeItemsFromAllDrives=true',{headers});
   const d=await r.json();
   return d.files||[];
 }
@@ -3840,7 +3837,7 @@ async function histOpenRecord(cardName,tag,date,refinery,rowIndex){
   const fileName=(rec&&rec['MAINTENANCE CARD']?rec['MAINTENANCE CARD']:tag+' · '+date)+'.json';
   try{
     const q="name='"+fileName+"' and mimeType='application/json' and trashed=false";
-    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,webViewLink)&pageSize=1',
+    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,webViewLink)&pageSize=1&supportsAllDrives=true&includeItemsFromAllDrives=true',
       {headers:{Authorization:'Bearer '+googleAccessToken}});
     const d=await r.json();
     if(d.files&&d.files.length){
