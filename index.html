@@ -534,6 +534,61 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
 .expand-mc-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;}
 .expand-mc-badge.found{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;}
 .expand-mc-badge.notfound{background:#fff3e0;color:#e65100;border:1px solid #ffcc80;}
+
+.expand-detail{display:flex;gap:28px;flex-wrap:wrap;margin-bottom:4px;align-items:flex-start;}
+.expand-field{display:flex;flex-direction:column;gap:4px;}
+.expand-field-comments{flex:1;min-width:160px;}
+.expand-flabel{font-size:10px;color:var(--silver);text-transform:uppercase;letter-spacing:1px;}
+.expand-ctext{font-size:13px;color:var(--text-light);}
+/* ══ EQUIPMENT TIMELINE ══ */
+.tl-wrap{padding:20px 28px;max-width:900px;}
+.tl-sel-search{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:9px 13px;margin-bottom:12px;box-shadow:var(--shadow);}
+.tl-sel-search input{border:none;outline:none;flex:1;font-size:14px;color:var(--text);background:transparent;}
+.tl-chips{display:flex;gap:8px;margin-bottom:6px;flex-wrap:wrap;}
+.tl-chip{font-size:12px;padding:5px 14px;border-radius:14px;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text-light);user-select:none;transition:all .15s;}
+.tl-chip.active{background:linear-gradient(160deg,var(--navy-light),var(--navy));color:#fff;border-color:var(--navy);}
+.tl-group-label{font-size:11px;font-weight:600;color:var(--silver);text-transform:uppercase;letter-spacing:.05em;margin:18px 0 8px;}
+.tl-eq-list{border:1px solid var(--border);border-radius:10px;overflow:hidden;background:#fff;box-shadow:var(--shadow);margin-bottom:6px;}
+.tl-eq-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;}
+.tl-eq-row:last-child{border-bottom:none;}
+.tl-eq-row:hover{background:#f7f9fc;}
+.tl-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.tl-eq-tag{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;color:var(--navy);}
+.tl-eq-sub{font-size:12px;color:var(--text-light);}
+.tl-eq-meta{text-align:right;flex-shrink:0;font-size:12px;color:var(--text-light);}
+.tl-eq-meta b{color:var(--text);font-weight:600;}
+.tl-eq-chev{color:var(--silver);flex-shrink:0;font-size:16px;}
+.tl-head{display:flex;align-items:center;gap:12px;margin-bottom:6px;}
+.tl-head-icon{width:44px;height:44px;border-radius:10px;background:linear-gradient(160deg,#eef4ff,#dbe8fd);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.tl-head-tag{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:20px;color:var(--navy);line-height:1.1;}
+.tl-head-sub{font-size:12px;color:var(--text-light);}
+.tl-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin:14px 0 16px;}
+.tl-kpi{background:#fff;border:1px solid var(--border);border-radius:10px;padding:13px 15px;box-shadow:var(--shadow);}
+.tl-kpi-l{font-size:12px;color:var(--text-light);margin-bottom:4px;}
+.tl-kpi-v{font-size:24px;font-weight:700;font-family:'Rajdhani',sans-serif;color:var(--navy);}
+.tl-kpi-v small{font-size:12px;color:var(--text-light);font-family:'IBM Plex Sans',sans-serif;font-weight:500;}
+.tl-progress{background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:20px;box-shadow:var(--shadow);}
+.tl-progress-top{display:flex;justify-content:space-between;font-size:12px;color:var(--text-light);margin-bottom:6px;}
+.tl-progress-bar{height:6px;border-radius:3px;background:var(--border);overflow:hidden;}
+.tl-progress-fill{height:100%;background:var(--red);border-radius:3px;transition:width .4s;}
+.tl-timeline{position:relative;padding-left:26px;border-left:2px solid var(--border);}
+.tl-year{font-size:12px;font-weight:700;color:var(--silver);letter-spacing:.03em;margin:20px 0 12px -6px;}
+.tl-node{position:relative;margin-bottom:14px;}
+.tl-node-dot{position:absolute;left:-33px;top:18px;width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--border);}
+.tl-card{display:flex;gap:12px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px;box-shadow:var(--shadow);cursor:pointer;transition:border-color .12s,transform .12s;}
+.tl-card:hover{border-color:var(--red);transform:translateY(-1px);}
+.tl-photo{flex-shrink:0;width:64px;height:64px;border-radius:6px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--silver);overflow:hidden;font-size:18px;}
+.tl-photo img{width:100%;height:100%;object-fit:cover;}
+.tl-photo.empty{border:1px dashed var(--border);}
+.tl-node-head{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.tl-node-date{font-size:12px;color:var(--text-light);}
+.tl-type-badge{font-size:11px;padding:2px 9px;border-radius:12px;font-weight:600;white-space:nowrap;}
+.tl-node-desc{font-size:14px;color:var(--text);margin:5px 0 0;}
+.tl-node-tags{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap;align-items:center;}
+.tl-pending{font-size:10px;padding:2px 8px;border-radius:12px;border:1px dashed var(--silver);color:var(--silver);display:inline-flex;align-items:center;gap:3px;white-space:nowrap;}
+.tl-back{display:inline-flex;align-items:center;gap:5px;font-size:13px;color:var(--red);cursor:pointer;margin-bottom:14px;user-select:none;font-weight:500;}
+.tl-back:hover{text-decoration:underline;}
+.tl-empty{padding:40px;text-align:center;color:var(--silver);font-size:13px;}
 </style>
 </head>
 <body>
@@ -577,6 +632,9 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
 
     <div class="sb-divider"></div>
     <div class="sb-section-label">Analytics</div>
+<div class="sb-item" id="nav-timeline" onclick="switchView('timeline')">
+  <span class="sb-item-icon">🕒</span> Equipment Timeline
+</div>
 <div class="sb-item" id="nav-dashboard" onclick="switchView('dashboard')">
   <span class="sb-item-icon">📊</span> Dashboard
 </div>
@@ -821,6 +879,8 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
   </div>
   
 <!-- ── DASHBOARD VIEW ── -->
+  <div id="timelineView" style="display:none"></div>
+
   <div id="dashView" style="display:none">
     <div style="padding:20px 28px 0">
       <!-- Filtros -->
@@ -1387,7 +1447,8 @@ function switchView(view){
  document.getElementById('dashView').style.display=view==='dashboard'?'block':'none';
 document.getElementById('cloudmcView').style.display=view==='cloudmc'?'block':'none';
 document.getElementById('otherDocsView').style.display=view==='otherdocs'?'block':'none';
-  const viewIds={tracking:'trackingView',card:'mcView',equipment:'eqView',dashboard:'dashView',cloudmc:'cloudmcView',otherdocs:'otherDocsView'};
+document.getElementById('timelineView').style.display=view==='timeline'?'block':'none';
+  const viewIds={tracking:'trackingView',card:'mcView',equipment:'eqView',dashboard:'dashView',cloudmc:'cloudmcView',otherdocs:'otherDocsView',timeline:'timelineView'};
   const activeEl=document.getElementById(viewIds[view]);
   if(activeEl){
     activeEl.classList.remove('view-fade-in');
@@ -1395,11 +1456,11 @@ document.getElementById('otherDocsView').style.display=view==='otherdocs'?'block
     activeEl.classList.add('view-fade-in');
   }
   document.getElementById('mcBottomBar').classList.toggle('hidden',view!=='card');
-['tracking','card','equipment','dashboard','cloudmc','otherdocs'].forEach(v=>{
+['tracking','card','equipment','dashboard','cloudmc','otherdocs','timeline'].forEach(v=>{
     const el=document.getElementById('nav-'+v);
     if(el){el.className='sb-item'+(v===view?' active'+(currentDiscipline==='rotating'?' rot':''):'');}
   });
-const titles={tracking:'MC <span>History</span>',card:'Maintenance <span>Card</span>',equipment:'Equipment <span>List</span>',dashboard:'<span>Dashboard</span>',cloudmc:'Cloud <span>MCs</span>',otherdocs:'Other <span>Documents</span>'};  document.getElementById('mainTitle').innerHTML=titles[view]||'';
+const titles={tracking:'MC <span>History</span>',card:'Maintenance <span>Card</span>',equipment:'Equipment <span>List</span>',dashboard:'<span>Dashboard</span>',cloudmc:'Cloud <span>MCs</span>',otherdocs:'Other <span>Documents</span>',timeline:'Equipment <span>Timeline</span>'};  document.getElementById('mainTitle').innerHTML=titles[view]||'';
   if(view==='equipment'&&equipmentList.length)renderEquipment(equipmentList);
   if(view==='otherdocs')loadOtherDocsList();
   if(view==='card'){
@@ -1411,6 +1472,7 @@ const titles={tracking:'MC <span>History</span>',card:'Maintenance <span>Card</s
     },80);
   }
   if(view==='dashboard')renderDashboard();
+if(view==='timeline')openTimelineView();
 if(view==='cloudmc')loadCloudMCList();
   window.scrollTo(0,0);
 }
@@ -1637,6 +1699,7 @@ async function driveSearchFolder(name,parentId,exact=true){
   const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,webViewLink)&supportsAllDrives=true&includeItemsFromAllDrives=true',
     {headers:{Authorization:'Bearer '+googleAccessToken}});
   const d=await r.json();
+  if(d.error&&(d.error.code===401||d.error.status==='UNAUTHENTICATED')){googleAccessToken=null;googleTokenExpiry=0;localStorage.removeItem('gat');localStorage.removeItem('gatExp');updateGoogleBtn(false);return null;}
   return(d.files&&d.files.length)?d.files[0]:null;
 }
 async function driveCreateFolder(name,parentId){
@@ -1822,7 +1885,7 @@ return`<tr>
       <td class="td-date">${date||'–'}</td>
       <td class="td-year">${r['YEAR']||''}</td>
       <td><span class="asset-badge">${r['ASSOCIATED ASSET']||'–'}</span></td>
-      <td><span class="tag-badge" style="cursor:pointer" onclick="filterByTag('${tag}')">${tag||'–'}</span></td>
+      <td><span class="tag-badge" style="cursor:pointer" title="Double-click for equipment timeline" onclick="filterByTag('${tag}')" ondblclick="event.stopPropagation();openEquipmentTimelineFromHistory('${st}')">${tag||'–'}</span></td>
       <td class="wrap" style="font-size:12px;color:var(--text-light)">${card}</td>
 <td class="wrap td-expand" onclick="toggleExpand(${r.rowIndex})" style="font-size:12px;color:var(--text-light)">${r['ACTIVITY DESCRIPTION']||'–'} <span style="font-size:10px;color:var(--silver)">▾</span></td>      <td><span class="refinery-badge">${r['REFINERY']||'–'}</span></td>
       <td style="font-size:12px;color:var(--text-light);max-width:130px;white-space:normal">${inspLink}</td>
@@ -1835,12 +1898,9 @@ return`<tr>
     </tr>
     <tr class="expand-row" id="exp_${r.rowIndex}">
       <td class="expand-cell" colspan="11">
-        <div class="expand-comment">
-          <span style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
-            <strong style="font-size:10px;color:var(--silver);text-transform:uppercase;letter-spacing:1px">Comments</strong>
-            ${r['FAILURE MODE']?`<span class="fm-badge ${fmClass(r['FAILURE MODE'])}">${String(r['FAILURE MODE']).toUpperCase()}</span>`:''}
-          </span>
-          ${r['COMMENTS']||'<em style="color:var(--silver)">No comments</em>'}
+        <div class="expand-detail">
+          ${r['FAILURE MODE']?`<div class="expand-field"><strong class="expand-flabel">Failure Mode</strong><span class="fm-badge ${fmClass(r['FAILURE MODE'])}">${String(r['FAILURE MODE']).toUpperCase()}</span></div>`:''}
+          <div class="expand-field expand-field-comments"><strong class="expand-flabel">Comments</strong><span class="expand-ctext">${r['COMMENTS']||'<em style="color:var(--silver)">No comments</em>'}</span></div>
         </div>
         <div id="exp_mc_${r.rowIndex}"><span class="expand-mc-badge notfound">⏳ Checking Drive MC...</span></div>
       </td>
@@ -1997,16 +2057,17 @@ function filterEquipment(){if(equipmentList.length)renderEquipment(equipmentList
 async function resolveFileInDrive(cardName, tag, refinery, assetType){
   if(!isTokenValid())return null;
   const headers={Authorization:'Bearer '+googleAccessToken};
+  function handle401(d){if(d.error&&(d.error.code===401||d.error.status==='UNAUTHENTICATED')){googleAccessToken=null;googleTokenExpiry=0;localStorage.removeItem('gat');localStorage.removeItem('gatExp');updateGoogleBtn(false);throw new Error('Drive session expired');}}
   async function driveSearch(q){
     const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,mimeType,webViewLink)&supportsAllDrives=true&includeItemsFromAllDrives=true',{headers});
-    const d=await r.json();return d.files||[];
+    const d=await r.json();handle401(d);return d.files||[];
   }
   async function findFolder(name,parentId,exact=true){
     let q=exact?`name='${name}'`:`name contains '${name}'`;
     q+=` and mimeType='application/vnd.google-apps.folder' and trashed=false`;
     if(parentId)q+=` and '${parentId}' in parents`;
     const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,webViewLink)&supportsAllDrives=true&includeItemsFromAllDrives=true',{headers});
-    const d=await r.json();return(d.files&&d.files.length)?d.files[0]:null;
+    const d=await r.json();handle401(d);return(d.files&&d.files.length)?d.files[0]:null;
   }
   const PDF='application/pdf';
   const EXCEL=['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/vnd.ms-excel'];
@@ -2023,7 +2084,7 @@ async function resolveFileInDrive(cardName, tag, refinery, assetType){
         return{type,url:f.webViewLink};
       }
     }
-    // Búsqueda sin extensión (archivos subidos sin .xlsx/.pdf en el nombre)
+    // Búsqueda sin extensión
     for(const mime of [PDF,...EXCEL,...WORD]){
       const files=await driveSearch(`name='${cardName}' and mimeType='${mime}' and trashed=false`);
       if(files.length){
@@ -2048,7 +2109,9 @@ async function resolveFileInDrive(cardName, tag, refinery, assetType){
     const assetParentId=assetFolder?assetFolder.id:karFolderId;
     // Buscar TAG siempre dentro del KAR correcto
     let tagFolder=null;
-    const tagVariants=[tag,tag.replace(/^[A-Z]-/,'')];
+    const tagNoPlantPrefix=tag.replace(/^([BC])-/i,'');
+    const tagNoSuffix=tagNoPlantPrefix.replace(/[A-Z](\/[A-Z])?$/i,'');
+    const tagVariants=[...new Set([tag,tagNoPlantPrefix,tagNoSuffix])].filter(Boolean);
     for(const v of tagVariants){
       tagFolder=await findFolder(v,assetParentId,true);
       if(tagFolder)break;
@@ -2091,7 +2154,7 @@ async function resolveFileInDrive(cardName, tag, refinery, assetType){
       }
     }
     if(!tagFolder)return null;
-    // ── Paso 3: buscar subcarpeta de actividad por Card Name, luego archivos dentro ──
+    // ── Paso 3: buscar subcarpeta de actividad, luego archivos dentro ──
     const activityFolder=await findFolder(cardName,tagFolder.id,true);
     const searchId=activityFolder?activityFolder.id:tagFolder.id;
     const inner=await driveSearch(`'${searchId}' in parents and trashed=false and mimeType!='application/vnd.google-apps.folder'`);
@@ -2100,12 +2163,11 @@ async function resolveFileInDrive(cardName, tag, refinery, assetType){
       const type=pick.mimeType===PDF?'pdf':EXCEL.includes(pick.mimeType)?'excel':'word';
       return{type,url:pick.webViewLink};
     }
-    // Si no hay archivo, devolver la carpeta de actividad o la del tag
-    const folderUrl=(activityFolder||tagFolder).webViewLink;
-    const folderLink=(activityFolder||tagFolder).webViewLink||`https://drive.google.com/drive/folders/${(activityFolder||tagFolder).id}`;
+    const bestFolder=activityFolder||tagFolder;
+    const folderLink=bestFolder.webViewLink||`https://drive.google.com/drive/folders/${bestFolder.id}`;
     return{type:'folder',url:folderLink};
 
-  }catch(e){console.error('resolveFileInDrive:',e);return null;}
+  }catch(e){if(e.message&&e.message.includes('expired'))toast('Drive session expired — please reconnect.','warning');else console.error('resolveFileInDrive:',e);return null;}
 }
 // ── OPEN FILE ──────────────────────────────────
 async function openFile(filename,tag,rowIndex){
@@ -2405,6 +2467,130 @@ function fmClass(val){
   if(v==='INTERNAL PASSING')return'internal-passing';
   if(v)return'other';
   return'';
+}
+
+// ══ EQUIPMENT TIMELINE ══
+let tlCurrentTag=null,tlOpenedFromHistory=false,tlSearch='',tlChip='all';
+const TL_TYPE_META={
+  corrective:{label:'Corrective',dot:'#c0392b',bg:'#fdecea',fg:'#a13a2f'},
+  replacement:{label:'Replacement / Renewal',dot:'#1565c0',bg:'#eef4ff',fg:'#0c447c'},
+  inspection:{label:'Inspection / NDT',dot:'#1d9e75',bg:'#e3f6ee',fg:'#0f6e56'},
+  preventive:{label:'Preventive',dot:'#27ae60',bg:'#eaf7e9',fg:'#2e7d32'},
+  cleaning:{label:'Cleaning',dot:'#e67e22',bg:'#fff6e0',fg:'#8a5a00'},
+  pressure:{label:'Pressure test',dot:'#7b1fa2',bg:'#f3e5f5',fg:'#6a1b7a'},
+  turnaround:{label:'Turnaround',dot:'#8898aa',bg:'#eef1f5',fg:'#5a6a80'},
+  other:{label:'Other',dot:'#b0bccd',bg:'#f0f3f8',fg:'#5a6a80'}
+};
+const TL_DICT=[
+  ['corrective',['leak','crack','broken','fracture','damage','damaged','failure','failed','hole','repair','repaired','fuga','rotura','roto','grieta','fisura','falla','fallo','agujero','reparacion','reparo']],
+  ['replacement',['replac','bundle replacement','retub','new equipment','new unit','renew','renov','reemplaz','cambio de haz','haz nuevo','unidad nueva','equipo nuevo']],
+  ['turnaround',['turnaround','overhaul','shutdown','parada','apertura','desmontaje','dismantl']],
+  ['pressure',['hydrotest','hydro test','hydrostatic','pressure test','leak test','prueba hidrostatica','prueba de presion','hidrostatica','neumatica']],
+  ['cleaning',['cleaning','chemical clean','hydrojet','hydro jet','descal','wash','clean','limpieza','quimica','hidrolav','lavado']],
+  ['inspection',['inspection','inspect','thickness','ultrasonic','radiograph','dye penetrant','penetrant','magnetic particle','borescope','boroscop','ndt','iris','measurement','espesor','inspeccion','medicion']],
+  ['preventive',['preventive','preventivo','calibr','lubric','torque','greasing','scheduled']]
+];
+function tlNorm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+function inferActivityType(desc){const t=tlNorm(desc);for(const[type,kws]of TL_DICT){for(const k of kws){if(t.indexOf(k)!==-1)return type;}}return 'other';}
+function tlIsFailureDriven(type){return type==='corrective'||type==='replacement';}
+function tlGetRecent(){try{return JSON.parse(localStorage.getItem('tlRecentTags')||'[]');}catch(e){return[];}}
+function tlPushRecent(tag){try{let a=tlGetRecent().filter(x=>x!==tag);a.unshift(tag);a=a.slice(0,4);localStorage.setItem('tlRecentTags',JSON.stringify(a));}catch(e){}}
+async function openTimelineView(){
+  const host=document.getElementById('timelineView');
+  if(!allRecordsLoaded){host.innerHTML='<div class="tl-wrap"><div class="table-msg"><div class="spinner"></div><p>Loading full history\u2026</p></div></div>';try{await init(true);}catch(e){}}
+  if(tlCurrentTag)renderEquipmentTimeline(tlCurrentTag);else renderTimelineSelector();
+}
+function tlBuildIndex(){
+  const map={};
+  allRecords.forEach(r=>{
+    const tag=String(r['TAG']||'').trim();if(!tag)return;
+    const d=String(r['MAINTENANCE DATE']||'').substring(0,10);
+    if(!map[tag])map[tag]={tag,refinery:String(r['REFINERY']||''),asset:String(r['ASSOCIATED ASSET']||'\u2014'),count:0,last:'',lastType:'other'};
+    const e=map[tag];e.count++;
+    if(r['REFINERY'])e.refinery=String(r['REFINERY']);
+    if(d>e.last){e.last=d;e.lastType=inferActivityType((r['ACTIVITY DESCRIPTION']||'')+' '+(r['MAINTENANCE CARD']||''));}
+  });
+  return Object.values(map);
+}
+function renderTimelineSelector(){
+  const host=document.getElementById('timelineView');
+  host.innerHTML=`<div class="tl-wrap"><div class="tl-sel-search"><span style="color:var(--silver)">\uD83D\uDD0D</span><input id="tlSearchInput" placeholder="Search by tag\u2026" value="${tlSearch.replace(/"/g,'&quot;')}" oninput="tlSearch=this.value;tlRenderList()"></div><div class="tl-chips"><span class="tl-chip ${tlChip==='all'?'active':''}" onclick="tlSetChip('all')">All</span><span class="tl-chip ${tlChip==='KAR-1'?'active':''}" onclick="tlSetChip('KAR-1')">KAR-1</span><span class="tl-chip ${tlChip==='KAR-2'?'active':''}" onclick="tlSetChip('KAR-2')">KAR-2</span></div><div id="tlListHost"></div></div>`;
+  tlRenderList();
+}
+function tlSetChip(v){tlChip=v;document.querySelectorAll('#timelineView .tl-chip').forEach(c=>c.classList.toggle('active',c.textContent.trim()===(v==='all'?'All':v)));tlRenderList();}
+function tlEqRowHTML(e){const meta=TL_TYPE_META[e.lastType]||TL_TYPE_META.other;return `<div class="tl-eq-row" onclick="tlSelectEquipment('${e.tag.replace(/'/g,"\\'")}')"><span class="tl-dot" style="background:${meta.dot}"></span><div style="flex:1;min-width:0"><div class="tl-eq-tag">${e.tag}</div><div class="tl-eq-sub">${e.refinery||'\u2014'}</div></div><div class="tl-eq-meta"><b>${e.count}</b> interv.<br>last ${e.last?fmtDateDisplay(e.last):'\u2014'}</div><span class="tl-eq-chev">\u203A</span></div>`;}
+function tlRenderList(){
+  const listHost=document.getElementById('tlListHost');if(!listHost)return;
+  let index=tlBuildIndex();const q=tlNorm(tlSearch);
+  if(q)index=index.filter(e=>tlNorm(e.tag).indexOf(q)!==-1);
+  if(tlChip!=='all')index=index.filter(e=>String(e.refinery).toUpperCase().indexOf(tlChip)!==-1);
+  if(!index.length){listHost.innerHTML='<div class="tl-empty">No equipment matches.</div>';return;}
+  let out='';
+  const recentTags=tlGetRecent();const recentEq=recentTags.map(t=>index.find(e=>e.tag===t)).filter(Boolean);
+  if(recentEq.length&&!q)out+='<div class="tl-group-label">Recent</div><div class="tl-eq-list">'+recentEq.map(tlEqRowHTML).join('')+'</div>';
+  const groups={};index.forEach(e=>{const g=e.asset||'\u2014';(groups[g]=groups[g]||[]).push(e);});
+  Object.keys(groups).sort().forEach(g=>{out+=`<div class="tl-group-label">${g}</div><div class="tl-eq-list">${groups[g].sort((a,b)=>a.tag.localeCompare(b.tag)).map(tlEqRowHTML).join('')}</div>`;});
+  listHost.innerHTML=out;
+}
+function tlSelectEquipment(tag){tlCurrentTag=tag;tlOpenedFromHistory=false;tlPushRecent(tag);renderEquipmentTimeline(tag);window.scrollTo(0,0);}
+function openEquipmentTimelineFromHistory(tag){if(!tag)return;tlCurrentTag=tag;tlOpenedFromHistory=true;tlPushRecent(tag);switchView('timeline');}
+function tlBack(){if(tlOpenedFromHistory){tlCurrentTag=null;tlOpenedFromHistory=false;switchView('tracking');}else{tlCurrentTag=null;renderTimelineSelector();window.scrollTo(0,0);}}
+function renderEquipmentTimeline(tag){
+  const host=document.getElementById('timelineView');
+  const recs=allRecords.filter(r=>String(r['TAG']||'').trim()===tag).slice().sort((a,b)=>String(b['MAINTENANCE DATE']||'').localeCompare(String(a['MAINTENANCE DATE']||'')));
+  if(!recs.length){host.innerHTML=`<div class="tl-wrap"><span class="tl-back" onclick="tlBack()">\u2190 Back</span><div class="tl-empty">No records for ${tag}.</div></div>`;return;}
+  const types=recs.map(r=>inferActivityType((r['ACTIVITY DESCRIPTION']||'')+' '+(r['MAINTENANCE CARD']||'')));
+  const dates=recs.map(r=>String(r['MAINTENANCE DATE']||'').substring(0,10)).filter(Boolean);
+  const maxD=dates.length?dates.reduce((a,b)=>a>b?a:b):'';const minD=dates.length?dates.reduce((a,b)=>a<b?a:b):'';
+  const lastDays=maxD?Math.round((new Date()-new Date(maxD))/86400000):null;
+  let perYear='\u2014';if(minD&&maxD){const span=(new Date(maxD)-new Date(minD))/(365.25*86400000);perYear=span>=0.5?(recs.length/span).toFixed(1):recs.length;}
+  const corrPct=recs.length?Math.round(types.filter(t=>t==='corrective').length/recs.length*100):0;
+  const corrColor=corrPct>=50?'var(--red)':(corrPct<=25?'var(--green)':'var(--navy)');
+  let failCount=0,failWithFM=0;recs.forEach((r,i)=>{if(tlIsFailureDriven(types[i])){failCount++;if(r['FAILURE MODE'])failWithFM++;}});
+  const pct=failCount?Math.round(failWithFM/failCount*100):0;
+  let nodes='',curYear='',ni=0;
+  recs.forEach((r,i)=>{const d=String(r['MAINTENANCE DATE']||'').substring(0,10);const yr=d.substring(0,4)||'\u2014';if(yr!==curYear){curYear=yr;nodes+=`<div class="tl-year">${yr}</div>`;}nodes+=tlNodeHTML(r,types[i],ni++);});
+  const f=recs[0];
+  host.innerHTML=`<div class="tl-wrap"><span class="tl-back" onclick="tlBack()">\u2190 ${tlOpenedFromHistory?'Back to MC History':'Equipment list'}</span><div class="tl-head"><div class="tl-head-icon">\u2699\uFE0F</div><div><div class="tl-head-tag">${tag}</div><div class="tl-head-sub">${f['ASSOCIATED ASSET']||'\u2014'} \u00B7 ${f['REFINERY']||'\u2014'}</div></div></div><div class="tl-kpis"><div class="tl-kpi"><div class="tl-kpi-l">Interventions</div><div class="tl-kpi-v">${recs.length}</div></div><div class="tl-kpi"><div class="tl-kpi-l">Last</div><div class="tl-kpi-v">${lastDays!=null?lastDays:'\u2014'} <small>days</small></div></div><div class="tl-kpi"><div class="tl-kpi-l">Per year</div><div class="tl-kpi-v">${perYear}</div></div><div class="tl-kpi"><div class="tl-kpi-l">Corrective</div><div class="tl-kpi-v" style="color:${corrColor}">${corrPct}<small>%</small></div></div></div>${failCount?`<div class="tl-progress"><div class="tl-progress-top"><span>\uD83C\uDFF7 Failure mode classified</span><span>${failWithFM} / ${failCount}</span></div><div class="tl-progress-bar"><div class="tl-progress-fill" style="width:${pct}%"></div></div></div>`:''}<div class="tl-timeline">${nodes}</div></div>`;
+  tlObservePhotos();
+}
+function tlNodeHTML(r,type,idx){
+  const meta=TL_TYPE_META[type]||TL_TYPE_META.other;
+  const d=String(r['MAINTENANCE DATE']||'').substring(0,10);const tag=String(r['TAG']||'');const fm=r['FAILURE MODE']||'';
+  const tagRow=fm?`<span class="fm-badge ${fmClass(fm)}">${String(fm).toUpperCase()}</span>`:tlIsFailureDriven(type)?`<span class="tl-pending">\uD83C\uDFF7 Failure mode pending</span>`:'';
+  const cardName=r['MAINTENANCE CARD']||(tag+' \u00B7 '+d);
+  return `<div class="tl-node"><span class="tl-node-dot" style="background:${meta.dot}"></span><div class="tl-card" onclick="tlOpenMC('${tag.replace(/'/g,"\\'")}','${d}')"><div class="tl-photo empty" id="tlph_${idx}" data-card="${cardName.replace(/"/g,'&quot;')}"><span>\uD83D\uDCF7</span></div><div style="flex:1;min-width:0"><div class="tl-node-head"><span class="tl-node-date">${fmtDateDisplay(d)}</span><span class="tl-type-badge" style="background:${meta.bg};color:${meta.fg}">${meta.label}</span></div><p class="tl-node-desc">${r['ACTIVITY DESCRIPTION']||'\u2014'}</p>${tagRow?`<div class="tl-node-tags">${tagRow}</div>`:''}</div></div></div>`;
+}
+function tlObservePhotos(){
+  if(!('IntersectionObserver' in window))return;
+  const io=new IntersectionObserver((entries,obs)=>{entries.forEach(e=>{if(e.isIntersecting){obs.unobserve(e.target);tlFetchPhoto(e.target);}});},{rootMargin:'100px'});
+  document.querySelectorAll('#timelineView .tl-photo[data-card]').forEach(el=>io.observe(el));
+}
+async function tlFetchPhoto(el){
+  const card=el.getAttribute('data-card');if(!card)return;el.removeAttribute('data-card');
+  if(!isTokenValid()){el.innerHTML='<span>\uD83D\uDCF7</span>';return;}
+  try{
+    const q="name='"+card+".json' and mimeType='application/json' and trashed=false";
+    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id)&pageSize=1&supportsAllDrives=true&includeItemsFromAllDrives=true',{headers:{Authorization:'Bearer '+googleAccessToken}});
+    const dd=await r.json();if(!dd.files||!dd.files.length){el.innerHTML='<span style="font-size:8px">No photo</span>';return;}
+    const cr=await fetch('https://www.googleapis.com/drive/v3/files/'+dd.files[0].id+'?alt=media',{headers:{Authorization:'Bearer '+googleAccessToken}});
+    const mc=await cr.json();const first=(mc.photos||[]).find(p=>p&&p.src);
+    if(first&&first.src){el.classList.remove('empty');el.innerHTML='<img loading="lazy" src="'+first.src+'=w150-h150" alt="">';}
+    else{el.innerHTML='<span style="font-size:8px">No photo</span>';}
+  }catch(e){el.innerHTML='<span>\uD83D\uDCF7</span>';}
+}
+async function tlOpenMC(tag,date){
+  if(!isTokenValid()){toast('Connect Drive to open the MC.','warning');return;}
+  mcViewReturnTarget='timeline';toast('Searching Drive MC\u2026','info');
+  try{
+    const rec=allRecords.find(x=>String(x['MAINTENANCE DATE']||'').substring(0,10)===date&&String(x['TAG']||'')===tag);
+    const fileName=(rec&&rec['MAINTENANCE CARD']?rec['MAINTENANCE CARD']:tag+' \u00B7 '+date)+'.json';
+    const q="name='"+fileName+"' and mimeType='application/json' and trashed=false";
+    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name)&pageSize=1&supportsAllDrives=true&includeItemsFromAllDrives=true',{headers:{Authorization:'Bearer '+googleAccessToken}});
+    const d=await r.json();if(!d.files||!d.files.length){toast('No Drive MC found.','warning');return;}
+    const cr=await fetch('https://www.googleapis.com/drive/v3/files/'+d.files[0].id+'?alt=media',{headers:{Authorization:'Bearer '+googleAccessToken}});
+    const mc=await cr.json();mc.id=d.files[0].id;viewMCFromCloud(mc);
+  }catch(e){toast('Error opening MC: '+e.message,'error');}
 }
 function toast(msg,type='info'){const t=document.createElement('div');t.className=`toast ${type}`;t.innerHTML=`<span>${type==='success'?'✅':type==='error'?'❌':type==='warning'?'⚠️':'ℹ️'}</span> ${msg}`;document.getElementById('toastContainer').appendChild(t);setTimeout(()=>t.remove(),5000);}
 document.getElementById('modalOverlay').addEventListener('click',e=>{e.stopPropagation();});
@@ -3849,7 +4035,7 @@ async function histOpenRecord(cardName,tag,date,refinery,rowIndex){
   const fileName=(rec&&rec['MAINTENANCE CARD']?rec['MAINTENANCE CARD']:tag+' · '+date)+'.json';
   try{
     const q="name='"+fileName+"' and mimeType='application/json' and trashed=false";
-    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,webViewLink)&pageSize=1&supportsAllDrives=true&includeItemsFromAllDrives=true',
+    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name,webViewLink)&pageSize=1',
       {headers:{Authorization:'Bearer '+googleAccessToken}});
     const d=await r.json();
     if(d.files&&d.files.length){
