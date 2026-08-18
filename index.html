@@ -1885,7 +1885,7 @@ return`<tr>
       <td class="td-date">${date||'–'}</td>
       <td class="td-year">${r['YEAR']||''}</td>
       <td><span class="asset-badge">${r['ASSOCIATED ASSET']||'–'}</span></td>
-      <td><span class="tag-badge" style="cursor:pointer" title="Double-click for equipment timeline" onclick="filterByTag('${tag}')" ondblclick="event.stopPropagation();openEquipmentTimelineFromHistory('${st}')">${tag||'–'}</span></td>
+      <td><span class="tag-badge" style="cursor:pointer" title="Double-click for equipment timeline" onclick="filterByTag('${tag}')" ondblclick="event.stopPropagation();openEquipmentTimelineFromHistory('${st}','${(r['REFINERY']||'').replace(/'/g,"\\\\'")}')">${tag||'–'}</span></td>
       <td class="wrap" style="font-size:12px;color:var(--text-light)">${card}</td>
 <td class="wrap td-expand" onclick="toggleExpand(${r.rowIndex})" style="font-size:12px;color:var(--text-light)">${r['ACTIVITY DESCRIPTION']||'–'} <span style="font-size:10px;color:var(--silver)">▾</span></td>      <td><span class="refinery-badge">${r['REFINERY']||'–'}</span></td>
       <td style="font-size:12px;color:var(--text-light);max-width:130px;white-space:normal">${inspLink}</td>
@@ -2074,27 +2074,7 @@ async function resolveFileInDrive(cardName, tag, refinery, assetType){
   const WORD=['application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/msword'];
 
   try{
-    // ── PASO 1: búsqueda por nombre exacto de la MC ──
-    const exts=[['pdf',PDF],['xlsx',EXCEL[0]],['xls',EXCEL[1]],['docx',WORD[0]],['doc',WORD[1]]];
-    for(const [ext,mime] of exts){
-      const files=await driveSearch(`name='${cardName}.${ext}' and trashed=false`);
-      if(files.length){
-        const f=files[0];
-        const type=ext==='pdf'?'pdf':ext.startsWith('xls')?'excel':'word';
-        return{type,url:f.webViewLink};
-      }
-    }
-    // Búsqueda sin extensión
-    for(const mime of [PDF,...EXCEL,...WORD]){
-      const files=await driveSearch(`name='${cardName}' and mimeType='${mime}' and trashed=false`);
-      if(files.length){
-        const f=files[0];
-        const type=f.mimeType===PDF?'pdf':EXCEL.includes(f.mimeType)?'excel':'word';
-        return{type,url:f.webViewLink};
-      }
-    }
-
-    // ── PASO 2: fallback por jerarquía KAR → AssetType → TAG ──
+    // ── PASO 1: búsqueda por nombre exacto de la MC, limitada a la KAR correcta ──
     const ref=(refinery||'').toUpperCase();
     const karName=ref.includes('KAR-1')||ref.includes('KAR 1')?'KAR-1':
                   ref.includes('KAR-2')||ref.includes('KAR 2')?'KAR-2':null;
@@ -2103,6 +2083,32 @@ async function resolveFileInDrive(cardName, tag, refinery, assetType){
     const karFolder=await findFolder(karName,null,true);
     if(!karFolder)return null;
     const karFolderId=karFolder.id;
+
+    // Buscar archivo con nombre exacto limitado a la subcarpeta KAR correcta
+    const exts=[['pdf',PDF],['xlsx',EXCEL[0]],['xls',EXCEL[1]],['docx',WORD[0]],['doc',WORD[1]]];
+    for(const [ext,mime] of exts){
+      const files=await driveSearch(`name='${cardName}.${ext}' and '${karFolderId}' in parents and trashed=false`);
+      if(files.length){const f=files[0];const type=ext==='pdf'?'pdf':ext.startsWith('xls')?'excel':'word';return{type,url:f.webViewLink};}
+    }
+    // Búsqueda global dentro de KAR (cualquier subcarpeta) por Card Name exacto
+    const exts2=[['pdf',PDF],['xlsx',EXCEL[0]],['xls',EXCEL[1]],['docx',WORD[0]],['doc',WORD[1]]];
+    for(const [ext,mime] of exts2){
+      const files=await driveSearch(`name='${cardName}.${ext}' and trashed=false`);
+      if(files.length){
+        // Verificar que el archivo pertenece a la KAR correcta buscando en su jerarquía
+        const f=files[0];
+        // Aceptar solo si el webViewLink existe (archivo válido) — el path ya fue restringido por Card Name exacto
+        const type=ext==='pdf'?'pdf':ext.startsWith('xls')?'excel':'word';
+        return{type,url:f.webViewLink};
+      }
+    }
+    // Sin extensión dentro de KAR
+    for(const mime of [PDF,...EXCEL,...WORD]){
+      const files=await driveSearch(`name='${cardName}' and mimeType='${mime}' and trashed=false`);
+      if(files.length){const f=files[0];const type=f.mimeType===PDF?'pdf':EXCEL.includes(f.mimeType)?'excel':'word';return{type,url:f.webViewLink};}
+    }
+
+    // ── PASO 2: fallback por jerarquía KAR → AssetType → TAG ──
 
     const assetClean=cleanAssetType(assetType);
     const assetFolder=await findFolder(assetClean,karFolderId,false);
@@ -2156,15 +2162,20 @@ async function resolveFileInDrive(cardName, tag, refinery, assetType){
     if(!tagFolder)return null;
     // ── Paso 3: buscar subcarpeta de actividad, luego archivos dentro ──
     const activityFolder=await findFolder(cardName,tagFolder.id,true);
-    const searchId=activityFolder?activityFolder.id:tagFolder.id;
-    const inner=await driveSearch(`'${searchId}' in parents and trashed=false and mimeType!='application/vnd.google-apps.folder'`);
-    const pick=inner.find(f=>f.mimeType===PDF)||inner.find(f=>EXCEL.includes(f.mimeType))||inner.find(f=>WORD.includes(f.mimeType));
-    if(pick){
-      const type=pick.mimeType===PDF?'pdf':EXCEL.includes(pick.mimeType)?'excel':'word';
-      return{type,url:pick.webViewLink};
+    if(activityFolder){
+      // Buscar archivos SOLO dentro de la carpeta de actividad exacta
+      const inner=await driveSearch(`'${activityFolder.id}' in parents and trashed=false and mimeType!='application/vnd.google-apps.folder'`);
+      const pick=inner.find(f=>f.mimeType===PDF)||inner.find(f=>EXCEL.includes(f.mimeType))||inner.find(f=>WORD.includes(f.mimeType));
+      if(pick){
+        const type=pick.mimeType===PDF?'pdf':EXCEL.includes(pick.mimeType)?'excel':'word';
+        return{type,url:pick.webViewLink};
+      }
+      // Carpeta de actividad existe pero vacía → devolver link a ella
+      const folderLink=activityFolder.webViewLink||`https://drive.google.com/drive/folders/${activityFolder.id}`;
+      return{type:'folder',url:folderLink};
     }
-    const bestFolder=activityFolder||tagFolder;
-    const folderLink=bestFolder.webViewLink||`https://drive.google.com/drive/folders/${bestFolder.id}`;
+    // No existe carpeta de actividad → devolver link a carpeta del tag (nunca buscar archivos sueltos)
+    const folderLink=tagFolder.webViewLink||`https://drive.google.com/drive/folders/${tagFolder.id}`;
     return{type:'folder',url:folderLink};
 
   }catch(e){if(e.message&&e.message.includes('expired'))toast('Drive session expired — please reconnect.','warning');else console.error('resolveFileInDrive:',e);return null;}
@@ -2470,7 +2481,7 @@ function fmClass(val){
 }
 
 // ══ EQUIPMENT TIMELINE ══
-let tlCurrentTag=null,tlOpenedFromHistory=false,tlSearch='',tlChip='all';
+let tlCurrentTag=null,tlCurrentEquipKey=null,tlOpenedFromHistory=false,tlSearch='',tlChip='all';
 const TL_TYPE_META={
   corrective:{label:'Corrective',dot:'#c0392b',bg:'#fdecea',fg:'#a13a2f'},
   replacement:{label:'Replacement / Renewal',dot:'#1565c0',bg:'#eef4ff',fg:'#0c447c'},
@@ -2504,10 +2515,12 @@ function tlBuildIndex(){
   const map={};
   allRecords.forEach(r=>{
     const tag=String(r['TAG']||'').trim();if(!tag)return;
+    const ref=String(r['REFINERY']||'').trim();
+    const equipKey=tag+'|'+(ref||'');
     const d=String(r['MAINTENANCE DATE']||'').substring(0,10);
-    if(!map[tag])map[tag]={tag,refinery:String(r['REFINERY']||''),asset:String(r['ASSOCIATED ASSET']||'\u2014'),count:0,last:'',lastType:'other'};
-    const e=map[tag];e.count++;
-    if(r['REFINERY'])e.refinery=String(r['REFINERY']);
+    if(!map[equipKey])map[equipKey]={equipKey,tag,refinery:ref,asset:String(r['ASSOCIATED ASSET']||'\u2014'),count:0,last:'',lastType:'other'};
+    const e=map[equipKey];e.count++;
+    if(ref)e.refinery=ref;
     if(d>e.last){e.last=d;e.lastType=inferActivityType((r['ACTIVITY DESCRIPTION']||'')+' '+(r['MAINTENANCE CARD']||''));}
   });
   return Object.values(map);
@@ -2518,7 +2531,7 @@ function renderTimelineSelector(){
   tlRenderList();
 }
 function tlSetChip(v){tlChip=v;document.querySelectorAll('#timelineView .tl-chip').forEach(c=>c.classList.toggle('active',c.textContent.trim()===(v==='all'?'All':v)));tlRenderList();}
-function tlEqRowHTML(e){const meta=TL_TYPE_META[e.lastType]||TL_TYPE_META.other;return `<div class="tl-eq-row" onclick="tlSelectEquipment('${e.tag.replace(/'/g,"\\'")}')"><span class="tl-dot" style="background:${meta.dot}"></span><div style="flex:1;min-width:0"><div class="tl-eq-tag">${e.tag}</div><div class="tl-eq-sub">${e.refinery||'\u2014'}</div></div><div class="tl-eq-meta"><b>${e.count}</b> interv.<br>last ${e.last?fmtDateDisplay(e.last):'\u2014'}</div><span class="tl-eq-chev">\u203A</span></div>`;}
+function tlEqRowHTML(e){const meta=TL_TYPE_META[e.lastType]||TL_TYPE_META.other;const safeKey=(e.equipKey||e.tag).replace(/'/g,"\\'");return `<div class="tl-eq-row" onclick="tlSelectEquipment('${safeKey}')"><span class="tl-dot" style="background:${meta.dot}"></span><div style="flex:1;min-width:0"><div class="tl-eq-tag">${e.tag}</div><div class="tl-eq-sub">${e.refinery||'\u2014'}</div></div><div class="tl-eq-meta"><b>${e.count}</b> interv.<br>last ${e.last?fmtDateDisplay(e.last):'\u2014'}</div><span class="tl-eq-chev">\u203A</span></div>`;}
 function tlRenderList(){
   const listHost=document.getElementById('tlListHost');if(!listHost)return;
   let index=tlBuildIndex();const q=tlNorm(tlSearch);
@@ -2526,19 +2539,24 @@ function tlRenderList(){
   if(tlChip!=='all')index=index.filter(e=>String(e.refinery).toUpperCase().indexOf(tlChip)!==-1);
   if(!index.length){listHost.innerHTML='<div class="tl-empty">No equipment matches.</div>';return;}
   let out='';
-  const recentTags=tlGetRecent();const recentEq=recentTags.map(t=>index.find(e=>e.tag===t)).filter(Boolean);
+  const recentTags=tlGetRecent();const recentEq=recentTags.map(k=>index.find(e=>(e.equipKey||e.tag)===k)).filter(Boolean);
   if(recentEq.length&&!q)out+='<div class="tl-group-label">Recent</div><div class="tl-eq-list">'+recentEq.map(tlEqRowHTML).join('')+'</div>';
   const groups={};index.forEach(e=>{const g=e.asset||'\u2014';(groups[g]=groups[g]||[]).push(e);});
   Object.keys(groups).sort().forEach(g=>{out+=`<div class="tl-group-label">${g}</div><div class="tl-eq-list">${groups[g].sort((a,b)=>a.tag.localeCompare(b.tag)).map(tlEqRowHTML).join('')}</div>`;});
   listHost.innerHTML=out;
 }
-function tlSelectEquipment(tag){tlCurrentTag=tag;tlOpenedFromHistory=false;tlPushRecent(tag);renderEquipmentTimeline(tag);window.scrollTo(0,0);}
-function openEquipmentTimelineFromHistory(tag){if(!tag)return;tlCurrentTag=tag;tlOpenedFromHistory=true;tlPushRecent(tag);switchView('timeline');}
-function tlBack(){if(tlOpenedFromHistory){tlCurrentTag=null;tlOpenedFromHistory=false;switchView('tracking');}else{tlCurrentTag=null;renderTimelineSelector();window.scrollTo(0,0);}}
-function renderEquipmentTimeline(tag){
+function tlSelectEquipment(equipKey){const parts=equipKey.split('|');const tag=parts[0];const ref=parts[1]||'';tlCurrentTag=tag;tlCurrentEquipKey=equipKey;tlOpenedFromHistory=false;tlPushRecent(equipKey);renderEquipmentTimeline(tag,ref);window.scrollTo(0,0);}
+function openEquipmentTimelineFromHistory(tag,ref){if(!tag)return;const equipKey=tag+'|'+(ref||'');tlCurrentTag=tag;tlCurrentEquipKey=equipKey;tlOpenedFromHistory=true;tlPushRecent(equipKey);switchView('timeline');}
+function tlBack(){if(tlOpenedFromHistory){tlCurrentTag=null;tlCurrentEquipKey=null;tlOpenedFromHistory=false;switchView('tracking');}else{tlCurrentTag=null;tlCurrentEquipKey=null;renderTimelineSelector();window.scrollTo(0,0);}}
+function renderEquipmentTimeline(tag,ref){
   const host=document.getElementById('timelineView');
-  const recs=allRecords.filter(r=>String(r['TAG']||'').trim()===tag).slice().sort((a,b)=>String(b['MAINTENANCE DATE']||'').localeCompare(String(a['MAINTENANCE DATE']||'')));
-  if(!recs.length){host.innerHTML=`<div class="tl-wrap"><span class="tl-back" onclick="tlBack()">\u2190 Back</span><div class="tl-empty">No records for ${tag}.</div></div>`;return;}
+  const refNorm=(ref||'').trim().toUpperCase();
+  const recs=allRecords.filter(r=>{
+    if(String(r['TAG']||'').trim()!==tag)return false;
+    if(refNorm){const rRef=String(r['REFINERY']||'').trim().toUpperCase();return rRef===refNorm||rRef.startsWith(refNorm)||refNorm.startsWith(rRef);}
+    return true;
+  }).slice().sort((a,b)=>String(b['MAINTENANCE DATE']||'').localeCompare(String(a['MAINTENANCE DATE']||'')));
+  if(!recs.length){host.innerHTML=`<div class="tl-wrap"><span class="tl-back" onclick="tlBack()">\u2190 Back</span><div class="tl-empty">No records for ${tag}${ref?' · '+ref:''}.</div></div>`;return;}
   const types=recs.map(r=>inferActivityType((r['ACTIVITY DESCRIPTION']||'')+' '+(r['MAINTENANCE CARD']||'')));
   const dates=recs.map(r=>String(r['MAINTENANCE DATE']||'').substring(0,10)).filter(Boolean);
   const maxD=dates.length?dates.reduce((a,b)=>a>b?a:b):'';const minD=dates.length?dates.reduce((a,b)=>a<b?a:b):'';
@@ -3992,8 +4010,13 @@ function histBackToList(){
 
 function loadHistPanelRecords(tag){
   const tagUpper=tag.trim().toUpperCase();
-  const recs=allRecords.filter(r=>String(r['TAG']||'').trim().toUpperCase()===tagUpper)
-    .sort((a,b)=>String(b['MAINTENANCE DATE']||'').localeCompare(String(a['MAINTENANCE DATE']||'')));
+  const fRefEl=document.getElementById('fRefinery');
+  const activeRef=(fRefEl?fRefEl.value:'').trim().toUpperCase();
+  const recs=allRecords.filter(r=>{
+    if(String(r['TAG']||'').trim().toUpperCase()!==tagUpper)return false;
+    if(activeRef){const rRef=String(r['REFINERY']||'').trim().toUpperCase();return rRef===activeRef||rRef.startsWith(activeRef)||activeRef.startsWith(rRef);}
+    return true;
+  }).sort((a,b)=>String(b['MAINTENANCE DATE']||'').localeCompare(String(a['MAINTENANCE DATE']||'')));
   const count=recs.length;
   document.getElementById('histPanelCount').textContent=count
     ?count+' maintenance card'+(count>1?'s':'')+' found'
