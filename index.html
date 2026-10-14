@@ -116,6 +116,12 @@ td.wrap{white-space:normal;min-width:220px;max-width:420px;}
 .fm-badge.low-efficiency{background:linear-gradient(160deg,#fff6e0,#ffe0a3);color:#8a5a00;}
 .fm-badge.internal-passing{background:linear-gradient(160deg,#f3e5f5,#e6cbea);color:#6a1b7a;}
 .fm-badge.other{background:linear-gradient(160deg,#eef1f5,#dde3ec);color:#5a6a80;}
+.fm-badge.rot-leak{background:linear-gradient(160deg,#fdecea,#f8c9c2);color:#b3261e;}
+.fm-badge.rot-mech{background:linear-gradient(160deg,#fff0e3,#ffd2a8);color:#b45309;}
+.fm-badge.rot-perf{background:linear-gradient(160deg,#fff8dc,#ffe9a0);color:#8a6d00;}
+.fm-badge.rot-stop{background:linear-gradient(160deg,#f6e0e4,#e8b9c2);color:#7a1426;}
+.fm-badge.rot-struct{background:linear-gradient(160deg,#f1e6fa,#dcc5f0);color:#5b2a86;}
+.fm-badge.rot-plan{background:linear-gradient(160deg,#e6f6e8,#c6eacb);color:#2e7d32;}
 .exp-mc-btn{transition:all .15s;box-shadow:0 1px 2px rgba(26,35,50,.08);}
 .exp-mc-btn:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(26,35,50,.18);}
 .refinery-badge{font-size:11px;font-weight:600;color:var(--text-light);background:var(--bg);padding:2px 8px;border-radius:3px;}
@@ -1425,6 +1431,7 @@ document.querySelectorAll('.sb-logo img').forEach(img=>img.src=KAR_LOGO);
 // ── DISCIPLINE ─────────────────────────────────
 function setDiscipline(disc){
   currentDiscipline=disc;
+  populateDisciplineDropdowns();
   document.getElementById('discStatic').className='disc-btn'+(disc==='static'?' active static':' static');
   document.getElementById('discRot').className='disc-btn'+(disc==='rotating'?' active rotating':' rotating');
   const isRot=disc==='rotating';
@@ -1498,20 +1505,44 @@ function cleanAssetType(val){
 }
 // ── ASSOCIATED ASSET dropdown (patrón establecido: Equipment List y Sheet de Drive) ──
 const ASSET_TYPE_OPTIONS=['1.- FAN COOLER','2.- HEAT EXCHANGER','3.- BOILER','4.- HEATER','5.- TANK','6.- VESSEL','7.- TOWER','8.- COOLING TOWER','9.- REACTOR','10.- VALVE','11.- PIPE','12.- OTHER'];
-function matchAssetTypeOption(raw){
+const ASSET_TYPE_OPTIONS_ROT=['1.- CENTRIFUGAL PUMP','2.- POSITIVE DISPLACEMENT PUMP','3.- DOSING PUMP','4.- RECIPROCATING COMPRESSOR','5.- SCREW COMPRESSOR','6.- FAN COOLER','7.- COOLING TOWER FAN','8.- BLOWER','9.- ELECTRIC MOTOR'];
+function getAssetTypeOptions(){return currentDiscipline==='rotating'?ASSET_TYPE_OPTIONS_ROT:ASSET_TYPE_OPTIONS;}
+const FAILURE_MODES_ROT=['ELP - EXTERNAL LEAKAGE PROCESS MEDIUM','ELU - EXTERNAL LEAKAGE UTILITY MEDIUM','INL - INTERNAL LEAKAGE','VIB - VIBRATION','NOI - NOISE','LOO - LOW OUTPUT','PDE - PARAMETER DEVIATION','PLU - PLUGGED / CHOKED','BRD - BREAKDOWN','UST - SPURIOUS STOP','STD - STRUCTURAL DEFICIENCY','N/A - PLANNED MAINTENANCE','OTH - OTHER'];
+// Static options = HTML original (se cachea tal cual); Rotating se construye desde las listas
+let _staticAssetHTML=null,_staticFmHTML=null,_populatedDisc=null;
+function populateDisciplineDropdowns(){
+  const a=document.getElementById('fAsset'),f=document.getElementById('fFailureMode');
+  if(!a||!f)return;
+  if(_staticAssetHTML===null){_staticAssetHTML=a.innerHTML;_staticFmHTML=f.innerHTML;}
+  if(_populatedDisc===currentDiscipline)return;
+  if(currentDiscipline==='rotating'){
+    const opt=v=>`<option value="${v}">${v}</option>`;
+    a.innerHTML='<option value="">— Select —</option>'+ASSET_TYPE_OPTIONS_ROT.map(opt).join('');
+    f.innerHTML='<option value="">— Select —</option>'+FAILURE_MODES_ROT.map(opt).join('');
+  }else{a.innerHTML=_staticAssetHTML;f.innerHTML=_staticFmHTML;}
+  _populatedDisc=currentDiscipline;
+}
+function fmRotCode(v){const m=String(v||'').toUpperCase().trim().match(/^([A-Z\/]{2,3})(?:\s*-|$)/);return m?m[1]:'';}
+function matchFailureModeRot(raw){
   if(!raw)return'';
   const c=String(raw).toUpperCase().trim();
-  let found=ASSET_TYPE_OPTIONS.find(o=>o===c);
+  return FAILURE_MODES_ROT.find(o=>o===c)||FAILURE_MODES_ROT.find(o=>fmRotCode(o)===fmRotCode(c)&&fmRotCode(c))||'';
+}
+function matchAssetTypeOption(raw){
+  if(!raw)return'';
+  const opts=getAssetTypeOptions();
+  const c=String(raw).toUpperCase().trim();
+  let found=opts.find(o=>o===c);
   if(found)return found;
   const cNoNum=c.replace(/^\d+\.?\s*[-\u2013]?\s*/,'').trim();
   const singular=cNoNum.endsWith('S')?cNoNum.slice(0,-1):cNoNum;
   const plural=cNoNum.endsWith('S')?cNoNum:cNoNum+'S';
-  found=ASSET_TYPE_OPTIONS.find(o=>{
+  found=opts.find(o=>{
     const name=o.replace(/^\d+\.?\s*[-\u2013]?\s*/,'');
     return name===cNoNum||name===singular||name===plural;
   });
   if(found)return found;
-  found=ASSET_TYPE_OPTIONS.find(o=>{
+  found=opts.find(o=>{
     const name=o.replace(/^\d+\.?\s*[-\u2013]?\s*/,'');
     return name.includes(cNoNum)||cNoNum.includes(name)||name.includes(singular)||singular.includes(name);
   });
@@ -2285,10 +2316,12 @@ document.getElementById('attachFile').disabled=true;
 document.getElementById('uploadBtn').style.display='none';
   editingIndex=record?record.rowIndex:null;
   fAssetManualOverride=false;
+  populateDisciplineDropdowns();
   document.getElementById('modalTitle').textContent=record?'Edit Record':'New Maintenance Record';
  const map={fItemNo:'ITEM NO.',fDate:'MAINTENANCE DATE',fYear:'YEAR',fTag:'TAG',fRefinery:'REFINERY',fActivity:'ACTIVITY DESCRIPTION',fFailureMode:'FAILURE MODE',fRemark:'REMARK',fComments:'COMMENTS'};
 Object.entries(map).forEach(([id,key])=>{const el=document.getElementById(id);if(!el)return;const v=String(record?record[key]||'':'');el.value=record?(key==='MAINTENANCE DATE'?v.substring(0,10):v):'';});  document.getElementById('fCard').value=record?(record['MAINTENANCE CARD']||''):'';
   document.getElementById('fAsset').value=record?matchAssetTypeOption(record['ASSOCIATED ASSET']):'';
+  if(currentDiscipline==='rotating'){const fmEl=document.getElementById('fFailureMode');const rawFm=record?String(record['FAILURE MODE']||'').trim():'';const mFm=matchFailureModeRot(rawFm);if(rawFm&&!mFm){const o=document.createElement('option');o.value=rawFm;o.textContent=rawFm;fmEl.appendChild(o);_populatedDisc=null;}fmEl.value=mFm||rawFm;}
   if(!record){const maxNo=allRecords.reduce((max,r)=>{const n=parseInt(r['ITEM NO.'])||0;return n>max?n:max;},0);document.getElementById('fItemNo').value=maxNo+1;}
   selectedFile=null;
   const fn=document.getElementById('attachFileName');const ub=document.getElementById('uploadBtn');const us=document.getElementById('uploadStatus');const af=document.getElementById('attachFile');
@@ -2522,6 +2555,15 @@ function fmClass(val){
   if(v==='LEAK')return'leak';
   if(v==='LOW EFFICIENCY')return'low-efficiency';
   if(v==='INTERNAL PASSING')return'internal-passing';
+  const rc=fmRotCode(v);
+  if(rc){
+    if(['ELP','ELU','INL'].includes(rc))return'rot-leak';
+    if(['VIB','NOI'].includes(rc))return'rot-mech';
+    if(['LOO','PDE','PLU'].includes(rc))return'rot-perf';
+    if(['BRD','UST'].includes(rc))return'rot-stop';
+    if(rc==='STD')return'rot-struct';
+    if(rc==='N/A')return'rot-plan';
+  }
   if(v)return'other';
   return'';
 }
