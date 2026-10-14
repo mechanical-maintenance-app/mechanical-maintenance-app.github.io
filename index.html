@@ -1359,6 +1359,10 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
   <option value="KAR-2 UNIT-4">KAR-2 UNIT-4</option>
   <option value="KAR-2 Plant-B">KAR-2 Plant-B</option>
   <option value="KAR-2 Plant-C">KAR-2 Plant-C</option>
+  <option value="KAR-1 OSBL">KAR-1 OSBL</option>
+  <option value="KAR-2 FF">KAR-2 FF</option>
+  <option value="KAR-2 OSBL">KAR-2 OSBL</option>
+  <option value="KAR-2 UTILITIES">KAR-2 UTILITIES</option>
 </select></div>
         <div class="form-group"><label class="form-label">Item No.</label><input type="text" class="form-input" id="fItemNo" placeholder="Auto"></div>
         <div class="form-group full"><label class="form-label">Activity Description <span class="req">*</span></label><input type="text" class="form-input" id="fActivity" placeholder="e.g. BUNDLE REPLACEMENT"></div>
@@ -1945,7 +1949,10 @@ async function resolveFIleBadges(page){
     await Promise.all(batch.map(async r=>{
       const card=r['MAINTENANCE CARD']||'';
       const tag=r['TAG']||'';
-      if(card){
+      if(card&&currentDiscipline==='rotating'){
+        const btn=document.getElementById('fb_'+r.rowIndex);
+        if(btn&&isTokenValid()){const pdf=await resolveRotatingCardPDF(card);applyFileBadge(btn,pdf?{type:'pdf',url:'https://drive.google.com/file/d/'+pdf.id+'/view'}:{type:'none',url:null});}
+      }else if(card){
         const btn=document.getElementById('fb_'+r.rowIndex);
         if(btn){
           if(fileCache[r.rowIndex]!==undefined){applyFileBadge(btn,fileCache[r.rowIndex]);}
@@ -2180,8 +2187,43 @@ async function resolveFileInDrive(cardName, tag, refinery, assetType){
 
   }catch(e){if(e.message&&e.message.includes('expired'))toast('Drive session expired — please reconnect.','warning');else console.error('resolveFileInDrive:',e);return null;}
 }
+// ── ROTATING: history card PDF by exact MAINTENANCE CARD name ──
+const rotCardCache={};
+async function resolveRotatingCardPDF(cardName){
+  cardName=String(cardName||'').trim();
+  if(!cardName||!isTokenValid())return null;
+  if(Object.prototype.hasOwnProperty.call(rotCardCache,cardName))return rotCardCache[cardName];
+  const headers={Authorization:'Bearer '+googleAccessToken};
+  function handle401(d){if(d.error&&(d.error.code===401||d.error.status==='UNAUTHENTICATED')){googleAccessToken=null;googleTokenExpiry=0;localStorage.removeItem('gat');localStorage.removeItem('gatExp');updateGoogleBtn(false);throw new Error('Drive session expired');}}
+  try{
+    const safe=cardName.replace(/'/g,"\\'");
+    const q=`name = '${safe}.pdf' and mimeType = 'application/pdf' and trashed = false`;
+    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields='+encodeURIComponent('files(id,name,parents,webViewLink)')+'&supportsAllDrives=true&includeItemsFromAllDrives=true&corpora=allDrives',{headers});
+    const d=await r.json();handle401(d);
+    if(d.error){console.error('resolveRotatingCardPDF:',d.error);return null;}
+    const files=d.files||[];
+    let result=null;
+    if(files.length){
+      if(files.length>1)console.warn('resolveRotatingCardPDF: multiple PDFs for "'+cardName+'":',files.map(f=>f.id));
+      result={id:files[0].id,webViewLink:files[0].webViewLink};
+    }
+    rotCardCache[cardName]=result;
+    return result;
+  }catch(e){if(e.message&&e.message.includes('expired'))toast('Drive session expired — please reconnect.','warning');else console.error('resolveRotatingCardPDF:',e);return null;}
+}
+function openRotatingCardPDF(cardName){
+  cardName=String(cardName||'').trim();
+  if(!cardName){toast('PDF not found in Drive: (no Maintenance Card)','error');return;}
+  if(!isTokenValid()){toast('Connect Drive to open the PDF.','warning');return;}
+  const w=window.open('','_blank');
+  resolveRotatingCardPDF(cardName).then(res=>{
+    if(res&&res.id){if(w)w.location='https://drive.google.com/file/d/'+res.id+'/view';else window.open('https://drive.google.com/file/d/'+res.id+'/view','_blank');}
+    else{if(w)w.close();if(isTokenValid())toast('PDF not found in Drive: '+cardName,'error');}
+  });
+}
 // ── OPEN FILE ──────────────────────────────────
 async function openFile(filename,tag,rowIndex){
+  if(currentDiscipline==='rotating'){const rr=allRecords.find(x=>x.rowIndex===rowIndex);openRotatingCardPDF(rr?rr['MAINTENANCE CARD']:filename);return;}
   const btn=document.getElementById('fb_'+rowIndex);
   if(btn){btn.classList.add('loading');btn.textContent='⏳';}
   if(fileCache[rowIndex]?.url){window.open(fileCache[rowIndex].url,'_blank');applyFileBadge(btn,fileCache[rowIndex]);return;}
@@ -2216,7 +2258,7 @@ if(eq&&!fAssetManualOverride){
   let card=document.getElementById('fCard').value.trim();
   if(!card)return;
   const locations=['KAR-1 Unit-1','KAR-1 Unit-2','KAR-1 Unit-3',
-                   'KAR-2 UNIT-4','KAR-2 PLANT-B','KAR-2 PLANT-C','KAR-1','KAR-2'];
+                   'KAR-2 UNIT-4','KAR-2 PLANT-B','KAR-2 PLANT-C','KAR-1 OSBL','KAR-2 FF','KAR-2 OSBL','KAR-2 UTILITIES','KAR-1','KAR-2'];
   locations.forEach(loc=>{
     if(card.endsWith(' '+loc))card=card.slice(0,-(loc.length+1)).trim();
   });
@@ -2436,6 +2478,10 @@ let tooltipTimer=null;
 if(!r)return;
 const mcEl=document.getElementById('exp_mc_'+rowIndex);
 if(!mcEl)return;
+if(currentDiscipline==='rotating'){
+  mcEl.innerHTML='<button class="exp-mc-btn" style="padding:2px 8px;font-size:11px;border:1px solid #1565c0;color:#1565c0;border-radius:4px;background:white;cursor:pointer;font-weight:600" onclick="openRotatingCardPDF(allRecords.find(x=>x.rowIndex==='+rowIndex+')?.[\'MAINTENANCE CARD\'])">📄 Open PDF</button>';
+  return;
+}
 if(!isTokenValid()){
   mcEl.innerHTML='<span class="expand-mc-badge notfound">🔑 Connect Drive to check MC</span>';
   return;
@@ -2598,6 +2644,7 @@ async function tlFetchPhoto(el){
   }catch(e){el.innerHTML='<span>\uD83D\uDCF7</span>';}
 }
 async function tlOpenMC(tag,date){
+  if(currentDiscipline==='rotating'){const rr=allRecords.find(x=>String(x['MAINTENANCE DATE']||'').substring(0,10)===date&&String(x['TAG']||'')===tag);openRotatingCardPDF(rr?rr['MAINTENANCE CARD']:'');return;}
   if(!isTokenValid()){toast('Connect Drive to open the MC.','warning');return;}
   mcViewReturnTarget='timeline';toast('Searching Drive MC\u2026','info');
   try{
@@ -4053,6 +4100,7 @@ async function histOpenRecord(cardName,tag,date,refinery,rowIndex){
   document.querySelectorAll('.hist-card').forEach(c=>c.classList.remove('active'));
   const card=document.querySelector(`.hist-card[data-rowindex="${rowIndex}"]`);
   if(card)card.classList.add('active');
+  if(currentDiscipline==='rotating'){const rr=allRecords.find(x=>x.rowIndex===rowIndex);openRotatingCardPDF(rr&&rr['MAINTENANCE CARD']?rr['MAINTENANCE CARD']:cardName);return;}
   if(!isTokenValid()){histShowMCPreview(null,{cardName,tag,date,refinery});return;}
   const rec=allRecords.find(x=>x.rowIndex===rowIndex);
   const fileName=(rec&&rec['MAINTENANCE CARD']?rec['MAINTENANCE CARD']:tag+' · '+date)+'.json';
