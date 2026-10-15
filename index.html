@@ -1620,7 +1620,54 @@ function jsonp(params){
 }
 
 // ── GOOGLE OAUTH ──────────────────────────────
+// Dentro de un iframe (portal MDPOC) Google bloquea su pantalla de login (403).
+// En ese caso se usa el popup oficial de Google Identity Services; fuera del iframe
+// se mantiene la redirección de siempre.
+const IN_IFRAME=(()=>{try{return window.self!==window.top;}catch(e){return true;}})();
+function loadGIS(){
+  return new Promise((res,rej)=>{
+    if(window.google&&google.accounts&&google.accounts.oauth2)return res();
+    let s=document.getElementById('gisScript');
+    if(!s){s=document.createElement('script');s.id='gisScript';s.src='https://accounts.google.com/gsi/client';s.async=true;document.head.appendChild(s);}
+    s.addEventListener('load',()=>res());s.addEventListener('error',()=>rej(new Error('GIS load failed')));
+  });
+}
+if(IN_IFRAME)loadGIS().catch(e=>console.warn('GIS preload:',e));
+let _gisTokenClient=null;
+function signInGooglePopup(){
+  if(!(window.google&&google.accounts&&google.accounts.oauth2)){
+    toast('Preparing Google sign-in… click Connect Drive again in a second.','info');
+    loadGIS().catch(()=>toast('Could not load Google sign-in. Check your connection.','error'));
+    return;
+  }
+  if(!_gisTokenClient){
+    _gisTokenClient=google.accounts.oauth2.initTokenClient({
+      client_id:GOOGLE_CLIENT_ID,
+      scope:DRIVE_SCOPE,
+      callback:(resp)=>{
+        if(!resp||resp.error||!resp.access_token){toast('Google sign-in failed: '+((resp&&resp.error)||'unknown'),'error');return;}
+        googleAccessToken=resp.access_token;
+        const expiresIn=parseInt(resp.expires_in)||3600;
+        googleTokenExpiry=Date.now()+(expiresIn*1000);
+        try{localStorage.setItem('gat',googleAccessToken);localStorage.setItem('gatExp',googleTokenExpiry);}catch(e){}
+        updateGoogleBtn(true);
+        toast('Google Drive connected!','success');
+        try{
+          if(currentView==='otherdocs'&&typeof loadOtherDocsList==='function')loadOtherDocsList();
+          if(currentView==='cloudmc'&&typeof loadCloudMCList==='function')loadCloudMCList();
+        }catch(e){console.error('post-connect refresh:',e);}
+      },
+      error_callback:(err)=>{
+        const t=err&&err.type;
+        if(t==='popup_failed_to_open')toast('The Google sign-in window was blocked. Allow pop-ups for this site and try again.','error');
+        else if(t!=='popup_closed')toast('Google sign-in error: '+(t||'unknown'),'error');
+      }
+    });
+  }
+  _gisTokenClient.requestAccessToken({prompt:'select_account'});
+}
 function signInGoogle(){
+  if(IN_IFRAME){signInGooglePopup();return;}
   saveDraftBeforeReauth();
   const params=new URLSearchParams({client_id:GOOGLE_CLIENT_ID,redirect_uri:window.location.origin+window.location.pathname,response_type:'token',scope:DRIVE_SCOPE,prompt:'select_account'});
   window.location.href='https://accounts.google.com/o/oauth2/v2/auth?'+params.toString();
