@@ -1475,10 +1475,16 @@ function setDiscipline(disc){
   const spSec=document.getElementById('rotSparePartsSection');
   if(spSec)spSec.style.display=isRot?'':'none';
   syncDocPagination();
+  const wasCloudMC=currentView==='cloudmc';
+  if(wasCloudMC){
+    allCloudMCs=[];
+    const cg=document.getElementById('cloudMCGrid');
+    if(cg){const tb=cg.parentElement.querySelector('.cloud-mc-toolbar');if(tb)tb.remove();cg.innerHTML='';}
+  }
   allRecords=[];equipmentList=[];
   cachedRecords={};allRecordsLoaded=false;
   resetFilters();
-  switchView('tracking');
+  switchView(wasCloudMC?'cloudmc':'tracking');
   init();
 }
 
@@ -1786,6 +1792,81 @@ function extractBaseTag(tag){
 function extractPlantPrefix(tag){
   const m=tag.match(/^([BC])-/i);
   return m?m[1].toUpperCase():null;
+}
+// ── ROTATING MC FOLDERS: HISTORY CARDS ROTATING EQUIPMENT / History cards - claude program to system / 05_MC APP / [REFINERY] / [Card Name] ──
+const ROT_ROOT_PARENT='HISTORY CARDS ROTATING EQUIPMENT';
+const ROT_ROOT_NAME='History cards - claude program to system';
+const ROT_MC_FOLDER='05_MC APP';
+let _rotMcAppFolderId=null;
+function rotQ(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
+async function rotListAll(q,fields){
+  const out=[];let pageToken='';
+  do{
+    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields='+encodeURIComponent('nextPageToken,files('+fields+')')+'&pageSize=1000&supportsAllDrives=true&includeItemsFromAllDrives=true'+(pageToken?'&pageToken='+encodeURIComponent(pageToken):''),
+      {headers:{Authorization:'Bearer '+googleAccessToken}});
+    const d=await r.json();
+    if(d.error)throw new Error(d.error.message||'Drive error');
+    (d.files||[]).forEach(f=>out.push(f));
+    pageToken=d.nextPageToken||'';
+  }while(pageToken);
+  return out;
+}
+async function getRotatingMCAppFolder(create){
+  if(_rotMcAppFolderId)return _rotMcAppFolderId;
+  if(!isTokenValid())return null;
+  const parent=await driveSearchFolder(rotQ(ROT_ROOT_PARENT),null,true);if(!parent)return null;
+  const root=await driveSearchFolder(rotQ(ROT_ROOT_NAME),parent.id,true);if(!root)return null;
+  let app=await driveSearchFolder(rotQ(ROT_MC_FOLDER),root.id,true);
+  if(!app&&create)app=await driveCreateFolder(ROT_MC_FOLDER,root.id);
+  if(!app)return null;
+  _rotMcAppFolderId=app.id;
+  return app.id;
+}
+async function createRotatingActivityFolder(cardName,refinery){
+  if(!isTokenValid())return null;
+  const refName=String(refinery||'').trim();
+  if(!cardName||!refName)return null;
+  try{
+    const appId=await getRotatingMCAppFolder(true);if(!appId)return null;
+    let refFolder=await driveSearchFolder(rotQ(refName),appId,true);
+    if(!refFolder)refFolder=await driveCreateFolder(refName,appId);
+    if(!refFolder)return null;
+    let cardFolder=await driveSearchFolder(rotQ(cardName),refFolder.id,true);
+    if(!cardFolder)cardFolder=await driveCreateFolder(cardName,refFolder.id);
+    return cardFolder?cardFolder.id:null;
+  }catch(e){console.error('createRotatingActivityFolder:',e);return null;}
+}
+async function findRotatingMCJson(cardName,refinery){
+  cardName=String(cardName||'').trim();
+  const refName=String(refinery||'').trim();
+  if(!cardName||!refName||!isTokenValid())return null;
+  const appId=await getRotatingMCAppFolder(false);if(!appId)return null;
+  const refFolder=await driveSearchFolder(rotQ(refName),appId,true);if(!refFolder)return null;
+  const cardFolder=await driveSearchFolder(rotQ(cardName),refFolder.id,true);if(!cardFolder)return null;
+  const files=await rotListAll(`name='${rotQ(cardName+'.json')}' and mimeType='application/json' and '${cardFolder.id}' in parents and trashed=false`,'id,name');
+  return files.length?files[0]:null;
+}
+async function loadRotatingMCsFromDrive(){
+  if(!isTokenValid())return[];
+  try{
+    const appId=await getRotatingMCAppFolder(false);if(!appId)return[];
+    const FOLDER="mimeType='application/vnd.google-apps.folder'";
+    const refFolders=await rotListAll(`'${appId}' in parents and ${FOLDER} and trashed=false`,'id,name');
+    const inParents=ids=>'('+ids.map(id=>`'${id}' in parents`).join(' or ')+')';
+    const chunks=a=>{const c=[];for(let i=0;i<a.length;i+=30)c.push(a.slice(i,i+30));return c;};
+    let cardFolders=[];
+    for(const ch of chunks(refFolders.map(f=>f.id)))cardFolders=cardFolders.concat(await rotListAll(`${inParents(ch)} and ${FOLDER} and trashed=false`,'id,name'));
+    let jsonFiles=[];
+    for(const ch of chunks(cardFolders.map(f=>f.id)))jsonFiles=jsonFiles.concat(await rotListAll(`${inParents(ch)} and mimeType='application/json' and trashed=false`,'id,name,modifiedTime'));
+    const mcs=await Promise.all(jsonFiles.map(async f=>{
+      try{
+        const cr=await fetch('https://www.googleapis.com/drive/v3/files/'+f.id+'?alt=media',
+          {headers:{Authorization:'Bearer '+googleAccessToken}});
+        const mc=await cr.json();mc.id=f.id;return mc;
+      }catch(e){return null;}
+    }));
+    return mcs.filter(Boolean);
+  }catch(e){toast('Error loading Rotating Drive MCs: '+e.message,'error');return[];}
 }
 async function createActivityFolder(cardName,tag,assetType,refinery){
   if(!isTokenValid())return null;
@@ -2546,7 +2627,15 @@ if(!r)return;
 const mcEl=document.getElementById('exp_mc_'+rowIndex);
 if(!mcEl)return;
 if(currentDiscipline==='rotating'){
-  mcEl.innerHTML='<button class="exp-mc-btn" style="padding:2px 8px;font-size:11px;border:1px solid #1565c0;color:#1565c0;border-radius:4px;background:white;cursor:pointer;font-weight:600" onclick="openRotatingCardPDF(allRecords.find(x=>x.rowIndex==='+rowIndex+')?.[\'MAINTENANCE CARD\'])">📄 Open PDF</button>';
+  const rotPdfBtn='<button class="exp-mc-btn" style="padding:2px 8px;font-size:11px;border:1px solid #1565c0;color:#1565c0;border-radius:4px;background:white;cursor:pointer;font-weight:600" onclick="openRotatingCardPDF(allRecords.find(x=>x.rowIndex==='+rowIndex+')?.[\'MAINTENANCE CARD\'])">📄 Open PDF</button>';
+  mcEl.innerHTML=rotPdfBtn;
+  if(!isTokenValid())return;
+  try{
+    const rTag=r['TAG']||'';
+    const rDate=String(r['MAINTENANCE DATE']||'').substring(0,10);
+    const jf=await findRotatingMCJson(r['MAINTENANCE CARD']||(rTag+' · '+rDate),r['REFINERY']||'');
+    if(jf)mcEl.innerHTML='<span class="expand-mc-badge found">\u2705 MC saved in Drive</span> <button class="exp-mc-btn" style="margin-left:8px;padding:2px 8px;font-size:11px;border:1px solid #1565c0;color:#1565c0;border-radius:4px;background:white;cursor:pointer;font-weight:600" onclick="openCloudMCFromHistory(\''+rTag+'\',\''+rDate+'\')">👁️ VIEW</button> <button class="exp-mc-btn" style="margin-left:6px;padding:2px 8px;font-size:11px;border:1px solid #c0392b;color:#c0392b;border-radius:4px;background:white;cursor:pointer;font-weight:600" onclick="openCloudMCFromHistory(\''+rTag+'\',\''+rDate+'\',\'edit\')">✏️ EDIT MC</button>';
+  }catch(e){console.log('toggleExpand rotating:',e.message);}
   return;
 }
 if(!isTokenValid()){
@@ -3296,6 +3385,11 @@ if(saveBtn){saveBtn.textContent='⏳ Saving...';saveBtn.disabled=true;}
       folderId=(d.parents&&d.parents.length)?d.parents[0]:null;
     }catch(e){folderId=null;}
   }
+  if(!folderId&&currentDiscipline==='rotating'){
+    if(!mcVal('mcLoc').trim()){toast('Fill Location (Refinery) first.','error');if(saveBtn){saveBtn.textContent='💾 Save to Drive';saveBtn.disabled=false;}return false;}
+    folderId=await createRotatingActivityFolder(actFolderName,mcVal('mcLoc'));
+    if(!folderId){toast('Could not find/create the Rotating MC folder (05_MC APP) in Drive.','error');if(saveBtn){saveBtn.textContent='💾 Save to Drive';saveBtn.disabled=false;}return false;}
+  }
   if(!folderId)folderId=await createActivityFolder(actFolderName,tag,mcVal('mcType'),mcVal('mcLoc'));
   try{
     for(let i=0;i<photos.length;i++){
@@ -3332,7 +3426,7 @@ if(saveBtn){saveBtn.textContent='⏳ Saving...';saveBtn.disabled=true;}
     photos:photos.map(p=>({src:p.src,caption:p.caption})),
     card_name:actFolderName,updated_at:new Date().toISOString()
   };
-  if(currentDiscipline==='rotating')data.spare_parts=spGetData();
+  if(currentDiscipline==='rotating'){data.spare_parts=spGetData();data.discipline='rotating';}
   try{
     const fileName=currentDriveMCFileId?undefined:(actFolderName+'.json');
     const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
@@ -3480,6 +3574,16 @@ async function openCloudMCFromHistory(tag,date,mode){
   toast('Searching Drive MC...','info');
   try{
     const rec=allRecords.find(x=>String(x['MAINTENANCE DATE']||'').substring(0,10)===date&&String(x['TAG']||'')===tag);
+    if(currentDiscipline==='rotating'){
+      const rotCard=rec&&rec['MAINTENANCE CARD']?rec['MAINTENANCE CARD']:tag+' · '+date;
+      const jf=await findRotatingMCJson(rotCard,rec?rec['REFINERY']:'');
+      if(!jf){toast('No Drive MC found for this record.','warning');return;}
+      const rcr=await fetch('https://www.googleapis.com/drive/v3/files/'+jf.id+'?alt=media',
+        {headers:{Authorization:'Bearer '+googleAccessToken}});
+      const rmc=await rcr.json();rmc.id=jf.id;
+      if(mode==='edit')loadMCIntoForm(rmc);else viewMCFromCloud(rmc);
+      return;
+    }
 const fileName=(rec&&rec['MAINTENANCE CARD']?rec['MAINTENANCE CARD']:tag+' · '+date)+'.json';
     const q="name='"+fileName+"' and mimeType='application/json' and trashed=false";
     const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id,name)&pageSize=1&supportsAllDrives=true&includeItemsFromAllDrives=true',
@@ -3494,6 +3598,8 @@ const fileName=(rec&&rec['MAINTENANCE CARD']?rec['MAINTENANCE CARD']:tag+' · '+
 }
 
 let allCloudMCs=[];
+const cloudMCCache={static:null,rotating:null};
+let _cloudMCLoadSeq=0;
 async function loadCloudMCList(){
   if(!isTokenValid()){
     document.getElementById('cloudMCGrid').innerHTML='<div style="color:var(--silver);font-size:13px;padding:20px">🔑 Connect Google Drive to view saved MCs.</div>';
@@ -3501,11 +3607,14 @@ async function loadCloudMCList(){
   }
   const grid=document.getElementById('cloudMCGrid');
   grid.innerHTML='<div style="color:var(--silver);font-size:13px">Loading from Drive...</div>';
-  const mcs=await loadMCsFromDrive();
+  const loadDisc=currentDiscipline,loadSeq=++_cloudMCLoadSeq;
+  const mcs=loadDisc==='rotating'?await loadRotatingMCsFromDrive():(await loadMCsFromDrive()).filter(mc=>mc&&mc.discipline!=='rotating');
+  if(loadSeq!==_cloudMCLoadSeq||loadDisc!==currentDiscipline)return;
+  cloudMCCache[loadDisc]=mcs;
   allCloudMCs=(mcs||[]).slice().sort((a,b)=>(parseInt(b.item_no)||0)-(parseInt(a.item_no)||0));
   const existing=grid.parentElement.querySelector('.cloud-mc-toolbar');
   if(existing)existing.remove();
-  if(!allCloudMCs.length){grid.innerHTML='<div style="color:var(--silver);font-size:13px">No MCs saved yet.</div>';return;}
+  if(!allCloudMCs.length){grid.innerHTML=loadDisc==='rotating'?'<div style="grid-column:1/-1;text-align:center;color:var(--silver);font-size:13px;padding:40px 20px">No Rotating MCs created in the app yet. Historical cards open as PDF from MC History.</div>':'<div style="color:var(--silver);font-size:13px">No MCs saved yet.</div>';return;}
   const toolbar=document.createElement('div');
   toolbar.className='cloud-mc-toolbar';
   toolbar.style.cssText='display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap';
