@@ -303,6 +303,23 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
 .mcd-att-label{font-size:8.5px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;}
 .mcd-att-table input[type="checkbox"]{appearance:none;-webkit-appearance:none;width:14px;height:14px;border:1.5px solid #374151;border-radius:2px;background:#fff;cursor:pointer;position:relative;margin:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 .mcd-att-table input[type="checkbox"]:checked{background:#111827;border-color:#111827;}
+.sp-table{width:100%;border-collapse:collapse;table-layout:fixed;border:1px solid #D1D5DB;border-top:none;}
+.sp-table th{background:#1F3864;color:#fff;font-weight:700;text-align:center;font-size:9px;text-transform:uppercase;letter-spacing:.04em;padding:4px 6px;border:1px solid #9CA3AF;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.sp-table td{border:1px solid #D1D5DB;padding:2px 6px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#111827;vertical-align:middle;}
+.sp-table td.sp-no,.sp-table td.sp-qty{text-align:center;}
+.sp-table td.sp-qty{position:relative;}
+.sp-table input{width:100%;border:none;outline:none;background:transparent;font:inherit;color:inherit;padding:2px 0;box-sizing:border-box;}
+.sp-table input.sp-qty-inp{text-align:center;}
+.sp-table input.sp-qty-inp::-webkit-outer-spin-button,.sp-table input.sp-qty-inp::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.sp-table input.sp-qty-inp{-moz-appearance:textfield;}
+.sp-table .sp-desc-ed{min-height:18px;outline:none;text-align:left;white-space:pre-wrap;word-break:break-word;line-height:1.5;padding:2px 0;}
+.sp-table td:focus-within{background:#fafbff;}
+.sp-del-btn{position:absolute;right:-26px;top:50%;transform:translateY(-50%);border:none;background:none;cursor:pointer;font-size:12px;opacity:.6;padding:2px;}
+.sp-del-btn:hover{opacity:1;}
+.sp-add-btn{margin-top:4px;border:1px dashed #9CA3AF;background:#f9fafb;color:#374151;font-size:11px;padding:3px 10px;cursor:pointer;border-radius:3px;}
+.sp-add-btn:hover{background:#eef2ff;}
+.sp-na-row{display:none;}
+#rotSparePartsSection.sp-readonly .sp-del-btn,#rotSparePartsSection.sp-readonly .sp-add-btn{display:none;}
 .mcd-att-table input[type="checkbox"]:checked::after{content:'';position:absolute;left:3px;top:0px;width:4.5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);}
 
 /* Signatures */
@@ -528,6 +545,8 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
   .ph-annex-title{font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;border-bottom:1px solid #D1D5DB;padding-bottom:6px;}
 .mcd-toolbar{display:none!important;}
  .no-print{display:none!important;}
+  .sp-table tr.sp-empty{display:none!important;}
+  .sp-table.sp-all-empty tr.sp-na-row{display:table-row!important;}
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
 }
 #printOutput{display:none;}
@@ -1102,6 +1121,18 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
   <div class="mcd-ta mcd-editor" id="mcActivity" contenteditable="true" data-placeholder="Describe the maintenance activities performed in detail..."></div>
 </div>
 
+            <!-- Spare Parts Used (Rotating only) -->
+<div class="mcd-section" id="rotSparePartsSection" style="display:none;">
+  <div class="mcd-sec-hd">Spare Parts Used</div>
+  <table class="sp-table" id="spTable">
+    <colgroup><col style="width:6%"><col style="width:16%"><col style="width:16%"><col style="width:52%"><col style="width:10%"></colgroup>
+    <thead><tr><th>No.</th><th>MECH Code</th><th>Part Number</th><th>Description</th><th>Qty</th></tr></thead>
+    <tbody id="spBody"></tbody>
+    <tbody><tr class="sp-na-row"><td colspan="5" style="text-align:center;">N/A</td></tr></tbody>
+  </table>
+  <button type="button" class="sp-add-btn no-print" onclick="spAddRow(true)">+ Add row</button>
+</div>
+
             <!-- Attachments -->
             <table class="mcd-att-table">
               <tr>
@@ -1441,6 +1472,9 @@ function setDiscipline(disc){
   document.getElementById('sbModuleTag').className='sb-module-tag '+(isRot?'rotating':'static');
   document.getElementById('sbModuleTag').textContent=isRot?'Rotating':'Static';
   document.querySelectorAll('.sb-item.active').forEach(el=>el.classList.toggle('rot',isRot));
+  const spSec=document.getElementById('rotSparePartsSection');
+  if(spSec)spSec.style.display=isRot?'':'none';
+  syncDocPagination();
   allRecords=[];equipmentList=[];
   cachedRecords={};allRecordsLoaded=false;
   resetFilters();
@@ -3053,6 +3087,76 @@ function removeActivityPage(){
 }
 
 // ── CENTRAL PAGINATION — counts only visible .mc-doc-page nodes in document order ─────────
+// ── SPARE PARTS USED (Rotating only) ─────────
+function spEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function spAddRow(focus,data){
+  const body=document.getElementById('spBody');if(!body)return null;
+  const d=data||{};
+  const tr=document.createElement('tr');
+  tr.innerHTML='<td class="sp-no"></td>'+
+    '<td><input type="text" class="sp-mech" value="'+spEsc(d.mech_code)+'"></td>'+
+    '<td><input type="text" class="sp-pn" value="'+spEsc(d.part_number)+'"></td>'+
+    '<td><div class="sp-desc-ed" contenteditable="plaintext-only"></div></td>'+
+    '<td class="sp-qty"><input type="number" min="0" step="any" class="sp-qty-inp" value="'+spEsc(d.qty)+'"><button type="button" class="sp-del-btn no-print" tabindex="-1" title="Delete row">🗑</button></td>';
+  tr.querySelector('.sp-desc-ed').textContent=d.description||'';
+  tr.querySelector('.sp-del-btn').onclick=()=>spDeleteRow(tr);
+  body.appendChild(tr);
+  spRefresh();
+  if(focus){const f=tr.querySelector('.sp-mech');if(f)f.focus();}
+  return tr;
+}
+function spDeleteRow(tr){
+  if(tr&&tr.parentNode)tr.parentNode.removeChild(tr);
+  spRefresh();
+}
+function spRowData(tr){
+  const q=sel=>{const el=tr.querySelector(sel);return el?(el.value!==undefined&&el.tagName==='INPUT'?el.value:el.textContent).trim():'';};
+  return{mech_code:q('.sp-mech'),part_number:q('.sp-pn'),description:q('.sp-desc-ed'),qty:q('.sp-qty-inp')};
+}
+function spRefresh(){
+  const body=document.getElementById('spBody');if(!body)return;
+  let anyFilled=false;
+  [...body.rows].forEach((tr,i)=>{
+    tr.cells[0].textContent=i+1;
+    const d=spRowData(tr);
+    const filled=!!(d.mech_code||d.part_number||d.description||d.qty);
+    tr.classList.toggle('sp-empty',!filled);
+    if(filled)anyFilled=true;
+  });
+  const t=document.getElementById('spTable');if(t)t.classList.toggle('sp-all-empty',!anyFilled);
+}
+function spReset(rows){
+  const body=document.getElementById('spBody');if(!body)return;
+  body.innerHTML='';
+  const list=Array.isArray(rows)?rows.filter(Boolean):[];
+  list.forEach(r=>spAddRow(false,r));
+  for(let i=list.length;i<3;i++)spAddRow(false);
+  spRefresh();
+}
+function spGetData(){
+  const body=document.getElementById('spBody');if(!body)return[];
+  return [...body.rows].map(spRowData).filter(d=>d.mech_code||d.part_number||d.description||d.qty)
+    .map(d=>({mech_code:d.mech_code,part_number:d.part_number,description:d.description,qty:d.qty===''?'':(isNaN(Number(d.qty))?d.qty:Number(d.qty))}));
+}
+function spSetReadOnly(ro){
+  const sec=document.getElementById('rotSparePartsSection');if(!sec)return;
+  sec.classList.toggle('sp-readonly',!!ro);
+  sec.querySelectorAll('#spBody input').forEach(el=>el.disabled=!!ro);
+  sec.querySelectorAll('#spBody .sp-desc-ed').forEach(el=>el.setAttribute('contenteditable',ro?'false':'plaintext-only'));
+}
+(function spInit(){
+  const body=document.getElementById('spBody');if(!body)return;
+  body.addEventListener('input',spRefresh);
+  body.addEventListener('keydown',e=>{
+    if(e.key!=='Tab'||e.shiftKey)return;
+    const t=e.target;
+    if(!t.classList||!t.classList.contains('sp-qty-inp'))return;
+    const tr=t.closest('tr');
+    if(tr&&tr===body.rows[body.rows.length-1]){e.preventDefault();spAddRow(true);}
+  });
+  spReset();
+})();
+
 function syncDocPagination(){
   const pages=[...document.querySelectorAll('#mcDoc .mc-doc-page')].filter(p=>{
     const parent=p.closest('[style*="display: none"], [style*="display:none"]');
@@ -3139,6 +3243,8 @@ document.querySelectorAll('.mcd-ck input,.mcd-att-table input').forEach(el=>el.d
   document.querySelectorAll('input[name="prio"]').forEach(el=>el.checked=false);
   [0,1,2,3].forEach(i=>removePhoto(i));
   const act1B=document.getElementById('mcActivity1B');if(act1B)act1B.innerHTML='';
+  spSetReadOnly(false);
+  spReset();
   currentMCActivityShort='';
   currentMCCardName='';
   currentCloudMCId=null;
@@ -3226,6 +3332,7 @@ if(saveBtn){saveBtn.textContent='⏳ Saving...';saveBtn.disabled=true;}
     photos:photos.map(p=>({src:p.src,caption:p.caption})),
     card_name:actFolderName,updated_at:new Date().toISOString()
   };
+  if(currentDiscipline==='rotating')data.spare_parts=spGetData();
   try{
     const fileName=currentDriveMCFileId?undefined:(actFolderName+'.json');
     const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
@@ -3289,6 +3396,7 @@ function viewMCFromCloud(mc){
   });
   document.querySelectorAll('.mcd-toolbar').forEach(t=>t.style.display='none');
   document.querySelectorAll('.mcd-ck input,.mcd-att-table input').forEach(el=>el.disabled=true);
+  spSetReadOnly(true);
   document.getElementById('mcBottomBar').innerHTML=`
     <div class="mc-bottom-info">View mode — read only</div>
     <div style="display:flex;gap:10px">
@@ -3341,6 +3449,7 @@ function loadMCIntoForm(mc){
     document.getElementById('attHydro').checked=mc.attachments.hydrotest||false;
     document.getElementById('attTorque').checked=mc.attachments.torque||false;
   }
+  spReset(Array.isArray(mc.spare_parts)?mc.spare_parts:[]);
   if(mc.photos){
     let neededPages=0;
     for(let p=1;p<=MAX_EXTRA_PHOTO_PAGES;p++){
