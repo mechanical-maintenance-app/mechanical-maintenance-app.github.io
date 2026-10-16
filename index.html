@@ -304,7 +304,7 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
 .mcd-att-table input[type="checkbox"]{appearance:none;-webkit-appearance:none;width:14px;height:14px;border:1.5px solid #374151;border-radius:2px;background:#fff;cursor:pointer;position:relative;margin:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 .mcd-att-table input[type="checkbox"]:checked{background:#111827;border-color:#111827;}
 .sp-table{width:100%;border-collapse:collapse;table-layout:fixed;border:1px solid #D1D5DB;border-top:none;}
-.sp-table th{background:#1F3864;color:#fff;font-weight:700;text-align:center;font-size:9px;text-transform:uppercase;letter-spacing:.04em;padding:4px 6px;border:1px solid #9CA3AF;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.sp-table th{background:#4b5563;color:#fff;font-weight:700;text-align:center;font-size:9px;text-transform:uppercase;letter-spacing:.04em;padding:4px 6px;border:1px solid #9CA3AF;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 .sp-table td{border:1px solid #D1D5DB;padding:2px 6px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#111827;vertical-align:middle;}
 .sp-table td.sp-no,.sp-table td.sp-qty{text-align:center;}
 .sp-table td.sp-qty{position:relative;}
@@ -3295,9 +3295,58 @@ function spSetReadOnly(ro){
   sec.querySelectorAll('#spBody input').forEach(el=>el.disabled=!!ro);
   sec.querySelectorAll('#spBody .sp-desc-ed').forEach(el=>el.setAttribute('contenteditable',ro?'false':'plaintext-only'));
 }
+// Paste a block copied from Excel/Word: each value goes to its own cell, rows are added as needed
+function spParseTSV(txt){
+  const rows=[];let row=[],cell='',q=false;
+  txt=txt.replace(/\r\n?/g,'\n');
+  for(let i=0;i<txt.length;i++){
+    const ch=txt[i];
+    if(q){if(ch==='"'){if(txt[i+1]==='"'){cell+='"';i++;}else q=false;}else cell+=ch;}
+    else if(ch==='"'&&cell==='')q=true;
+    else if(ch==='\t'){row.push(cell);cell='';}
+    else if(ch==='\n'){row.push(cell);rows.push(row);row=[];cell='';}
+    else cell+=ch;
+  }
+  if(cell!==''||row.length){row.push(cell);rows.push(row);}
+  while(rows.length&&rows[rows.length-1].every(c=>c.trim()===''))rows.pop();
+  return rows;
+}
+function spHandlePaste(e){
+  const sec=document.getElementById('rotSparePartsSection');
+  if(sec&&sec.classList.contains('sp-readonly'))return;
+  const txt=(e.clipboardData||window.clipboardData).getData('text/plain')||'';
+  const t=e.target.closest('input,.sp-desc-ed');if(!t)return;
+  const inDesc=t.classList.contains('sp-desc-ed');
+  // single value, or multi-line text typed into Description only → normal paste
+  if(!txt.includes('\t')&&(inDesc||!/\n./.test(txt.trim())))return;
+  const rows=spParseTSV(txt);if(!rows.length)return;
+  e.preventDefault();
+  const body=document.getElementById('spBody');
+  const order=['sp-mech','sp-pn','sp-desc-ed','sp-qty-inp'];
+  const startCol=Math.max(0,order.findIndex(c=>t.classList.contains(c)));
+  const startRow=[...body.rows].indexOf(t.closest('tr'));
+  // copied block includes the NO. column → drop it
+  const maxLen=Math.max(...rows.map(r=>r.length));
+  const dropNo=startCol===0&&maxLen===5;
+  rows.forEach((r,ri)=>{
+    const vals=dropNo?r.slice(1):r;
+    let tr=body.rows[startRow+ri];if(!tr)tr=spAddRow(false);
+    vals.forEach((v,ci)=>{
+      const c=order[startCol+ci];if(!c)return;
+      const el=tr.querySelector('.'+c);if(!el)return;
+      v=String(v).trim();
+      if(c==='sp-desc-ed')el.textContent=v;
+      else if(c==='sp-qty-inp'){const n=parseFloat(v.replace(/,/g,'').replace(/[^0-9.\-]/g,''));el.value=isNaN(n)?'':n;}
+      else el.value=v;
+    });
+  });
+  spRefresh();
+  if(typeof toast==='function')toast(rows.length+' row(s) pasted','success');
+}
 (function spInit(){
   const body=document.getElementById('spBody');if(!body)return;
   body.addEventListener('input',spRefresh);
+  body.addEventListener('paste',spHandlePaste);
   body.addEventListener('keydown',e=>{
     if(e.key!=='Tab'||e.shiftKey)return;
     const t=e.target;
