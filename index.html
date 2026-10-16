@@ -614,6 +614,21 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
 .tl-back{display:inline-flex;align-items:center;gap:5px;font-size:13px;color:var(--red);cursor:pointer;margin-bottom:14px;user-select:none;font-weight:500;}
 .tl-back:hover{text-decoration:underline;}
 .tl-empty{padding:40px;text-align:center;color:var(--silver);font-size:13px;}
+/* ── MC HISTORY: Excel-style resizable columns ── */
+#mcHistTable thead th{position:relative;}
+.col-rz{position:absolute;top:0;right:-3px;width:7px;height:100%;cursor:col-resize;z-index:2;touch-action:none;}
+.col-rz:hover,.col-rz.active{background:rgba(255,255,255,.35);}
+#mcHistTable.colsized{table-layout:fixed;}
+#mcHistTable.colsized thead th{overflow:hidden;text-overflow:ellipsis;}
+#mcHistTable.colsized td{overflow:hidden;text-overflow:ellipsis;}
+#mcHistTable.colsized td.wrap{min-width:0;max-width:none;overflow-wrap:anywhere;}
+#mcHistTable.colsized td[style*="max-width"]{max-width:none!important;}
+#mcHistTable.colsized td.expand-cell{overflow:visible;white-space:normal;text-overflow:clip;}
+#mcHistTable.rz-measure td,#mcHistTable.rz-measure th{white-space:nowrap!important;}
+body.rz-dragging,body.rz-dragging *{cursor:col-resize!important;user-select:none!important;}
+.rz-reset-btn{font-size:11px;color:var(--silver);cursor:pointer;margin-left:12px;text-decoration:underline;}
+.rz-reset-btn:hover{color:var(--red);}
+@media print{#mcHistTable.colsized{table-layout:auto!important;width:100%!important;}.col-rz,.rz-reset-btn{display:none!important;}}
 </style>
 </head>
 <body>
@@ -750,12 +765,12 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
 
     <div class="stats-bar">
       <div class="stat-chip"><div class="stat-dot" style="background:var(--red)"></div>Showing <strong id="showingCount">0</strong> of <strong id="totalRecords">0</strong> records</div>
-      <div style="font-size:11px;color:var(--silver)">Page <strong id="pageIndicator">1</strong></div>
+      <div style="font-size:11px;color:var(--silver)">Page <strong id="pageIndicator">1</strong><span class="rz-reset-btn" onclick="mchResetAllCols()" title="Restore default column widths">↺ Reset columns</span></div>
     </div>
 
     <div class="table-wrapper">
       <div class="table-scroll">
-        <table>
+        <table id="mcHistTable">
           <thead>
             <tr>
               <th onclick="sortBy('ITEM NO.')">NO.</th>
@@ -4471,6 +4486,75 @@ function histShowMCPreview(mc,fallback){
 document.querySelectorAll('.kar-logo-img').forEach(img=>img.src=KAR_LOGO);
 checkGoogleToken();
 init();
+
+// ── MC HISTORY: Excel-style resizable columns ──────────────
+// Drag a header's right edge to resize · double-click the edge to auto-fit · widths saved per browser
+const MCH_COLW_KEY='mcHistColW_v1';
+let mchDragged=false;
+function mchTable(){return document.getElementById('mcHistTable');}
+function mchCols(){const t=mchTable();return t?[...t.querySelectorAll('colgroup.mch-cg col')]:[];}
+function mchSyncTableWidth(){const t=mchTable();const w=mchCols().reduce((a,c)=>a+(parseFloat(c.style.width)||0),0);if(w)t.style.width=w+'px';}
+function mchFreeze(){
+  const t=mchTable();if(!t||t.classList.contains('colsized'))return;
+  const ths=[...t.tHead.rows[0].cells];
+  const widths=ths.map(th=>th.offsetWidth||th.getBoundingClientRect().width);
+  mchCols().forEach((c,i)=>c.style.width=Math.max(40,Math.round(widths[i]||100))+'px');
+  t.classList.add('colsized');mchSyncTableWidth();
+}
+function mchSave(){try{localStorage.setItem(MCH_COLW_KEY,JSON.stringify(mchCols().map(c=>parseFloat(c.style.width)||0)));}catch(e){}}
+function mchApply(widths){const t=mchTable();mchCols().forEach((c,i)=>c.style.width=Math.max(40,widths[i]||100)+'px');t.classList.add('colsized');mchSyncTableWidth();}
+function mchResetAllCols(){
+  const t=mchTable();if(!t)return;
+  t.classList.remove('colsized');t.style.width='';
+  mchCols().forEach(c=>c.style.width='');
+  try{localStorage.removeItem(MCH_COLW_KEY);}catch(e){}
+}
+function mchAutoFit(i){
+  const t=mchTable();if(!t)return;mchFreeze();
+  t.classList.add('rz-measure');
+  let max=0;
+  [t.tHead.rows[0].cells[i],...[...t.tBodies[0].rows].filter(r=>!r.classList.contains('expand-row')&&r.cells.length>i).map(r=>r.cells[i])]
+    .forEach(c=>{if(c&&c.colSpan===1)max=Math.max(max,c.scrollWidth);});
+  t.classList.remove('rz-measure');
+  if(!max)return;
+  mchCols()[i].style.width=Math.min(600,Math.max(40,max+4))+'px';
+  mchSyncTableWidth();mchSave();
+}
+function mchStartDrag(e,i,handle){
+  if(e.button!==undefined&&e.button!==0)return;
+  e.preventDefault();e.stopPropagation();
+  mchFreeze();
+  const col=mchCols()[i];if(!col)return;
+  const startX=e.clientX,startW=parseFloat(col.style.width)||100;
+  let moved=false;
+  handle.classList.add('active');document.body.classList.add('rz-dragging');
+  try{handle.setPointerCapture(e.pointerId);}catch(_){}
+  const move=ev=>{const dx=ev.clientX-startX;if(Math.abs(dx)>2)moved=true;col.style.width=Math.max(40,Math.round(startW+dx))+'px';mchSyncTableWidth();};
+  const up=()=>{
+    handle.removeEventListener('pointermove',move);handle.removeEventListener('pointerup',up);handle.removeEventListener('pointercancel',up);
+    handle.classList.remove('active');document.body.classList.remove('rz-dragging');
+    if(moved){mchDragged=true;setTimeout(()=>mchDragged=false,0);mchSave();}
+  };
+  handle.addEventListener('pointermove',move);handle.addEventListener('pointerup',up);handle.addEventListener('pointercancel',up);
+}
+function mchInitColResize(){
+  const t=mchTable();if(!t||t.dataset.rz)return;t.dataset.rz='1';
+  const ths=[...t.tHead.rows[0].cells];
+  const cg=document.createElement('colgroup');cg.className='mch-cg';
+  ths.forEach(()=>cg.appendChild(document.createElement('col')));
+  t.insertBefore(cg,t.firstChild);
+  // block the header's sort-click that fires right after a drag
+  t.tHead.addEventListener('click',e=>{if(mchDragged||e.target.classList.contains('col-rz')){e.stopPropagation();e.preventDefault();}},true);
+  ths.forEach((th,i)=>{
+    const h=document.createElement('span');h.className='col-rz';h.title='Drag to resize · Double-click to auto-fit';
+    h.addEventListener('pointerdown',e=>mchStartDrag(e,i,h));
+    h.addEventListener('dblclick',e=>{e.stopPropagation();e.preventDefault();mchAutoFit(i);});
+    th.appendChild(h);
+  });
+  let saved=null;try{saved=JSON.parse(localStorage.getItem(MCH_COLW_KEY)||'null');}catch(e){}
+  if(Array.isArray(saved)&&saved.length===ths.length&&saved.every(w=>w>0))mchApply(saved);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mchInitColResize);else mchInitColResize();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 </body>
