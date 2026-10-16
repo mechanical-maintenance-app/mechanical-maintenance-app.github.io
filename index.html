@@ -52,7 +52,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 .sb-module-tag.rotating{background:#4a2a1a;color:var(--gold);}
 
 /* ══ MAIN CONTENT ══ */
-.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;display:flex;flex-direction:column;}
+.main{margin-left:var(--sb-space);flex:1;min-height:100vh;display:flex;flex-direction:column;}
 .main-header{background:linear-gradient(160deg,var(--navy-light) 0%,var(--navy-mid) 100%);padding:16px 28px;border-bottom:2px solid var(--red);box-shadow:0 2px 8px rgba(0,0,0,.15),0 2px 0 rgba(231,76,60,.4);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:90;}
 .main-header.rot{border-bottom-color:var(--orange);}
 .main-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:20px;color:white;letter-spacing:1.5px;text-transform:uppercase;}
@@ -348,7 +348,7 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
 .mcd-cap-inp::placeholder{color:#9CA3AF;}
 
 /* MC bottom bar */
-.mc-bottom-bar{position:fixed;bottom:0;left:var(--sidebar-w);right:0;background:var(--navy);padding:12px 24px;display:flex;justify-content:space-between;align-items:center;z-index:80;box-shadow:0 -4px 20px rgba(0,0,0,.2);}
+.mc-bottom-bar{position:fixed;bottom:0;left:var(--sb-space);right:0;background:var(--navy);padding:12px 24px;display:flex;justify-content:space-between;align-items:center;z-index:80;box-shadow:0 -4px 20px rgba(0,0,0,.2);}
 .mc-bottom-bar.hidden{display:none;}
 .mc-bottom-info{font-size:12px;color:var(--silver);}
 
@@ -423,7 +423,7 @@ input[type="date"].mcd-cell-inp{color:#111827;width:100%;}
 
 /* ══ HISTORY PANEL ══ */
 .mc-view-wrapper{display:flex;flex:1;overflow:hidden;position:relative;}
-.hist-panel{width:0;min-width:0;background:white;display:flex;flex-direction:column;overflow:hidden;transition:width .25s ease,min-width .25s ease;flex-shrink:0;position:fixed;top:110px;left:calc(var(--sidebar-w) + 12px);z-index:95;border-radius:10px;box-shadow:0 8px 32px rgba(26,35,50,.22);border:1px solid var(--border);}
+.hist-panel{width:0;min-width:0;background:white;display:flex;flex-direction:column;overflow:hidden;transition:width .25s ease,min-width .25s ease;flex-shrink:0;position:fixed;top:110px;left:calc(var(--sb-space) + 12px);z-index:95;border-radius:10px;box-shadow:0 8px 32px rgba(26,35,50,.22);border:1px solid var(--border);}
 .hist-panel.open{width:268px;min-width:268px;}
 .hist-panel-list{flex:1;overflow-y:auto;max-height:calc(100vh - 280px);}
 .hist-panel-header{background:var(--navy);padding:10px 12px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;border-radius:10px 10px 0 0;}
@@ -614,6 +614,18 @@ thead th:nth-child(11), td:nth-child(11) { display: none !important; }
 .tl-back{display:inline-flex;align-items:center;gap:5px;font-size:13px;color:var(--red);cursor:pointer;margin-bottom:14px;user-select:none;font-weight:500;}
 .tl-back:hover{text-decoration:underline;}
 .tl-empty{padding:40px;text-align:center;color:var(--silver);font-size:13px;}
+/* ── SIDEBAR: fixed / auto-hide ── */
+:root{--sb-space:var(--sidebar-w);}
+body.sb-auto{--sb-space:0px;}
+.sidebar{transition:transform .2s ease;}
+body.sb-auto .sidebar{transform:translateX(-100%);box-shadow:none;}
+body.sb-auto.sb-peek .sidebar{transform:none;box-shadow:8px 0 32px rgba(0,0,0,.45);}
+.sb-hotzone{display:none;position:fixed;left:0;top:0;width:10px;height:100vh;z-index:99;}
+body.sb-auto .sb-hotzone{display:block;}
+.sb-hotzone::after{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:4px;height:70px;border-radius:0 4px 4px 0;background:var(--red);opacity:.75;}
+.sb-pin{position:absolute;top:10px;right:10px;width:24px;height:24px;border-radius:5px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#c9d3df;font-size:13px;line-height:22px;text-align:center;cursor:pointer;padding:0;}
+.sb-pin:hover{background:rgba(255,255,255,.16);color:#fff;}
+@media print{.sb-hotzone,.sb-pin{display:none!important;}}
 /* ── MC HISTORY: Excel-style resizable columns ── */
 #mcHistTable thead th{position:relative;}
 .col-rz{position:absolute;top:0;right:-3px;width:7px;height:100%;cursor:col-resize;z-index:2;touch-action:none;}
@@ -634,7 +646,9 @@ body.rz-dragging,body.rz-dragging *{cursor:col-resize!important;user-select:none
 <body>
 
 <!-- ══ SIDEBAR ══ -->
-<div class="sidebar">
+<div class="sb-hotzone" id="sbHotzone" title="Show menu"></div>
+<div class="sidebar" id="sidebar">
+  <button type="button" class="sb-pin" id="sbPinBtn" onclick="sbToggleMode()" title="Auto-hide menu">«</button>
   <div class="sb-brand">
     <div class="sb-logo">
       <img src="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;" class="kar-logo-img">
@@ -1018,7 +1032,7 @@ body.rz-dragging,body.rz-dragging *{cursor:col-resize!important;user-select:none
                 <div>
                   <div class="mcd-logo-name">KAR Group</div>
                   <div class="mcd-logo-sub">Mechanical Maintenance Management</div>
-                  <div class="mcd-logo-sub">Static Equipment's</div>
+                  <div class="mcd-logo-sub mc-disc-lbl">Static Equipment's</div>
                 </div>
               </div>
               <div class="mcd-title-center">
@@ -1183,7 +1197,7 @@ body.rz-dragging,body.rz-dragging *{cursor:col-resize!important;user-select:none
            </div><!-- end mcd-page-body -->
             <!-- Footer -->
             <div class="mcd-footer">
-              <span>Mechanical Maintenance Management · KAR Group · Static Equipment's</span>
+              <span>Mechanical Maintenance Management · KAR Group · <span class="mc-disc-lbl">Static Equipment's</span></span>
               <span class="mcd-pageno">Pag. 1/2</span>
             </div>
             <!-- Add Activity Page button — flota fuera de la hoja, en el margen -->
@@ -1205,7 +1219,7 @@ body.rz-dragging,body.rz-dragging *{cursor:col-resize!important;user-select:none
                 <div>
                   <div class="mcd-logo-name">KAR Group</div>
                   <div class="mcd-logo-sub">Mechanical Maintenance Management</div>
-                  <div class="mcd-logo-sub">Static Equipment's</div>
+                  <div class="mcd-logo-sub mc-disc-lbl">Static Equipment's</div>
                 </div>
               </div>
               <div class="mcd-title-center">
@@ -1255,7 +1269,7 @@ body.rz-dragging,body.rz-dragging *{cursor:col-resize!important;user-select:none
             </div><!-- end mcd-page-body -->
             <!-- Footer -->
             <div class="mcd-footer">
-              <span>Mechanical Maintenance Management · KAR Group · Static Equipment's</span>
+              <span>Mechanical Maintenance Management · KAR Group · <span class="mc-disc-lbl">Static Equipment's</span></span>
               <span class="mcd-pageno">Pag. 2/2</span>
             </div>
           </div><!-- end page 2 -->
@@ -1475,6 +1489,37 @@ document.querySelectorAll('.kar-logo-img').forEach(img=>img.src=KAR_LOGO);
 document.querySelectorAll('.sb-logo img').forEach(img=>img.src=KAR_LOGO);
 
 // ── DISCIPLINE ─────────────────────────────────
+// ── SIDEBAR: fixed / auto-hide (shows when the mouse touches the left edge) ──
+const SB_MODE_KEY='kar_sb_mode';
+let sbHideTimer=null;
+function sbIsAuto(){return document.body.classList.contains('sb-auto');}
+function sbShow(){clearTimeout(sbHideTimer);if(sbIsAuto())document.body.classList.add('sb-peek');}
+function sbScheduleHide(){clearTimeout(sbHideTimer);sbHideTimer=setTimeout(()=>document.body.classList.remove('sb-peek'),350);}
+function sbApplyMode(mode){
+  const auto=mode==='auto';
+  document.body.classList.toggle('sb-auto',auto);
+  document.body.classList.remove('sb-peek');
+  const b=document.getElementById('sbPinBtn');
+  if(b){b.textContent=auto?'📌':'«';b.title=auto?'Pin menu (keep fixed)':'Auto-hide menu';}
+  try{localStorage.setItem(SB_MODE_KEY,auto?'auto':'fixed');}catch(e){}
+  setTimeout(()=>window.dispatchEvent(new Event('resize')),250);
+}
+function sbToggleMode(){sbApplyMode(sbIsAuto()?'fixed':'auto');}
+function sbInit(){
+  const sb=document.getElementById('sidebar'),hz=document.getElementById('sbHotzone');
+  if(!sb||!hz||sb.dataset.sbInit)return;sb.dataset.sbInit='1';
+  hz.addEventListener('mouseenter',sbShow);
+  hz.addEventListener('click',sbShow);
+  hz.addEventListener('mouseleave',sbScheduleHide);
+  sb.addEventListener('mouseenter',sbShow);
+  sb.addEventListener('mouseleave',sbScheduleHide);
+  // touch screens: tap outside closes it
+  document.addEventListener('pointerdown',e=>{if(sbIsAuto()&&!sb.contains(e.target)&&e.target!==hz)document.body.classList.remove('sb-peek');});
+  let m='fixed';try{m=localStorage.getItem(SB_MODE_KEY)||'fixed';}catch(e){}
+  sbApplyMode(m);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sbInit);else sbInit();
+function mcDiscLabel(){return currentDiscipline==='rotating'?"Rotating Equipment's":"Static Equipment's";}
 function setDiscipline(disc){
   currentDiscipline=disc;
   populateDisciplineDropdowns();
@@ -1486,6 +1531,7 @@ function setDiscipline(disc){
   document.getElementById('discIndicator').textContent=isRot?'🔄 Rotating Equipment':'⚙️ Static Equipment';
   document.getElementById('sbModuleTag').className='sb-module-tag '+(isRot?'rotating':'static');
   document.getElementById('sbModuleTag').textContent=isRot?'Rotating':'Static';
+  document.querySelectorAll('.mc-disc-lbl').forEach(el=>el.textContent=mcDiscLabel());
   document.querySelectorAll('.sb-item.active').forEach(el=>el.classList.toggle('rot',isRot));
   const spSec=document.getElementById('rotSparePartsSection');
   if(spSec)spSec.style.display=isRot?'':'none';
@@ -3074,7 +3120,7 @@ function buildPhotoPageHTML(pageNum){
           <div>
             <div class="mcd-logo-name">KAR Group</div>
             <div class="mcd-logo-sub">Mechanical Maintenance Management</div>
-            <div class="mcd-logo-sub">Static Equipment's</div>
+            <div class="mcd-logo-sub mc-disc-lbl">${mcDiscLabel()}</div>
           </div>
         </div>
         <div class="mcd-title-center">
@@ -3092,7 +3138,7 @@ function buildPhotoPageHTML(pageNum){
       </div>
       </div><!-- end mcd-page-body -->
       <div class="mcd-footer">
-        <span>Mechanical Maintenance Management · KAR Group · Static Equipment's</span>
+        <span>Mechanical Maintenance Management · KAR Group · <span class="mc-disc-lbl">${mcDiscLabel()}</span></span>
         <span class="mcd-pageno">Pag. ${2+pageNum}</span>
       </div>
     </div>`;
@@ -3149,7 +3195,7 @@ function addActivityPage(){
           <div>
             <div class="mcd-logo-name">KAR Group</div>
             <div class="mcd-logo-sub">Mechanical Maintenance Management</div>
-            <div class="mcd-logo-sub">Static Equipment's</div>
+            <div class="mcd-logo-sub mc-disc-lbl">${mcDiscLabel()}</div>
           </div>
         </div>
         <div class="mcd-title-center">
@@ -3218,7 +3264,7 @@ function addActivityPage(){
       </div>
       </div><!-- end mcd-page-body -->
       <div class="mcd-footer">
-        <span>Mechanical Maintenance Management · KAR Group · Static Equipment's</span>
+        <span>Mechanical Maintenance Management · KAR Group · <span class="mc-disc-lbl">${mcDiscLabel()}</span></span>
         <span class="mcd-pageno">Pag. 1B</span>
       </div>
     </div>`;
