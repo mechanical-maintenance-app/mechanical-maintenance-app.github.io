@@ -208,6 +208,13 @@ td.wrap{white-space:normal;min-width:220px;max-width:420px;}
 .form-input,.form-textarea{padding:9px 12px;border:1.5px solid var(--border);border-radius:5px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:var(--text);background:white;outline:none;transition:border-color .15s;}
 .form-input:focus,.form-textarea:focus{border-color:var(--red);}
 .form-input:disabled{background:#f1f8e9;color:var(--text-light);border-color:#c8e6c9;}
+.tag-sug{position:fixed;z-index:1000;background:white;border:1.5px solid var(--red);border-radius:5px;box-shadow:0 8px 24px rgba(0,0,0,.25);max-height:280px;overflow-y:auto;display:none;font-family:'IBM Plex Sans',sans-serif;}
+.tag-sug-item{display:flex;gap:10px;align-items:baseline;padding:7px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid #eef1f5;}
+.tag-sug-item:last-child{border-bottom:none;}
+.tag-sug-item b{color:var(--navy);white-space:nowrap;}
+.tag-sug-item span{color:#5a6a7e;font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tag-sug-item small{color:#8898aa;font-size:11px;white-space:nowrap;}
+.tag-sug-item.active,.tag-sug-item:hover{background:#fff4e5;}
 .form-textarea{resize:vertical;min-height:70px;}
 .modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;}
 .req{color:var(--red);}
@@ -1400,7 +1407,7 @@ body.rz-dragging,body.rz-dragging *{cursor:col-resize!important;user-select:none
         <div class="form-group full"><label class="form-label">Maintenance Card Name <span class="req">*</span></label><input type="text" class="form-input" id="fCard" placeholder="e.g. 20260419 B-E-106 Replace Kar-2 Plan-B" oninput="parseCard(this.value)"></div>
         <div class="form-group"><label class="form-label">Maintenance Date <span class="req">*</span></label><input type="date" class="form-input" id="fDate" onchange="dateToCard(this.value)"></div>
         <div class="form-group"><label class="form-label">Year (auto)</label><input type="text" class="form-input" id="fYear" disabled></div>
-        <div class="form-group"><label class="form-label">TAG <span class="req">*</span></label><input type="text" class="form-input" id="fTag" oninput="lookupEquipment(this.value)" placeholder="e.g. B-E-106"></div>
+        <div class="form-group"><label class="form-label">TAG <span class="req">*</span></label><input type="text" class="form-input" id="fTag" oninput="lookupEquipment(this.value);tagSuggest(this)" onkeydown="tagSuggestKey(event)" onchange="tagToCard(this.value)" onblur="setTimeout(tagSuggestHide,150)" autocomplete="off" placeholder="e.g. B-E-106"></div>
 <div class="form-group"><label class="form-label">Associated Asset</label><select class="form-input" id="fAsset" onchange="fAssetManualOverride=true">
   <option value="">— Select —</option>
   <option value="1.- FAN COOLER">1.- Fan Cooler</option>
@@ -2518,6 +2525,74 @@ if(eq&&!fAssetManualOverride){
   });
   document.getElementById('fCard').value=card+' '+refinery;
 }
+// ── TAG AUTOCOMPLETE (Rotating) + TAG → Maintenance Card Name ──
+let _tagSugIdx=-1,_tagSugItems=[],_lastCardTag='';
+function _tagNorm(s){return String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');}
+function _tagEsc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+// Returns the tag found at the start of `rest` (longest equipment-list match), or ''
+function _cardTagPrefix(rest,eqOnly){
+  rest=String(rest||'').trim();if(!rest)return '';
+  const R=rest.toUpperCase();
+  const cands=equipmentList.map(e=>String(e.TAG||'').trim()).filter(Boolean);
+  if(!eqOnly&&_lastCardTag)cands.push(_lastCardTag);
+  let best='';
+  cands.forEach(c=>{const C=c.toUpperCase();if(C.length>best.length&&(R===C||R.startsWith(C+' ')))best=c;});
+  if(best)return rest.slice(0,best.length);
+  if(eqOnly)return '';
+  const tok=rest.split(/\s+/)[0];
+  return (/\d/.test(tok)&&/^[A-Z0-9]+(-[A-Z0-9\/]+)+$/i.test(tok))?tok:'';
+}
+// Writes the TAG right after the YYYYMMDD in the Maintenance Card Name (replaces the previous tag)
+function tagToCard(tag){
+  if(currentDiscipline!=='rotating')return;
+  tag=String(tag||'').trim();if(!tag)return;
+  const el=document.getElementById('fCard');
+  const card=el.value.trim();
+  const m=card.match(/^(\d{8})(?:\s+|$)(.*)$/);
+  const date=m?m[1]:'';let rest=m?m[2]:card;
+  const old=_cardTagPrefix(rest);if(old)rest=rest.slice(old.length).trim();
+  el.value=[date,tag,rest].filter(Boolean).join(' ')+(rest?'':' ');
+  _lastCardTag=tag;
+}
+function tagSuggest(inp){
+  if(currentDiscipline!=='rotating'||!equipmentList.length){tagSuggestHide();return;}
+  const q=_tagNorm(inp.value);if(!q){tagSuggestHide();return;}
+  const seen=new Set(),starts=[],has=[];
+  equipmentList.forEach(e=>{
+    const t=String(e.TAG||'').trim(),k=t.toUpperCase();if(!t||seen.has(k))return;
+    const n=_tagNorm(t);
+    if(n.startsWith(q)){seen.add(k);starts.push(e);}
+    else if(n.includes(q)||(q.length>=3&&_tagNorm(e.SERVICE).includes(q))){seen.add(k);has.push(e);}
+  });
+  _tagSugItems=starts.concat(has).slice(0,15);_tagSugIdx=-1;
+  if(!_tagSugItems.length){tagSuggestHide();return;}
+  let box=document.getElementById('tagSug');
+  if(!box){box=document.createElement('div');box.id='tagSug';box.className='tag-sug';document.body.appendChild(box);
+    window.addEventListener('scroll',ev=>{if(ev.target!==box)tagSuggestHide();},true);
+    window.addEventListener('resize',tagSuggestHide);}
+  box.innerHTML=_tagSugItems.map((e,i)=>`<div class="tag-sug-item" onmousedown="event.preventDefault();tagPick(${i})"><b>${_tagEsc(e.TAG)}</b><span>${_tagEsc(e.SERVICE)}</span><small>${_tagEsc(e.UNIT||e.KAR||'')}</small></div>`).join('');
+  const r=inp.getBoundingClientRect(),w=Math.max(r.width,340);
+  box.style.left=Math.max(8,Math.min(r.left,window.innerWidth-w-8))+'px';
+  box.style.top=(r.bottom+2)+'px';box.style.width=w+'px';box.style.display='block';
+}
+function tagSuggestHide(){const b=document.getElementById('tagSug');if(b)b.style.display='none';_tagSugIdx=-1;}
+function tagSuggestKey(ev){
+  const box=document.getElementById('tagSug');
+  if(!box||box.style.display!=='block'||!_tagSugItems.length)return;
+  if(ev.key==='ArrowDown'||ev.key==='ArrowUp'){
+    ev.preventDefault();const n=_tagSugItems.length;
+    _tagSugIdx=ev.key==='ArrowDown'?(_tagSugIdx+1)%n:(_tagSugIdx<=0?n-1:_tagSugIdx-1);
+    [...box.children].forEach((c,i)=>c.classList.toggle('active',i===_tagSugIdx));
+    box.children[_tagSugIdx].scrollIntoView({block:'nearest'});
+  }else if(ev.key==='Enter'){ev.preventDefault();tagPick(_tagSugIdx>=0?_tagSugIdx:0);}
+  else if(ev.key==='Escape'){tagSuggestHide();}
+}
+function tagPick(i){
+  const e=_tagSugItems[i];if(!e)return;
+  const t=String(e.TAG||'').trim(),inp=document.getElementById('fTag');
+  inp.value=t;lookupEquipment(t);tagToCard(t);tagSuggestHide();
+}
+
 // Date picker → writes YYYYMMDD at the start of the Maintenance Card Name
 function dateToCard(v){
   const m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);if(!m)return;
@@ -2530,6 +2605,8 @@ function dateToCard(v){
 function parseCard(val){
   const dm=val.match(/^(\d{4})(\d{2})(\d{2})/);
   if(dm){document.getElementById('fDate').value=`${dm[1]}-${dm[2]}-${dm[3]}`;document.getElementById('fYear').value=dm[1];}
+  const eqT=_cardTagPrefix(val.replace(/^\d{8}\s*/,''),true);
+  if(eqT){document.getElementById('fTag').value=eqT;lookupEquipment(eqT);return;}
   const tm=val.match(/\b([A-Z]+-[A-Z]+-?\d+[A-Z]*(?:\/[A-Z])?|[A-Z]+-\d+[A-Z]*(?:\/[A-Z])?)\b/);
   if(tm){document.getElementById('fTag').value=tm[1];lookupEquipment(tm[1]);}
 }
