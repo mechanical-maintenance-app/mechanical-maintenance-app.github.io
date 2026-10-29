@@ -3927,11 +3927,27 @@ let allOtherDocs=[];
 let odEditingId=null;
 let odTagValid=true; // siempre válido ahora (texto libre)
 
+// Shared root: Maintenance Cards / OTHER DOCUMENTS / [type folders] — same access as the MCs
+const OD_ROOT_ID='13M_38Xdin1vjkSRbE9iGPDUacYgJTfSZ';
 async function driveQuery(q,fields){
   const headers={Authorization:'Bearer '+googleAccessToken};
-  const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files('+fields+')&supportsAllDrives=true&includeItemsFromAllDrives=true',{headers});
-  const d=await r.json();
-  return d.files||[];
+  let out=[],pageToken='';
+  do{
+    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=nextPageToken,files('+fields+')&pageSize=1000&supportsAllDrives=true&includeItemsFromAllDrives=true'+(pageToken?'&pageToken='+encodeURIComponent(pageToken):''),{headers});
+    const d=await r.json();
+    out=out.concat(d.files||[]);pageToken=d.nextPageToken||'';
+  }while(pageToken);
+  return out;
+}
+async function odTypeFolder(type,create){
+  const safe=String(type).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  const f=await driveQuery(`name='${safe}' and '${OD_ROOT_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,'id,name');
+  if(f.length)return f[0];
+  if(!create)return null;
+  const r=await fetch('https://www.googleapis.com/drive/v3/files?supportsAllDrives=true',{
+    method:'POST',headers:{Authorization:'Bearer '+googleAccessToken,'Content-Type':'application/json'},
+    body:JSON.stringify({name:type,mimeType:'application/vnd.google-apps.folder',parents:[OD_ROOT_ID]})});
+  const d=await r.json();return d.id?d:null;
 }
 async function uploadGenericFileToFolder(file,folderId){
   const metadata={name:file.name};
@@ -3939,7 +3955,7 @@ async function uploadGenericFileToFolder(file,folderId){
   const form=new FormData();
   form.append('metadata',new Blob([JSON.stringify(metadata)],{type:'application/json'}));
   form.append('file',file);
-  const res=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink,mimeType,name',{
+  const res=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true&fields=id,webViewLink,mimeType,name',{
     method:'POST',headers:{Authorization:'Bearer '+googleAccessToken},body:form});
   const data=await res.json();
   if(!data.id)throw new Error('File upload failed');
@@ -4000,8 +4016,8 @@ async function saveOtherDoc(){
   const btn=document.getElementById('odSaveBtn');
   btn.textContent='⏳ Saving...';btn.disabled=true;
   try{
-    let folder=await driveSearchFolder(type,null,true);
-    if(!folder)folder=await driveCreateFolder(type,null);
+    const folder=await odTypeFolder(type,true);
+    if(!folder)throw new Error('Cannot open OTHER DOCUMENTS folder in Drive');
     const existing=odEditingId?allOtherDocs.find(d=>d.id===odEditingId):null;
     const uploadedFiles=existing?existing.files||[]:[];
     for(const f of filesInput.files){
@@ -4011,14 +4027,14 @@ async function saveOtherDoc(){
     const entry={type,date,description,equip_type,area,tag,files:uploadedFiles};
     const jsonBlob=new Blob([JSON.stringify(entry)],{type:'application/json'});
     if(odEditingId){
-      await fetch('https://www.googleapis.com/upload/drive/v3/files/'+odEditingId+'?uploadType=media',{
+      await fetch('https://www.googleapis.com/upload/drive/v3/files/'+odEditingId+'?uploadType=media&supportsAllDrives=true',{
         method:'PATCH',headers:{Authorization:'Bearer '+googleAccessToken,'Content-Type':'application/json'},body:jsonBlob});
     }else{
       const metadata={name:'doc_'+Date.now()+'.json',parents:[folder.id]};
       const form=new FormData();
       form.append('metadata',new Blob([JSON.stringify(metadata)],{type:'application/json'}));
       form.append('file',jsonBlob);
-      await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{
+      await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true&fields=id',{
         method:'POST',headers:{Authorization:'Bearer '+googleAccessToken},body:form});
     }
     toast('Document saved ✅','success');
@@ -4035,13 +4051,17 @@ async function loadOtherDocsList(){
   }
   document.getElementById('otherDocsTbody').innerHTML='<tr><td colspan="6" style="padding:20px;color:var(--silver)">Loading...</td></tr>';
   let all=[];
-  for(const type of knownDocTypes){
-    const folder=await driveSearchFolder(type,null,true);
-    if(!folder)continue;
-    const files=await driveQuery(`'${folder.id}' in parents and mimeType='application/json' and trashed=false`,'id,name');
+  const typeFolders=await driveQuery(`'${OD_ROOT_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,'id,name');
+  if(!typeFolders.length){
+    document.getElementById('otherDocsTbody').innerHTML='<tr><td colspan="8" style="padding:20px;color:var(--silver)">⚠️ No access to the OTHER DOCUMENTS folder in Drive (Maintenance Cards / OTHER DOCUMENTS).</td></tr>';
+    return;
+  }
+  for(const tf of typeFolders){
+    const type=tf.name;
+    const files=await driveQuery(`'${tf.id}' in parents and mimeType='application/json' and trashed=false`,'id,name');
     for(const f of files){
       try{
-        const r=await fetch('https://www.googleapis.com/drive/v3/files/'+f.id+'?alt=media',{headers:{Authorization:'Bearer '+googleAccessToken}});
+        const r=await fetch('https://www.googleapis.com/drive/v3/files/'+f.id+'?alt=media&supportsAllDrives=true',{headers:{Authorization:'Bearer '+googleAccessToken}});
         const doc=await r.json();
         doc.id=f.id;doc.type=doc.type||type;
         all.push(doc);
@@ -4086,7 +4106,7 @@ function renderOtherDocsList(docs){
 async function deleteOtherDoc(id){
   if(!confirm('Delete this document record? (attached files stay in Drive, only the record is removed)'))return;
   try{
-    await fetch('https://www.googleapis.com/drive/v3/files/'+id,{
+    await fetch('https://www.googleapis.com/drive/v3/files/'+id+'?supportsAllDrives=true',{
       method:'PATCH',headers:{Authorization:'Bearer '+googleAccessToken,'Content-Type':'application/json'},
       body:JSON.stringify({trashed:true})});
     toast('Document removed.','info');
