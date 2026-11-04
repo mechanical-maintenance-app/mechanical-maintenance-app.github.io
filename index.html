@@ -35,13 +35,13 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 .disc-btn:not(.active):hover{background:rgba(255,255,255,.06);color:white;}
 .sb-nav{flex:1;padding:10px 0;overflow-y:auto;}
 .sb-section-label{font-size:9px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1.5px;padding:12px 18px 4px;}
-.sb-item{display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;border-left:3px solid transparent;transition:all .15s;color:rgba(255,255,255,.55);font-size:13px;font-weight:500;user-select:none;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;border-left:3px solid transparent;transition:all .15s;color:rgba(255,255,255,.55);font-size:12px;font-weight:500;user-select:none;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;}
 .sb-item:hover{background:rgba(255,255,255,.05);color:white;}
 .sb-item.active{background:rgba(255,255,255,.08);border-left-color:var(--red);color:white;}
 .sb-item.active.rot{border-left-color:var(--orange);}
 .sb-item-icon{font-size:14px;width:18px;text-align:center;}
 .sb-divider{height:1px;background:rgba(255,255,255,.07);margin:8px 14px;}
-.sb-action{display:flex;align-items:center;gap:10px;padding:8px 18px;cursor:pointer;border-radius:0;transition:all .15s;color:rgba(255,255,255,.45);font-size:12px;font-weight:500;}
+.sb-action{display:flex;align-items:center;gap:10px;padding:8px 18px;cursor:pointer;border-radius:0;transition:all .15s;color:rgba(255,255,255,.45);font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.4px;}
 .sb-action:hover{color:white;background:rgba(255,255,255,.04);}
 .sb-action-icon{font-size:13px;width:18px;text-align:center;}
 .sb-bottom{padding:14px 18px;border-top:1px solid rgba(255,255,255,.07);}
@@ -59,7 +59,9 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 .main-title span{color:var(--red-light);}
 .main-title span.rot{color:var(--gold);}
 .main-header-right{display:flex;align-items:center;gap:14px;}
-.disc-indicator{font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;letter-spacing:.5px;}
+.disc-indicator{font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;letter-spacing:.5px;display:inline-flex;align-items:center;gap:6px;}
+.disc-ico{width:24px;height:12px;vertical-align:-2px;flex-shrink:0;}
+.disc-btn .disc-ico{margin-right:4px;}
 .disc-indicator.static{background:linear-gradient(160deg,#1e6b52,#123d2f);color:#4cd98a;box-shadow:var(--shadow-badge);}
 .disc-indicator.rotating{background:linear-gradient(160deg,#6b3a1e,#3d2012);color:var(--gold);box-shadow:var(--shadow-badge);}
 
@@ -653,6 +655,10 @@ body.rz-dragging,body.rz-dragging *{cursor:col-resize!important;user-select:none
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="ico-static" viewBox="0 0 32 16"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="5" y="4" width="20" height="8"/><path d="M25 4h2a4 4 0 0 1 0 8h-2"/><path d="M2 3v10M5 3v10"/><path d="M9 4V1.5M21 12v2.5"/></g></symbol>
+  <symbol id="ico-rotating" viewBox="0 0 32 16"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><circle cx="8" cy="8" r="4"/><path d="M8 4V1.5"/><rect x="14" y="4" width="13" height="8" rx="3"/><path d="M12 8h2"/><path d="M2 14.5h28"/></g></symbol>
+</defs></svg>
 
 <!-- ══ SIDEBAR ══ -->
 <div class="sb-hotzone" id="sbHotzone" title="Show menu"></div>
@@ -668,8 +674,8 @@ body.rz-dragging,body.rz-dragging *{cursor:col-resize!important;user-select:none
   <div class="sb-disc">
     <div class="sb-disc-label">Discipline</div>
     <div class="disc-btns">
-      <button class="disc-btn active static" id="discStatic" onclick="setDiscipline('static')">⚙️ Static</button>
-      <button class="disc-btn rotating" id="discRot" onclick="setDiscipline('rotating')">🔄 Rotating</button>
+      <button class="disc-btn active static" id="discStatic" onclick="setDiscipline('static')"><svg class="disc-ico"><use href="#ico-static"/></svg>Static</button>
+      <button class="disc-btn rotating" id="discRot" onclick="setDiscipline('rotating')"><svg class="disc-ico"><use href="#ico-rotating"/></svg>Rotating</button>
     </div>
   </div>
   <div class="sb-nav">
@@ -724,7 +730,7 @@ body.rz-dragging,body.rz-dragging *{cursor:col-resize!important;user-select:none
   <div class="main-header" id="mainHeader">
     <div class="main-title" id="mainTitle">MC <span>History</span></div>
     <div class="main-header-right">
-      <span class="disc-indicator static" id="discIndicator">⚙️ Static Equipment</span>
+      <span class="disc-indicator static" id="discIndicator"><svg class="disc-ico"><use href="#ico-static"/></svg>Static Equipment</span>
       <button id="googleSignInBtn" onclick="signInGoogle()" style="display:flex;align-items:center;gap:6px;padding:5px 14px;border-radius:5px;border:1.5px solid rgba(255,255,255,.25);background:transparent;color:rgba(255,255,255,.8);font-size:12px;font-weight:500;cursor:pointer;">🔑 Connect Drive</button>
     </div>
   </div>
@@ -1537,7 +1543,7 @@ function setDiscipline(disc){
   const isRot=disc==='rotating';
   document.getElementById('mainHeader').className='main-header'+(isRot?' rot':'');
   document.getElementById('discIndicator').className='disc-indicator '+(isRot?'rotating':'static');
-  document.getElementById('discIndicator').textContent=isRot?'🔄 Rotating Equipment':'⚙️ Static Equipment';
+  document.getElementById('discIndicator').innerHTML=isRot?'<svg class="disc-ico"><use href="#ico-rotating"/></svg>Rotating Equipment':'<svg class="disc-ico"><use href="#ico-static"/></svg>Static Equipment';
   document.getElementById('sbModuleTag').className='sb-module-tag '+(isRot?'rotating':'static');
   document.getElementById('sbModuleTag').textContent=isRot?'Rotating':'Static';
   document.querySelectorAll('.mc-disc-lbl').forEach(el=>el.textContent=mcDiscLabel());
@@ -3965,6 +3971,7 @@ async function deleteSelectedMCs(){
   // ── OTHER DOCUMENTS (Memos · Repair Reports · MOC) ──────────────────────
 let knownDocTypes=['Memo','Reporte de Reparación','MOC','INSPECTION REPORT'];
 let allOtherDocs=[];
+let odDocCache={},odLoadSeq=0;
 let odEditingId=null;
 let odTagValid=true; // siempre válido ahora (texto libre)
 
@@ -4090,30 +4097,51 @@ async function loadOtherDocsList(){
     document.getElementById('otherDocsTbody').innerHTML='<tr><td colspan="6" style="padding:20px;color:var(--silver)">🔑 Connect Google Drive to view documents.</td></tr>';
     return;
   }
-  document.getElementById('otherDocsTbody').innerHTML='<tr><td colspan="6" style="padding:20px;color:var(--silver)">Loading...</td></tr>';
-  let all=[];
+  const seq=++odLoadSeq;
+  // show what we already have right away; refresh in background
+  if(allOtherDocs.length)filterOtherDocsList();
+  else document.getElementById('otherDocsTbody').innerHTML='<tr><td colspan="8" style="padding:20px;color:var(--silver)">Loading...</td></tr>';
   const typeFolders=await driveQuery(`'${OD_ROOT_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,'id,name');
+  if(seq!==odLoadSeq)return;
   if(!typeFolders.length){
     document.getElementById('otherDocsTbody').innerHTML='<tr><td colspan="8" style="padding:20px;color:var(--silver)">⚠️ No access to the OTHER DOCUMENTS folder in Drive (Maintenance Cards / OTHER DOCUMENTS).</td></tr>';
     return;
   }
-  for(const tf of typeFolders){
-    const type=tf.name;
-    const files=await driveQuery(`'${tf.id}' in parents and mimeType='application/json' and trashed=false`,'id,name');
-    for(const f of files){
+  const typeById={};typeFolders.forEach(t=>typeById[t.id]=t.name);
+  // one query for every JSON in every type folder
+  let files=[];
+  const ids=typeFolders.map(t=>t.id);
+  for(let i=0;i<ids.length;i+=30){
+    const ch=ids.slice(i,i+30);
+    files=files.concat(await driveQuery(`(${ch.map(id=>`'${id}' in parents`).join(' or ')}) and mimeType='application/json' and trashed=false`,'id,name,parents,modifiedTime'));
+  }
+  if(seq!==odLoadSeq)return;
+  // download only new/changed files, 8 at a time
+  const todo=files.filter(f=>!odDocCache[f.id]||odDocCache[f.id].mt!==f.modifiedTime);
+  let next=0;
+  async function worker(){
+    while(next<todo.length){
+      const f=todo[next++];
       try{
         const r=await fetch('https://www.googleapis.com/drive/v3/files/'+f.id+'?alt=media&supportsAllDrives=true',{headers:{Authorization:'Bearer '+googleAccessToken}});
-        const doc=await r.json();
-        doc.id=f.id;doc.type=doc.type||type;
-        all.push(doc);
+        odDocCache[f.id]={mt:f.modifiedTime,doc:await r.json()};
       }catch(e){}
     }
   }
+  await Promise.all(Array.from({length:Math.min(8,todo.length)},worker));
+  if(seq!==odLoadSeq)return;
+  const all=[];
+  files.forEach(f=>{
+    const c=odDocCache[f.id];if(!c||!c.doc)return;
+    const doc=Object.assign({},c.doc);
+    doc.id=f.id;doc.type=doc.type||typeById[(f.parents||[])[0]]||'';
+    all.push(doc);
+  });
   const foundTypes=[...new Set(all.map(d=>d.type).filter(Boolean))];
   foundTypes.forEach(t=>{if(!knownDocTypes.includes(t))knownDocTypes.push(t);});
   populateOdTypeFilter();
   allOtherDocs=all.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-  renderOtherDocsList(allOtherDocs);
+  filterOtherDocsList();
 }
 function filterOtherDocsList(){
   const q=(document.getElementById('otherDocsSearch').value||'').trim().toLowerCase();
