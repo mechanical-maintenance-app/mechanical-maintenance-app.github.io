@@ -154,6 +154,8 @@ td.wrap{white-space:normal;min-width:220px;max-width:420px;}
 .action-btn.edit:hover{border-color:#1565c0;background:#e3f2fd;}
 .action-btn.prnt:hover{border-color:var(--green);background:#e8f5e9;}
 .action-btn.mc:hover{border-color:#8e24aa;background:#f3e5f5;}
+.action-btn.mc.has-mc{background:#c8e6c9;border-color:#2e7d32;box-shadow:inset 0 0 0 1px #2e7d32;}
+.action-btn.mc.no-mc{background:#fff3c4;border-color:#f9a825;box-shadow:inset 0 0 0 1px #f9a825;}
 .table-msg{text-align:center;padding:60px 20px;color:var(--silver);}
 .table-msg .icon{font-size:40px;margin-bottom:12px;}
 .table-msg p{font-size:14px;}
@@ -1815,6 +1817,7 @@ function updateGoogleBtn(connected){
   const btn=document.getElementById('googleSignInBtn');if(!btn)return;
   if(connected){
     btn.innerHTML='<span>✅</span> Drive Connected';btn.style.color='#4cd98a';btn.style.borderColor='#4cd98a';btn.onclick=null;btn.style.cursor='default';
+    setTimeout(()=>{try{refreshMCStatus();}catch(e){}},300);
   }else{
     btn.innerHTML='🔑 Connect Drive';btn.style.color='rgba(255,255,255,.8)';btn.style.borderColor='rgba(255,255,255,.25)';btn.onclick=signInGoogle;btn.style.cursor='pointer';
   }
@@ -2157,7 +2160,7 @@ return`<tr>
       <td>${fb}</td>
 <td><div class="td-actions">
         <button class="action-btn edit" title="Edit" onclick="editRecord(${r.rowIndex})">✏️</button>
-        <button class="action-btn mc" title="Generate MC" onclick="generateMC(${r.rowIndex})">📄</button>
+        <button class="action-btn mc" id="mcb_${r.rowIndex}" title="Generate MC" onclick="generateMC(${r.rowIndex})">📄</button>
         <button class="action-btn" title="Delete" onclick="deleteRecord(${r.rowIndex})">🗑️</button>
 </div></td>
     </tr>
@@ -2173,6 +2176,39 @@ return`<tr>
   }).join('');
   document.getElementById('pageIndicator').textContent=currentPage;
   resolveFIleBadges(page);
+  resolveMCStatus(page);
+}
+
+// ── MC STATUS: 📄 button green = MC saved in Drive · yellow = no MC yet ──
+const mcExistCache={};
+function mcJsonName(r){
+  const tag=r['TAG']||'',date=String(r['MAINTENANCE DATE']||'').substring(0,10);
+  return (r['MAINTENANCE CARD']?r['MAINTENANCE CARD']:tag+' · '+date)+'.json';
+}
+function paintMCBtn(rowIndex,has){
+  const b=document.getElementById('mcb_'+rowIndex);if(!b)return;
+  b.classList.toggle('has-mc',has===true);b.classList.toggle('no-mc',has===false);
+  b.title=has===true?'MC saved in Drive ✅ — Generate MC':has===false?'No MC in Drive yet — Generate MC':'Generate MC';
+}
+async function resolveMCStatus(page){
+  if(!isTokenValid()||!page||!page.length)return;
+  const disc=currentDiscipline,todo=[];
+  page.forEach(r=>{const n=mcJsonName(r),k=disc+'|'+n;if(k in mcExistCache)paintMCBtn(r.rowIndex,mcExistCache[k]);else todo.push({r,n,k});});
+  const esc=v=>v.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  for(let i=0;i<todo.length;i+=15){
+    const ch=todo.slice(i,i+15);
+    const names=[...new Set(ch.map(x=>x.n))];
+    const q='('+names.map(n=>`name='${esc(n)}'`).join(' or ')+") and mimeType='application/json' and trashed=false";
+    try{
+      const found=new Set((await driveQuery(q,'name')).map(f=>f.name));
+      if(disc!==currentDiscipline)return;
+      ch.forEach(x=>{mcExistCache[x.k]=found.has(x.n);paintMCBtn(x.r.rowIndex,mcExistCache[x.k]);});
+    }catch(e){console.log('resolveMCStatus:',e.message);}
+  }
+}
+function refreshMCStatus(){
+  if(typeof filteredRecords==='undefined'||!document.getElementById('tableBody'))return;
+  const start=(currentPage-1)*PAGE_SIZE;resolveMCStatus(filteredRecords.slice(start,start+PAGE_SIZE));
 }
 
 // ── LAZY FILE BADGES ───────────────────────────
@@ -3694,7 +3730,7 @@ if(saveBtn){saveBtn.textContent='⏳ Saving...';saveBtn.disabled=true;}
       const res=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{
         method:'POST',headers:{Authorization:'Bearer '+googleAccessToken},body:form});
       const d=await res.json();
-   if(d.id){currentDriveMCFileId=d.id;toast('MC saved to Drive ✅','success');if(saveBtn){saveBtn.textContent='💾 Save to Drive';saveBtn.disabled=false;}if(currentView==='cloudmc')loadCloudMCList();}
+   if(d.id){currentDriveMCFileId=d.id;Object.keys(mcExistCache).forEach(k=>delete mcExistCache[k]);toast('MC saved to Drive ✅','success');if(saveBtn){saveBtn.textContent='💾 Save to Drive';saveBtn.disabled=false;}if(currentView==='cloudmc')loadCloudMCList();}
       else throw new Error(d.error?.message||'Save failed');
     }
     return true;
