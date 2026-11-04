@@ -1174,7 +1174,7 @@ body.rz-dragging,body.rz-dragging *{cursor:col-resize!important;user-select:none
               <tr>
                 <td class="mcd-att-lbl-cell">Attachments</td>
                 <td><span class="mcd-att-label">Inspection</span><input type="checkbox" id="attInsp"></td>
-                <td><span class="mcd-att-label">Pictures</span><input type="checkbox" id="attPic"></td>
+                <td><span class="mcd-att-label">Pictures</span><input type="checkbox" id="attPic" onchange="syncDocPagination()"></td>
                 <td><span class="mcd-att-label">Hydrotest</span><input type="checkbox" id="attHydro"></td>
                 <td><span class="mcd-att-label">Torque</span><input type="checkbox" id="attTorque"></td>
               </tr>
@@ -1216,7 +1216,7 @@ body.rz-dragging,body.rz-dragging *{cursor:col-resize!important;user-select:none
           <div id="mcPage1B" style="display:none;"></div>
 
           <!-- ══ PAGE 2 — PHOTOS ══ -->
-          <div class="mc-doc-page">
+          <div class="mc-doc-page" id="mcPhotoPage">
             <div class="mcd-page-body">
 
             <!-- Header -->
@@ -3490,6 +3490,10 @@ function spHandlePaste(e){
 })();
 
 function syncDocPagination(){
+  // Photo pages (page 2 + extra photo pages) only when Attachments → PICTURES is checked
+  const showPics=!!(document.getElementById('attPic')||{}).checked;
+  const pp=document.getElementById('mcPhotoPage');if(pp)pp.style.display=showPics?'':'none';
+  const xp=document.getElementById('extraPhotoPagesContainer');if(xp)xp.style.display=showPics?'':'none';
   const pages=[...document.querySelectorAll('#mcDoc .mc-doc-page')].filter(p=>{
     const parent=p.closest('[style*="display: none"], [style*="display:none"]');
     return !parent || parent.id==='mcDoc';
@@ -3797,6 +3801,7 @@ function loadMCIntoForm(mc){
     mc.photos.forEach((p,i)=>{
       if(p&&p.src){photos[i].src=p.src;photos[i].caption=p.caption;renderPhotoSlot(i);}
     });
+    if(mc.photos.some(ph=>ph&&ph.src)){const ap=document.getElementById('attPic');if(ap)ap.checked=true;}
   }
   currentMCItemNo=mc.item_no||'';
   syncMCNumberDisplay();
